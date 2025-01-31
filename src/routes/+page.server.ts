@@ -1,27 +1,33 @@
-import { superValidate } from 'sveltekit-superforms/server';
-import { zod } from "sveltekit-superforms/adapters";
+import { fail, message, superValidate } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
 
-import { formSchema } from '../lib/schema';
-import type { Actions } from '@sveltejs/kit';
+import { last_step } from '$lib/schema';
 
+import type { Actions, PageServerLoad } from './$types';
 
-export const load = async () => {
-    const form = await superValidate(zod(formSchema));
+// This function can live in $lib/server/[some-entity].ts
+async function mockCreateEntity(data: any) {
+	console.log('Mock creating:', data);
+	return true;
+}
 
-    return {
-        form
-    };
+export const load: PageServerLoad = async () => {
+	const form = await superValidate(zod(last_step));
+	return { form };
 };
 
-
 export const actions: Actions = {
-    default: async (event) => {
-        const form = await superValidate(event, zod(formSchema));
+	new: async ({ request }) => {
+		const form = await superValidate(request, zod(last_step));
 
-        console.log('form.data :>> ', form.data);
+		if (!form.valid) return fail(400, { form });
 
-        return {
-            form
-        };
-    }
+		const created = await mockCreateEntity(form.data);
+
+		if (!created) {
+			return message(form, 'Sorry, we could not create the item.', { status: 500 });
+		}
+
+		return message(form, 'Item created successfully.');
+	}
 };

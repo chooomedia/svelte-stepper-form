@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let label: string = 'Weiter';
+	export let label: string;
 	export let type: 'button' | 'submit' = 'button';
 	export let variant: 'primary' | 'secondary' | 'outline' = 'primary';
 	export let isLoading: boolean = false;
