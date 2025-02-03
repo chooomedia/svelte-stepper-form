@@ -5,6 +5,11 @@
 	export let isLoading: boolean = false;
 	export let isSuccess: boolean = false;
 	export let disabled: boolean = false;
+
+	interface ButtonProps {
+		// ... existing props
+		'aria-label'?: string;
+	}
 </script>
 
 <button

@@ -1,7 +1,5 @@
-// src/lib/schema.ts
 import { z } from 'zod';
 
-// Basis-Schema für Image-Optionen
 const imageOptionSchema = z.object({
 	value: z.string(),
 	label: z.string(),
@@ -10,90 +8,130 @@ const imageOptionSchema = z.object({
 	weight: z.number().int().min(0).max(10).default(1)
 });
 
-// Schema für den ersten Schritt (Unternehmenssichtbarkeit)
-export const step_1 = z.object({
-	visibility: z.string({
-		required_error: 'Bitte wählen Sie aus, wo Ihr Unternehmen zu finden ist'
-	})
-});
+export type ImageOption = z.infer<typeof imageOptionSchema>;
 
-// Schema für den zweiten Schritt (Werbefrequenz)
-export const step_2 = step_1.extend({
-	advertising_frequency: z.string({
-		required_error: 'Bitte wählen Sie Ihre Werbefrequenz aus'
-	})
-});
+export const baseFormSchema = z.object({
+	// Required fields for image options
+	visibility: z.string({ required_error: 'Bitte wähle aus, wo Dein Unternehmen zu finden ist' }),
+	advertising_frequency: z
+		.string({ required_error: 'Bitte wähle die Werbefrequenz aus' })
+		.optional(),
+	goals: z.string({ required_error: 'Bitte wähle Dein Hauptziel aus' }).optional(),
+	campaign_management: z
+		.string({ required_error: 'Bitte wähle aus, wer die Werbung betreuen soll' })
+		.optional(),
+	online_reviews: z
+		.string({ required_error: 'Bitte angeben wie durchschnittlich Deine Online-Bewertungen sind' })
+		.optional(),
+	previous_campaigns: z
+		.string({ required_error: 'Bitte geben an, ob Sie bereits Onlinewerbung geschaltet haben' })
+		.optional(),
+	business_phase: z
+		.string({ required_error: 'Bitte wählen Deine Unternehmensphase aus' })
+		.optional(),
+	implementation_time: z
+		.string({ required_error: 'Bitte wählen Sie den gewünschten Implementierungszeitraum' })
+		.optional(),
 
-// Schema für den dritten Schritt (Ziele)
-export const step_3 = step_2.extend({
-	goals: z.string({
-		required_error: 'Bitte wählen Sie Ihr Hauptziel aus'
-	})
-});
-
-// Schema für den vierten Schritt (Werbeverantwortlicher)
-export const step_4 = step_3.extend({
-	campaign_management: z.string({
-		required_error: 'Bitte wählen Sie aus, wer die Werbung betreuen soll'
-	})
-});
-
-// Schema für den fünften Schritt (Online Bewertungen)
-export const step_5 = step_4.extend({
-	online_reviews: z.string({
-		required_error: 'Bitte wählen Sie aus, wie Ihre Online-Bewertungen sind'
-	})
-});
-
-// Schema für den sechsten Schritt (Bisherige Kampagnen)
-export const step_6 = step_5.extend({
-	previous_campaigns: z.string({
-		required_error: 'Bitte geben Sie an, ob Sie bereits Onlinewerbung geschaltet haben'
-	})
-});
-
-// Schema für den siebten Schritt (Unternehmensphase)
-export const step_7 = step_6.extend({
-	business_phase: z.string({
-		required_error: 'Bitte wählen Sie Ihre Unternehmensphase aus'
-	})
-});
-
-// Schema für den achten Schritt (Implementierungszeit)
-export const step_8 = step_7.extend({
-	implementation_time: z.string({
-		required_error: 'Bitte wählen Sie den gewünschten Implementierungszeitraum'
-	})
-});
-
-// Schema für den neunten Schritt (Unternehmensdaten)
-export const step_9 = step_8.extend({
+	// Company and contact details
 	company_name: z
-		.string({
-			required_error: 'Unternehmensname wird benötigt'
-		})
+		.string({ required_error: 'Unternehmensname wird benötigt' })
 		.min(2, 'Name muss mindestens 2 Zeichen lang sein'),
-	company_url: z.string().url('Bitte geben Sie eine gültige URL ein').optional()
-});
-
-// Schema für den letzten Schritt (Kontaktdaten)
-export const last_step = step_9.extend({
-	salutation: z.enum(['Herr', 'Frau', 'Divers'], {
-		required_error: 'Bitte wählen Sie eine Anrede'
-	}),
-	first_name: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein'),
+	company_url: z.string().url('Bitte gültige URL angeben'),
+	salutation: z.enum(['Herr', 'Frau', 'Divers']).optional(),
+	first_name: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein').optional(),
 	last_name: z.string().min(2, 'Nachname muss mindestens 2 Zeichen lang sein'),
-	email: z.string().email('Bitte geben Sie eine gültige E-Mail-Adresse ein'),
+	email: z.string().email('Bitte eine gültige E-Mail-Adresse angeben'),
 	phone: z
 		.string()
 		.regex(/^\+?[0-9\s\-()]{7,20}$/, 'Ungültiges Telefonformat')
 		.optional(),
-	privacy_agreement: z.boolean().refine((val) => val === true, {
-		message: 'Sie müssen den Datenschutzbestimmungen zustimmen'
-	})
+	privacy_agreement: z.boolean(),
+	marketing_consent: z.boolean().optional(),
+	visibility_score: z.number().optional()
 });
 
-// Vordefinierte Optionen für die verschiedenen Schritte
+export const step_1 = baseFormSchema.pick({ visibility: true });
+export const step_2 = baseFormSchema.pick({ visibility: true, advertising_frequency: true });
+export const step_3 = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true
+});
+export const step_4 = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true,
+	campaign_management: true
+});
+export const step_5 = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true,
+	campaign_management: true,
+	online_reviews: true
+});
+export const step_6 = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true,
+	campaign_management: true,
+	online_reviews: true,
+	previous_campaigns: true
+});
+export const step_7 = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true,
+	campaign_management: true,
+	online_reviews: true,
+	previous_campaigns: true,
+	business_phase: true
+});
+export const step_8 = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true,
+	campaign_management: true,
+	online_reviews: true,
+	previous_campaigns: true,
+	business_phase: true,
+	implementation_time: true
+});
+export const step_9 = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true,
+	campaign_management: true,
+	online_reviews: true,
+	previous_campaigns: true,
+	business_phase: true,
+	implementation_time: true,
+	company_name: true,
+	company_url: true
+});
+export const last_step = baseFormSchema.pick({
+	visibility: true,
+	advertising_frequency: true,
+	goals: true,
+	campaign_management: true,
+	online_reviews: true,
+	previous_campaigns: true,
+	business_phase: true,
+	implementation_time: true,
+	company_name: true,
+	company_url: true,
+	salutation: true,
+	first_name: true,
+	last_name: true,
+	email: true,
+	phone: true,
+	privacy_agreement: true,
+	marketing_consent: true
+});
+
+export type FormData = z.infer<typeof baseFormSchema>;
+
 export const formOptions = {
 	visibility: [
 		{
@@ -185,7 +223,7 @@ export const formOptions = {
 			value: 'all',
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-alle-zusammen-2.png',
-			description: 'Ganzheitliche Verbesserung',
+			description: 'All-in-One Lösung',
 			weight: 10
 		}
 	],
@@ -327,13 +365,21 @@ export const formOptions = {
 			weight: 5
 		}
 	]
-};
+} as const;
 
-// Export der Typen für TypeScript
-export type ImageOption = z.infer<typeof imageOptionSchema>;
-export type FormData = z.infer<typeof last_step>;
+export function getFormOptionWeight(category: keyof typeof formOptions, value: string): number {
+	const options = formOptions[category];
+	const option = options.find((opt) => opt.value === value);
+	return option ? option.weight : 0;
+}
 
-// Default-Werte für das Formular
+export function getFormOptionByValue<K extends keyof typeof formOptions>(
+	category: K,
+	value: string
+): (typeof formOptions)[K][number] | undefined {
+	return formOptions[category].find((option) => option.value === value);
+}
+
 export const defaultValues: FormData = {
 	visibility: '',
 	advertising_frequency: '',
@@ -350,68 +396,69 @@ export const defaultValues: FormData = {
 	last_name: '',
 	email: '',
 	phone: '',
-	privacy_agreement: false
+	privacy_agreement: false,
+	marketing_consent: false,
+	visibility_score: 0
 };
 
-// Schrittdefinitionen für den Stepper
 export const FORM_STEPS = [
 	{
-		title: 'Unternehmenssichtbarkeit',
-		description: 'Wo ist Ihr Unternehmen zu finden?',
+		title: 'visibility',
+		description: 'Wo ist Dein Unternehmen zu finden?',
 		schema: step_1,
 		showInIndicator: true
 	},
 	{
-		title: 'Werbefrequenz',
-		description: 'Wie oft schalten Sie Werbung?',
+		title: 'advertising_frequency',
+		description: 'Wie oft schaltest Du Werbung?',
 		schema: step_2,
 		showInIndicator: true
 	},
 	{
-		title: 'Unternehmensziele',
-		description: 'Was möchten Sie erreichen?',
+		title: 'goals',
+		description: 'Was möchtest Du unternehmerisch erreichen?',
 		schema: step_3,
 		showInIndicator: true
 	},
 	{
-		title: 'Werbemaßnahmen',
-		description: 'Wer soll Ihre Werbung betreuen?',
+		title: 'campaign_management',
+		description: 'Wer soll Deine Werbung betreuen?',
 		schema: step_4,
 		showInIndicator: true
 	},
 	{
-		title: 'Online-Bewertungen',
-		description: 'Wie bewerten Ihre Kunden Sie?',
+		title: 'online_reviews',
+		description: 'Wie bewerten Deine Kunden Sie?',
 		schema: step_5,
 		showInIndicator: true
 	},
 	{
-		title: 'Bisherige Werbung',
-		description: 'Ihre Erfahrung mit Online-Werbung',
+		title: 'previous_campaigns',
+		description: 'Deine Erfahrung mit Online-Werbung',
 		schema: step_6,
 		showInIndicator: true
 	},
 	{
-		title: 'Unternehmensphase',
-		description: 'In welcher Phase befindet sich Ihr Unternehmen?',
+		title: 'business_phase',
+		description: 'In welcher Phase befindet sich Dein Unternehmen?',
 		schema: step_7,
 		showInIndicator: true
 	},
 	{
-		title: 'Zeitplan',
-		description: 'Ihr gewünschter Implementierungszeitraum',
+		title: 'implementation_time',
+		description: 'Dein gewünschter Implementierungszeitraum',
 		schema: step_8,
 		showInIndicator: true
 	},
 	{
-		title: 'Unternehmensdaten',
-		description: 'Informationen zu Ihrem Unternehmen',
+		title: 'company_info',
+		description: 'Informationen zu Deinem Unternehmen',
 		schema: step_9,
 		showInIndicator: true
 	},
 	{
-		title: 'Kontaktdaten',
-		description: 'Ihre persönlichen Informationen',
+		title: 'contact',
+		description: 'Deine persönlichen Informationen',
 		schema: last_step,
 		showInIndicator: true
 	}
@@ -419,13 +466,6 @@ export const FORM_STEPS = [
 
 export type StepSchema = (typeof FORM_STEPS)[number];
 export type StepName = keyof FormData;
-export type FormStep = {
-	title: string;
-	description: string;
-	schema: z.ZodType<any>;
-	showInIndicator?: boolean;
-};
 
-// Hilfs-Konstanten
-export const TOTAL_STEPS = FORM_STEPS.length;
+export const TOTAL_STEPS = 12;
 export const LAST_STEP_INDEX = TOTAL_STEPS - 1;

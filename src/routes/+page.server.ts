@@ -1,24 +1,29 @@
 import { fail, message, superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
-
-import { last_step } from '$lib/schema';
+import { zod } from 'sveltekit-superforms/adapters'; // ✅ Richtig importiert
+import { last_step, defaultValues } from '$lib/schema';
 
 import type { Actions, PageServerLoad } from './$types';
 
-// This function can live in $lib/server/[some-entity].ts
+// Simulierte Server-Funktion
 async function mockCreateEntity(data: any) {
 	console.log('Mock creating:', data);
 	return true;
 }
 
 export const load: PageServerLoad = async () => {
-	const form = await superValidate(zod(last_step));
+	// ✅ Korrekte Verwendung von `superValidate`
+	const form = await superValidate(zod(last_step), { defaults: defaultValues });
+
+	console.log('Default Values:', defaultValues);
+
 	return { form };
 };
 
 export const actions: Actions = {
 	new: async ({ request }) => {
-		const form = await superValidate(request, zod(last_step));
+		const form = await superValidate(request, last_step);
+
+		console.log('🔍 Validierungsfehler:', form.errors); // ✅ Fehler in der Konsole anzeigen
 
 		if (!form.valid) return fail(400, { form });
 

@@ -13,9 +13,9 @@
 	{#each options as option}
 		<button
 			type="button"
-			class="relative flex cursor-pointer rounded-lg border px-4 py-6 shadow-sm focus:outline-none"
+			class="relative flex cursor-pointer rounded-lg border bg-gray-50 px-4 py-6 shadow-sm focus:outline-none"
 			class:border-indigo-500={value === option.value}
-			class:border-gray-300={value !== option.value}
+			class:border-gray-100={value !== option.value}
 			on:click={() => {
 				value = option.value;
 				if (onSelect) {
@@ -24,10 +24,10 @@
 			}}
 			aria-label={option.description || option.label}
 		>
-			<div class="flex w-full items-center justify-center">
+			<div class="group flex w-full items-center justify-center">
 				<div class="flex items-center">
 					<div class="text-sm">
-						<div class="flex items-center">
+						<div class="flex items-center transition-transform group-hover:scale-110">
 							{#if option.imgSrc}
 								<img
 									src={option.imgSrc}

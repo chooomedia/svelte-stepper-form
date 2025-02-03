@@ -72,7 +72,7 @@
 			const meta = document.createElement('meta');
 			meta.name = 'description';
 			meta.content =
-				'Ermitteln Sie Ihren digitalen Marketing-Score und erhalten Sie personalisierte Empfehlungen für Ihr Unternehmen mit Digital Pusher.';
+				'Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher.';
 			document.head.appendChild(meta);
 		}
 	});
@@ -82,12 +82,12 @@
 	<title>Digital Marketing Assessment | Digital Pusher</title>
 	<meta
 		name="description"
-		content="Ermitteln Sie Ihren digitalen Marketing-Score und erhalten Sie personalisierte Empfehlungen für Ihr Unternehmen."
+		content="Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher."
 	/>
 	<meta property="og:title" content="Digital Marketing Assessment | Digital Pusher" />
 	<meta
 		property="og:description"
-		content="Ermitteln Sie Ihren digitalen Marketing-Score und erhalten Sie personalisierte Empfehlungen für Ihr Unternehmen."
+		content="Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher."
 	/>
 	<meta property="og:image" content="https://digitalpusher.de/og-image.jpg" />
 	<meta property="og:url" content={$page.url.href} />
@@ -99,9 +99,9 @@
 	<link rel="alternate" hreflang="de" href={$page.url.href} />
 </svelte:head>
 
-<div class="flex min-h-screen flex-col bg-gray-50">
+<main class="container flex min-h-screen flex-col bg-gray-50">
 	{#if !isIframe}
-		<header class="bg-white shadow-sm" itemscope itemtype="https://schema.org/WPHeader">
+		<header class="bg-transparent shadow-sm" itemscope itemtype="https://schema.org/WPHeader">
 			<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
 				<nav
 					class="flex justify-center"
@@ -126,7 +126,7 @@
 		</header>
 	{/if}
 
-	<main
+	<section
 		class="flex flex-1 flex-col {isIframe ? 'py-0' : 'py-8'}"
 		itemscope
 		itemtype="https://schema.org/MainContentOfPage"
@@ -134,11 +134,11 @@
 		<div class="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8">
 			<slot />
 		</div>
-	</main>
+	</section>
 
 	{#if !isIframe}
 		<footer
-			class="border-t border-gray-200 bg-white"
+			class="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white"
 			itemscope
 			itemtype="https://schema.org/WPFooter"
 		>
@@ -149,4 +149,4 @@
 			</div>
 		</footer>
 	{/if}
-</div>
+</main>

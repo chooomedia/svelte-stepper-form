@@ -1,88 +1,153 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { Chart, DoughnutController, ArcElement, Tooltip } from 'chart.js';
+	import { fade } from 'svelte/transition';
+	import { tweened } from 'svelte/motion';
+	import { cubicInOut } from 'svelte/easing';
 
-	Chart.register(DoughnutController, ArcElement, Tooltip);
+	const {
+		score,
+		autoAdvance = 15, // Längere Wartezeit
+		nextStep
+	} = $props<{
+		score: number;
+		autoAdvance?: number;
+		nextStep: () => void;
+	}>();
 
-	export let score = 75;
-	export let autoAdvance = 5;
-	export let nextStep: () => void;
+	let isAnimating = $state(true);
+	let remainingTime = $state(autoAdvance);
+	let intervalId: number | undefined;
+	let timeoutId: number | undefined;
+	let stepTriggered = false;
 
-	let chartCanvas: HTMLCanvasElement;
-	let chartInstance: Chart | null = null;
-	let timeout: ReturnType<typeof setTimeout>;
+	const radius = 90;
+	const strokeWidth = 14;
+	const circumference = 2 * Math.PI * radius;
+
+	// 🚀 Langsame Animation: 6000ms für smoothere Bewegung
+	let displayScore = tweened(0, { duration: 6000, easing: cubicInOut });
+	let strokeDashoffset = tweened(circumference, { duration: 6000, easing: cubicInOut });
+
+	// Ampel-Farben für den Score
+	function getScoreColor(score: number): string {
+		if (score >= 80) return '#16a34a'; // Grün
+		if (score >= 60) return '#eab308'; // Gelb
+		if (score >= 40) return '#f97316'; // Orange
+		return '#dc2626'; // Rot
+	}
+
+	// Kundenansprache + Lösung
+	function getScoreMessage(score: number): { message: string; solution: string } {
+		if (score >= 80) {
+			return {
+				message: 'Hervorragend! Deine digitale Präsenz ist exzellent.',
+				solution: 'Nutzen Sie fortschrittliche Strategien, um Deine Dominanz weiter auszubauen!'
+			};
+		}
+		if (score >= 60) {
+			return {
+				message: 'Gut! Aber es gibt noch Potenzial.',
+				solution: 'Mit gezieltem Optimieren können Sie noch mehr Sichtbarkeit gewinnen.'
+			};
+		}
+		if (score >= 40) {
+			return {
+				message: 'Deine Sichtbarkeit ist ausbaufähig.',
+				solution: 'Erhöhen Sie Deine Reichweite durch smarte Online-Marketing-Strategien.'
+			};
+		}
+		return {
+			message: 'Kritisch! Dein Unternehmen ist kaum sichtbar.',
+			solution: 'Wir zeigen Dir, wie Du sofort mehr Kunden erreichen.'
+		};
+	}
+
+	function safeNextStep() {
+		if (!stepTriggered) {
+			stepTriggered = true;
+			setTimeout(() => {
+				nextStep();
+			}, 300);
+		}
+	}
 
 	onMount(() => {
-		if (chartCanvas) {
-			chartInstance = new Chart(chartCanvas, {
-				type: 'doughnut',
-				data: {
-					datasets: [
-						{
-							data: [score, 100 - score],
-							backgroundColor: [
-								'rgb(59, 130, 246)', // Tailwind blue-500
-								'rgb(229, 231, 235)' // Tailwind gray-200
-							],
-							borderWidth: 0,
-							circumference: 360,
-							cutout: '85%'
-						}
-					]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: {
-						tooltip: {
-							enabled: false
-						}
-					},
-					animation: {
-						duration: 1500,
-						easing: 'easeOutQuart'
-					}
-				}
-			});
-		}
+		displayScore.set(score);
+		strokeDashoffset.set(circumference - (circumference * score) / 100);
 
-		timeout = setTimeout(nextStep, autoAdvance * 1000);
+		intervalId = setInterval(() => {
+			if (remainingTime > 0) {
+				remainingTime--;
+			} else {
+				clearInterval(intervalId);
+				safeNextStep();
+			}
+		}, 1000);
+
+		timeoutId = setTimeout(safeNextStep, autoAdvance * 1000);
 	});
 
 	onDestroy(() => {
-		if (chartInstance) {
-			chartInstance.destroy();
-		}
-		clearTimeout(timeout);
+		clearInterval(intervalId);
+		clearTimeout(timeoutId);
 	});
 </script>
 
-<div class="mx-auto flex max-w-lg flex-col items-center space-y-4">
-	<div class="relative h-64 w-64">
-		<canvas bind:this={chartCanvas}></canvas>
+<div
+	class="relative flex flex-col items-center justify-center space-y-6 p-8"
+	role="alert"
+	aria-live="polite"
+	transition:fade={{ duration: 500 }}
+>
+	<!-- Animierter SVG Doughnut -->
+	<div class="relative h-56 w-56">
+		<!-- Größerer Doughnut für bessere Lesbarkeit -->
+		<svg width="220" height="220" viewBox="0 0 220 220" class="absolute inset-0">
+			<!-- Hintergrund-Grauer Ring -->
+			<circle
+				cx="110"
+				cy="110"
+				r={radius}
+				fill="none"
+				stroke="#e5e7eb"
+				stroke-width={strokeWidth}
+			/>
+			<!-- Fortschrittsring (animiert von oben nach rechts) -->
+			<circle
+				cx="110"
+				cy="110"
+				r={radius}
+				fill="none"
+				stroke={getScoreColor(score)}
+				stroke-width={strokeWidth}
+				stroke-linecap="round"
+				stroke-dasharray={circumference}
+				stroke-dashoffset={$strokeDashoffset}
+				transform="rotate(-90 110 110)"
+			/>
+		</svg>
+
+		<!-- Score-Text ABSOLUT positioniert -->
 		<div class="absolute inset-0 flex flex-col items-center justify-center">
-			<div class="text-4xl font-bold text-gray-900">{score}%</div>
-			<div class="text-sm text-gray-500">Sichtbarkeits-Score</div>
+			<span class="text-6xl font-bold" style="color: {getScoreColor(score)}">
+				{Math.round($displayScore)}
+			</span>
+			<span class="text-lg text-gray-500">von 100</span>
 		</div>
 	</div>
-	<div class="text-center">
-		<h3 class="text-xl font-semibold text-gray-900">
-			{#if score >= 80}
-				Ausgezeichnet!
-			{:else if score >= 60}
-				Gut auf dem Weg!
-			{:else}
-				Verbesserungspotential!
-			{/if}
-		</h3>
-		<p class="mt-2 text-gray-600">
-			{#if score >= 80}
-				Ihre digitale Sichtbarkeit ist hervorragend.
-			{:else if score >= 60}
-				Ihre digitale Präsenz zeigt gute Ansätze.
-			{:else}
-				Wir können Ihre digitale Sichtbarkeit deutlich verbessern.
-			{/if}
+
+	<!-- Score Message & Lösung -->
+	<div class="space-y-3 text-center">
+		<h2 class="text-2xl font-semibold text-gray-900">
+			{getScoreMessage(score).message}
+		</h2>
+		<p class="text-gray-600">
+			{getScoreMessage(score).solution}
 		</p>
+	</div>
+
+	<!-- Auto-advance notice -->
+	<div class="mt-4 text-sm text-gray-500">
+		Weiterleitung in {remainingTime} Sekunden...
 	</div>
 </div>
