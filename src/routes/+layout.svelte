@@ -99,7 +99,7 @@
 	<link rel="alternate" hreflang="de" href={$page.url.href} />
 </svelte:head>
 
-<main class="container flex min-h-screen flex-col bg-gray-50">
+<main class="flex min-h-screen flex-col bg-gray-100">
 	{#if !isIframe}
 		<header class="bg-transparent shadow-sm" itemscope itemtype="https://schema.org/WPHeader">
 			<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">

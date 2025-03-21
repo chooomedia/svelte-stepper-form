@@ -1,6 +1,5 @@
 <!-- src/lib/components/CompanyForm.svelte -->
 <script lang="ts">
-	import { slide } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
 
@@ -44,10 +43,9 @@
 			bind:value={$form.company_name}
 			class="input-field {shouldShowError('company_name') ? 'error' : ''}"
 			onblur={() => handleBlur('company_name')}
-			{...getAriaAttrs('company_name', 'Bitte gebe Deinen Unternehmensnamen ein')}
 		/>
 		{#if shouldShowError('company_name')}
-			<p class="error-text" id="company_name-error" role="alert" transition:slide>
+			<p class="error-text" id="company_name-error" role="alert">
 				{errors.company_name}
 			</p>
 		{/if}
@@ -63,10 +61,9 @@
 			class="input-field {shouldShowError('company_url') ? 'error' : ''}"
 			onblur={() => handleBlur('company_url')}
 			placeholder="https://www.example.com"
-			{...getAriaAttrs('company_url', 'Bitte gebe Deine Unternehmens-URL ein')}
 		/>
 		{#if shouldShowError('company_url')}
-			<p class="error-text" id="company_url-error" role="alert" transition:slide>
+			<p class="error-text" id="company_url-error" role="alert">
 				{errors.company_url}
 			</p>
 		{/if}

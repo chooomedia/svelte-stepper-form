@@ -300,9 +300,6 @@
 					out:fade={{ duration: 550 }}
 				>
 					{#if currentStep <= 8}
-						<h2 id={`step-${currentStep}-heading`} class="text-center text-xl text-gray-500">
-							{getCurrentStepData.description}
-						</h2>
 						{#if currentStep === 1}
 							<div class="form-card">
 								<ImageOption
