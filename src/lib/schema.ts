@@ -52,35 +52,45 @@ export const baseFormSchema = z.object({
 });
 
 export const step_1 = baseFormSchema.pick({ visibility: true });
-export const step_2 = baseFormSchema.pick({ visibility: true, advertising_frequency: true });
+export const step_2 = baseFormSchema.pick({ company_url: true });
 export const step_3 = baseFormSchema.pick({
 	visibility: true,
-	advertising_frequency: true,
-	goals: true
+	company_url: true,
+	advertising_frequency: true
 });
 export const step_4 = baseFormSchema.pick({
 	visibility: true,
+	company_url: true,
+	advertising_frequency: true,
+	goals: true
+});
+export const step_5 = baseFormSchema.pick({
+	visibility: true,
+	company_url: true,
 	advertising_frequency: true,
 	goals: true,
 	campaign_management: true
 });
-export const step_5 = baseFormSchema.pick({
+export const step_6 = baseFormSchema.pick({
 	visibility: true,
+	company_url: true,
 	advertising_frequency: true,
 	goals: true,
 	campaign_management: true,
 	online_reviews: true
 });
-export const step_6 = baseFormSchema.pick({
+export const step_7 = baseFormSchema.pick({
 	visibility: true,
+	company_url: true,
 	advertising_frequency: true,
 	goals: true,
 	campaign_management: true,
 	online_reviews: true,
 	previous_campaigns: true
 });
-export const step_7 = baseFormSchema.pick({
+export const step_8 = baseFormSchema.pick({
 	visibility: true,
+	company_url: true,
 	advertising_frequency: true,
 	goals: true,
 	campaign_management: true,
@@ -88,8 +98,9 @@ export const step_7 = baseFormSchema.pick({
 	previous_campaigns: true,
 	business_phase: true
 });
-export const step_8 = baseFormSchema.pick({
+export const step_9 = baseFormSchema.pick({
 	visibility: true,
+	company_url: true,
 	advertising_frequency: true,
 	goals: true,
 	campaign_management: true,
@@ -98,8 +109,9 @@ export const step_8 = baseFormSchema.pick({
 	business_phase: true,
 	implementation_time: true
 });
-export const step_9 = baseFormSchema.pick({
+export const step_10 = baseFormSchema.pick({
 	visibility: true,
+	company_url: true,
 	advertising_frequency: true,
 	goals: true,
 	campaign_management: true,
@@ -107,11 +119,11 @@ export const step_9 = baseFormSchema.pick({
 	previous_campaigns: true,
 	business_phase: true,
 	implementation_time: true,
-	company_name: true,
-	company_url: true
+	company_name: true
 });
 export const last_step = baseFormSchema.pick({
 	visibility: true,
+	company_url: true,
 	advertising_frequency: true,
 	goals: true,
 	campaign_management: true,
@@ -120,7 +132,6 @@ export const last_step = baseFormSchema.pick({
 	business_phase: true,
 	implementation_time: true,
 	company_name: true,
-	company_url: true,
 	salutation: true,
 	first_name: true,
 	last_name: true,
@@ -409,51 +420,57 @@ export const FORM_STEPS = [
 		showInIndicator: true
 	},
 	{
+		title: 'company_url',
+		description: 'Deine Website URL für die Analyse',
+		schema: step_2,
+		showInIndicator: true
+	},
+	{
 		title: 'advertising_frequency',
 		description: 'Wie oft schaltest Du Werbung?',
-		schema: step_2,
+		schema: step_3,
 		showInIndicator: true
 	},
 	{
 		title: 'goals',
 		description: 'Was möchtest Du unternehmerisch erreichen?',
-		schema: step_3,
+		schema: step_4,
 		showInIndicator: true
 	},
 	{
 		title: 'campaign_management',
 		description: 'Wer soll Deine Werbung betreuen?',
-		schema: step_4,
+		schema: step_5,
 		showInIndicator: true
 	},
 	{
 		title: 'online_reviews',
 		description: 'Wie bewerten Deine Kunden Sie?',
-		schema: step_5,
+		schema: step_6,
 		showInIndicator: true
 	},
 	{
 		title: 'previous_campaigns',
 		description: 'Deine Erfahrung mit Online-Werbung',
-		schema: step_6,
+		schema: step_7,
 		showInIndicator: true
 	},
 	{
 		title: 'business_phase',
 		description: 'In welcher Phase befindet sich Dein Unternehmen?',
-		schema: step_7,
+		schema: step_8,
 		showInIndicator: true
 	},
 	{
 		title: 'implementation_time',
 		description: 'Dein gewünschter Implementierungszeitraum',
-		schema: step_8,
+		schema: step_9,
 		showInIndicator: true
 	},
 	{
 		title: 'company_info',
 		description: 'Informationen zu Deinem Unternehmen',
-		schema: step_9,
+		schema: step_10,
 		showInIndicator: true
 	},
 	{
