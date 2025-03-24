@@ -26,7 +26,6 @@
 		step_7,
 		step_8,
 		step_9,
-		step_10,
 		last_step,
 		TOTAL_STEPS,
 		formOptions,
@@ -82,7 +81,6 @@
 		step_7,
 		step_8,
 		step_9,
-		step_10,
 		last_step,
 		zod(z.object({})),
 		zod(z.object({}))
@@ -94,7 +92,7 @@
 		const stepKey = stepData.title.toLowerCase() as keyof FormData;
 		const currentStepData = formData[stepKey];
 
-		if (step <= 10) {
+		if (step <= 9) {
 			if (!currentStepData) {
 				if (validSteps.includes(step)) {
 					incompleteSteps = [...incompleteSteps, step];
@@ -573,7 +571,7 @@
 					{:else if currentStep === 10}
 						<div class="form-card">
 							<div class="space-y-4">
-								<ContactForm form={$form} errors={$errors} {enhance} delayed={$delayed} />
+								<ContactForm {form} errors={$errors} />
 							</div>
 						</div>
 					{:else if currentStep === 11}

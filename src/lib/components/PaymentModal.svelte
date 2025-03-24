@@ -28,7 +28,7 @@
 	} = $props<Props>();
 
 	// State für Zahlungsart
-	let paymentMethod = $state('paypal'); // Default zu PayPal für bessere Konversion
+	let paymentMethod = $state('credit'); // Default zu PayPal für bessere Konversion
 
 	// State für Formularvalidierung
 	let cardNumber = $state('');
@@ -99,7 +99,7 @@
 <!-- Prevent click propagation for modal content -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	class="fixed inset-0 z-50 mt-0 mt-0 flex items-center justify-center overflow-hidden bg-black bg-opacity-50"
+	class="fixed inset-0 z-50 mt-0 flex items-center justify-center overflow-hidden bg-black bg-opacity-50 backdrop-blur-[2px]"
 	class:hidden={!showModal}
 	transition:fade={{ duration: 200 }}
 	onclick={handleClose}
@@ -217,31 +217,10 @@
 							></path>
 						</svg>
 						<p class="text-sm text-gray-700">
-							Nach dem Klicken auf "Weiter zu PayPal" werden Sie zu PayPal weitergeleitet, um den
-							Zahlungsprozess abzuschließen. Nach erfolgreicher Zahlung kehren Sie zu uns zurück.
+							Nach dem Klicken auf "Weiter zu PayPal" wirst Du zu PayPal weitergeleitet, um den
+							Zahlungsprozess abzuschließen. Nach erfolgreicher Zahlung wird auf diese Seite
+							zurückgeleitet - bitte nicht das Browserfenster neu laden.
 						</p>
-					</div>
-
-					<!-- PayPal Button -->
-					<div class="mt-6 text-center">
-						<button
-							type="button"
-							class="inline-flex items-center justify-center rounded-md bg-[#0070ba] px-6 py-3 text-lg font-bold text-white shadow-md hover:bg-[#003087] focus:outline-none"
-							onclick={() => {
-								// Hier würde die PayPal-Integration erfolgen
-								handleSubmit(new Event('submit') as Event);
-							}}
-						>
-							<svg class="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="white">
-								<path
-									d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 0 0-.794.68l-.04.22-.63 4.876-.03.15a.809.809 0 0 1-.794.68h-2.52c-.092 0-.166-.075-.151-.165l.955-6.05-.03-.17a.804.804 0 0 1 .792-.683h1.307c4.067 0 7.136-1.648 8.056-6.418.4-2.05.19-3.687-.814-4.857-.257-.3-.59-.566-.969-.788-.046.6-.069 1.2-.061 1.803-.016 1.275-.312 2.52-.849 3.645l-.001-.002z"
-								></path>
-								<path
-									d="M17.79 3.304a6.13 6.13 0 0 0-.717-.338 9.602 9.602 0 0 0-3.639-.675h-5.23c-.14 0-.258.105-.28.245l-1.458 9.224a.177.177 0 0 0 .175.204h3.74c.09-.006.168-.06.177-.15l.04-.22.77-4.884.05-.25c.01-.092.08-.147.17-.147h1.097c3.457 0 6.152-1.403 6.942-5.467.033-.17.062-.336.086-.497a4.908 4.908 0 0 0-.3-.895c-.35-.655-.982-1.138-1.743-1.3-.294-.074-.597-.123-.903-.147-.157.002-.315.013-.469.029l.04-.079z"
-								></path>
-							</svg>
-							PayPal
-						</button>
 					</div>
 				</div>
 			{:else if paymentMethod === 'credit'}
@@ -369,9 +348,7 @@
 					type="submit"
 					class="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white transition hover:bg-blue-700 disabled:bg-blue-300"
 				>
-					{paymentMethod === 'paypal'
-						? 'WEITER ZU PAYPAL'
-						: `${totalPrice.toFixed(2)}€ JETZT BEZAHLEN`}
+					{paymentMethod === 'paypal' ? 'WEITER ZU PAYPAL' : 'JETZT BEZAHLEN'}
 				</button>
 			</div>
 		</form>

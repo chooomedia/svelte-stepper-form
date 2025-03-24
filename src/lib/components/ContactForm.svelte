@@ -27,7 +27,7 @@
 	// Get ARIA attributes for field
 	function getAriaAttrs(fieldName: string, label: string) {
 		return {
-			'aria-invalid': shouldShowError(fieldName) ? 'true' : undefined,
+			'aria-invalid': (shouldShowError(fieldName) ? 'true' : 'false') as Booleanish,
 			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
 			'aria-label': label
 		};
@@ -35,6 +35,21 @@
 </script>
 
 <form method="POST" class="space-y-6" novalidate>
+	<div class="form-group">
+		<label for="company_name" class="form-label"> Unternehmensname </label>
+		<input
+			type="text"
+			id="company_name"
+			bind:value={$form.company_name}
+			class="input-field {shouldShowError('company_name') ? 'error' : ''}"
+			onblur={() => handleBlur('company_name')}
+		/>
+		{#if shouldShowError('company_name')}
+			<p class="error-text" id="company_name-error" role="alert">
+				{errors.company_name}
+			</p>
+		{/if}
+	</div>
 	<!-- Salutation -->
 	<div class="form-group">
 		<label for="salutation" class="form-label"> Anrede * </label>
