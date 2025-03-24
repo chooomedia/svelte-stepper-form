@@ -10,13 +10,10 @@
 	import Stepper from '$lib/components/Stepper.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import ImageOption from '$lib/components/ImageOption.svelte';
-	import VisibilityScore from '$lib/components/VisibilityScore.svelte';
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
-	import CompanyForm from '$lib/components/CompanyForm.svelte';
 	import SeoTips from '$lib/components/SeoTips.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
-	import PricingOptions from '$lib/components/PricingOptions.svelte';
 
 	import {
 		FORM_STEPS,
@@ -160,8 +157,11 @@
 
 		try {
 			// Call the webhook
+			const formattedUrl = $form.company_url.trim().endsWith('/')
+				? $form.company_url.trim().slice(0, -1)
+				: $form.company_url.trim();
+
 			const encodedUrl = encodeURIComponent(formattedUrl);
-			console.log(`Analyzing website: ${encodedUrl}`);
 
 			const response = await fetch(
 				`https://n8n.chooomedia.com/webhook/websitehealth?url=${encodedUrl}`
@@ -420,9 +420,9 @@
 		<div class="relative">
 			{#key currentStep}
 				<h2 class="mb-6 text-center text-2xl font-bold text-gray-900" itemprop="question">
-					{currentStep === 13
+					{currentStep === 12
 						? 'Vielen Dank für Deine Teilnahme!'
-						: currentStep === 12
+						: currentStep === 11
 							? 'Deine Daten werden verarbeitet...'
 							: `${FORM_STEPS[currentStep - 1].description}`}
 				</h2>
@@ -573,7 +573,7 @@
 					{:else if currentStep === 10}
 						<div class="form-card">
 							<div class="space-y-4">
-								<CompanyForm {form} errors={$errors} />
+								<ContactForm form={$form} errors={$errors} {enhance} delayed={$delayed} />
 							</div>
 						</div>
 					{:else if currentStep === 11}
@@ -582,7 +582,7 @@
 								autoAdvance={7}
 								nextStep={() => {
 									setTimeout(() => {
-										currentStep = 13;
+										currentStep = 12;
 									}, 500);
 								}}
 							/>

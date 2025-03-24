@@ -7,6 +7,7 @@
 	import type { FormData } from '$lib/schema';
 	import Chart from 'chart.js/auto';
 	import VisibilityScore from './VisibilityScore.svelte';
+	import PricingOptions from './PricingOptions.svelte';
 
 	interface Props {
 		score: number;
@@ -29,11 +30,11 @@
 	let showPlanSelector = $state(false);
 
 	// Price plans based on score range
-	const pricePlans = [
+	export const pricePlans = [
 		{
 			name: '1-MONATS-PLAN',
-			originalPrice: '€5.99',
-			price: '€4.49',
+			price: 3.98,
+			originalPrice: 7.99,
 			perDay: 'pro Tag',
 			popular: false,
 			features: [
@@ -45,8 +46,8 @@
 		},
 		{
 			name: '3-MONATS-PLAN',
-			originalPrice: '€4.99',
-			price: '€3.99',
+			price: 4.98,
+			originalPrice: 9.99,
 			perDay: 'pro Tag',
 			popular: true,
 			features: [
@@ -59,8 +60,8 @@
 		},
 		{
 			name: '6-MONATS-PLAN',
-			originalPrice: '€4.19',
-			price: '€3.09',
+			price: 9.98,
+			originalPrice: 19.99,
 			perDay: 'pro Tag',
 			popular: false,
 			features: [
@@ -145,12 +146,6 @@
 		return [...new Set([...baseRecommendations, ...recommendations])].slice(0, 5);
 	}
 
-	// Handle plan selection
-	function handlePlanSelect(plan: string, price: number) {
-		selectedPlan = plan;
-		selectedPrice = price;
-	}
-
 	// Initialize chart on mount
 	onMount(() => {
 		// Generate benefits and recommendations
@@ -225,31 +220,73 @@
 			radarChart.destroy();
 		}
 	});
+
+	function handlePlanSelection(plan: string, price: number) {
+		console.log(`Selected plan: ${plan}, price: ${price}€`);
+		// Add your logic here
+	}
 </script>
 
-<div class="results-page mb-16 space-y-8">
+<div class="results-page mb-16">
 	<!-- Score Section -->
-	<VisibilityScore {score} autoAdvance={300} {nextStep} showComparison={false} />
 
-	<!-- Chart & Analysis Section -->
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2" in:fade={{ duration: 500, delay: 700 }}>
-		<!-- Radar Chart -->
+		<!-- Modern score visualization -->
+		<div class="flex flex-col rounded-lg bg-white p-6 shadow-lg">
+			<h3 class="mb-4 text-xl font-bold">Dein Performance Score</h3>
+			<VisibilityScore {score} autoAdvance={300} {nextStep} showComparison={false} />
+		</div>
+
+		<!-- Improved Radar Chart -->
 		<div class="rounded-lg bg-white p-6 shadow-lg">
 			<h3 class="mb-4 text-xl font-bold">Deine digitale Performance im Detail</h3>
 			<div class="chart-container h-auto w-full">
 				<canvas bind:this={radarChartCanvas}></canvas>
+				<!-- Add interactive tooltips that appear on hover -->
+				<div class="mt-4 flex flex-wrap justify-center gap-3">
+					{#each ['SEO', 'Social', 'Website', 'Content', 'Lokal'] as area, i}
+						<div class="flex items-center">
+							<span
+								class="mr-2 inline-block h-3 w-3 rounded-full"
+								style="background-color: {i === 0
+									? 'rgba(255, 99, 132, 0.8)'
+									: 'rgba(54, 162, 235, 0.8)'}"
+							></span>
+							<span class="text-sm">{area}</span>
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
+	</div>
 
-		<!-- Analysis -->
-		<div class="rounded-lg bg-white p-6 shadow-lg">
-			<h3 class="mb-4 text-xl font-bold text-gray-800">Stärken & Schwächen Analyse</h3>
-			<div class="space-y-4">
-				<div>
-					<h4 class="flex items-center text-lg font-semibold text-green-600">
+	<!-- Chart & Analysis Section -->
+	<div class="grid grid-cols-2 gap-8" in:fade={{ duration: 500, delay: 900 }}>
+		<!-- Stärken -->
+		<div class="p-6">
+			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="mr-2 h-6 w-6"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M5 13l4 4L19 7"
+					/>
+				</svg>
+				Deine Stärken
+			</h3>
+			<ul class="space-y-3">
+				{#each [...(score > 60 ? ['Gute Grundlagen in digitaler Präsenz', 'Regelmäßige Content-Erstellung'] : score > 40 ? ['Grundverständnis für digitales Marketing', 'Potenzial für schnelle Verbesserungen'] : ['Großes Wachstumspotenzial', 'Möglichkeit für schnelle Sichtbarkeitssteigerung']), formData.visibility === 'social_media' ? 'Bestehende Social-Media-Präsenz' : formData.visibility === 'search_engines' ? 'Verständnis für Suchmaschinenoptimierung' : 'Bereitschaft für digitale Transformation'] as strength, i}
+					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="mr-2 h-5 w-5"
+							class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
@@ -261,33 +298,37 @@
 								d="M5 13l4 4L19 7"
 							/>
 						</svg>
-						Stärken
-					</h4>
-					<ul class="ml-7 mt-2 list-disc space-y-1 text-gray-700">
-						{#if score > 60}
-							<li>Gute Grundlagen in digitaler Präsenz</li>
-							<li>Regelmäßige Content-Erstellung</li>
-						{:else if score > 40}
-							<li>Grundverständnis für digitales Marketing</li>
-							<li>Potenzial für schnelle Verbesserungen</li>
-						{:else}
-							<li>Großes Wachstumspotenzial</li>
-							<li>Möglichkeit für schnelle Sichtbarkeitssteigerung</li>
-						{/if}
-						<li>
-							{formData.visibility === 'social_media'
-								? 'Bestehende Social-Media-Präsenz'
-								: formData.visibility === 'search_engines'
-									? 'Verständnis für Suchmaschinenoptimierung'
-									: 'Bereitschaft für digitale Transformation'}
-						</li>
-					</ul>
-				</div>
-				<div>
-					<h4 class="flex items-center text-lg font-semibold text-red-600">
+						<span>{strength}</span>
+					</li>
+				{/each}
+			</ul>
+		</div>
+
+		<!-- Verbesserungspotenzial -->
+		<div class="p-6">
+			<h3 class="mb-4 flex items-center text-xl font-bold text-red-600">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="mr-2 h-6 w-6"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/>
+				</svg>
+				Verbesserungspotenzial
+			</h3>
+			<ul class="space-y-3">
+				{#each [...(score < 40 ? ['Geringe digitale Sichtbarkeit', 'Fehlende Online-Marketingstrategie', 'Unzureichende Website-Optimierung'] : score < 60 ? ['Begrenzte Reichweite in Suchmaschinen', 'Unterentwickelte Content-Strategie', 'Mangelnde Conversion-Optimierung'] : ['Lücken in der Content-Distribution', 'Begrenzte Konkurrenzanalyse', 'Optimierungspotenzial in der Conversion Rate'])] as weakness, i}
+					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="mr-2 h-5 w-5"
+							class="mr-2 h-5 w-5 flex-shrink-0 text-red-500"
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
@@ -299,25 +340,10 @@
 								d="M6 18L18 6M6 6l12 12"
 							/>
 						</svg>
-						Verbesserungspotenzial
-					</h4>
-					<ul class="ml-7 mt-2 list-disc space-y-1 text-gray-700">
-						{#if score < 40}
-							<li>Geringe digitale Sichtbarkeit</li>
-							<li>Fehlende Online-Marketingstrategie</li>
-							<li>Unzureichende Website-Optimierung</li>
-						{:else if score < 60}
-							<li>Begrenzte Reichweite in Suchmaschinen</li>
-							<li>Unterentwickelte Content-Strategie</li>
-							<li>Mangelnde Conversion-Optimierung</li>
-						{:else}
-							<li>Lücken in der Content-Distribution</li>
-							<li>Begrenzte Konkurrenzanalyse</li>
-							<li>Optimierungspotenzial in der Conversion Rate</li>
-						{/if}
-					</ul>
-				</div>
-			</div>
+						<span>{weakness}</span>
+					</li>
+				{/each}
+			</ul>
 		</div>
 	</div>
 
@@ -407,172 +433,7 @@
 	</div>
 
 	<!-- Pricing Section -->
-	{#if showPlanSelector}
-		<div class="mt-8 rounded-lg bg-white p-6 shadow-lg" in:fade={{ duration: 500, delay: 1200 }}>
-			<div class="mb-6 text-center">
-				<h3 class="text-2xl font-bold text-gray-900">Wähle Deinen Plan</h3>
-				<p class="mt-2 text-gray-600">
-					Verbessere Deine Online-Präsenz mit unseren maßgeschneiderten Lösungen
-				</p>
-			</div>
-
-			<div class="mb-6">
-				<p class="mb-2 font-semibold">51% Rabatt verfällt in 00:00</p>
-				<div class="h-2 w-full rounded-full bg-gray-200">
-					<div class="h-2 w-1/5 animate-pulse rounded-full bg-red-500"></div>
-				</div>
-			</div>
-
-			<!-- Pricing Cards -->
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-				{#each pricePlans as plan, i}
-					<div
-						class="relative rounded-lg border {selectedPlan === plan.name
-							? 'border-blue-500 ring-2 ring-blue-200'
-							: 'border-gray-200'}"
-					>
-						{#if plan.popular}
-							<div class="absolute -top-3 left-0 right-0 flex justify-center">
-								<span
-									class="rounded-full bg-gray-200 px-4 py-1 text-xs font-medium uppercase tracking-wide text-gray-800"
-								>
-									★ AM BELIEBTESTEN
-								</span>
-							</div>
-						{/if}
-
-						<div class="p-6">
-							<div class="flex items-center">
-								<input
-									type="radio"
-									id={plan.name}
-									name="plan"
-									value={plan.name}
-									checked={selectedPlan === plan.name}
-									class="h-4 w-4 text-blue-600"
-									on:change={() =>
-										handlePlanSelect(plan.name, parseFloat(plan.price.replace('€', '')))}
-								/>
-								<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
-									{plan.name}
-								</label>
-							</div>
-
-							<div class="mt-4 flex items-baseline text-right">
-								<span class="text-sm text-gray-500 line-through">{plan.originalPrice}</span>
-								<span class="ml-1 text-3xl font-bold text-gray-900">{plan.price}</span>
-								<span class="ml-1 text-sm text-gray-500">{plan.perDay}</span>
-							</div>
-
-							<ul class="mt-6 space-y-3">
-								{#each plan.features as feature}
-									<li class="flex items-start">
-										<svg
-											class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-											fill="currentColor"
-											viewBox="0 0 20 20"
-										>
-											<path
-												fill-rule="evenodd"
-												d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-												clip-rule="evenodd"
-											></path>
-										</svg>
-										<span class="text-sm text-gray-700">{feature}</span>
-									</li>
-								{/each}
-							</ul>
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			<!-- Order Button -->
-			<div class="mt-8 text-center">
-				<button
-					class="inline-block rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700"
-				>
-					PLAN BESTELLEN
-				</button>
-			</div>
-
-			<!-- Security & Guarantee -->
-			<div
-				class="mt-6 flex flex-col items-center justify-center space-y-4 text-sm text-gray-600 md:flex-row md:space-x-8 md:space-y-0"
-			>
-				<div class="flex items-center">
-					<svg class="mr-2 h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-						<path
-							fill-rule="evenodd"
-							d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-							clip-rule="evenodd"
-						></path>
-					</svg>
-					Sicher & geschützt bezahlen
-				</div>
-				<div class="flex items-center">
-					<svg class="mr-2 h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-						<path
-							fill-rule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-							clip-rule="evenodd"
-						></path>
-					</svg>
-					30 Tage Geld-zurück-Garantie
-				</div>
-			</div>
-		</div>
-
-		<!-- What's Included/Not Included -->
-		<div
-			class="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2"
-			in:fade={{ duration: 500, delay: 1400 }}
-		>
-			<div class="rounded-lg bg-white p-6 shadow-lg">
-				<h3 class="mb-4 text-xl font-bold text-gray-900">Hier finden Sie</h3>
-				<ul class="space-y-4">
-					{#each includedFeatures as feature}
-						<li class="flex items-start">
-							<svg
-								class="mr-2 h-5 w-5 flex-shrink-0 text-blue-500"
-								fill="currentColor"
-								viewBox="0 0 20 20"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-									clip-rule="evenodd"
-								></path>
-							</svg>
-							<span class="text-blue-600 hover:text-blue-700">{feature}</span>
-						</li>
-					{/each}
-				</ul>
-			</div>
-
-			<div class="rounded-lg bg-white p-6 shadow-lg">
-				<h3 class="mb-4 text-xl font-bold text-gray-900">Was Sie NICHT finden werden</h3>
-				<ul class="space-y-4">
-					{#each excludedFeatures as feature}
-						<li class="flex items-start">
-							<svg
-								class="mr-2 h-5 w-5 flex-shrink-0 text-gray-400"
-								fill="currentColor"
-								viewBox="0 0 20 20"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-									clip-rule="evenodd"
-								></path>
-							</svg>
-							<span class="text-gray-500">{feature}</span>
-						</li>
-					{/each}
-				</ul>
-			</div>
-		</div>
-	{/if}
+	<PricingOptions {score} {formData} onPlanSelect={handlePlanSelection} {pricePlans} />
 
 	<!-- Before/After Comparison with Real Results -->
 	<div class="mt-8" in:fade={{ duration: 500, delay: 1600 }}>
@@ -593,13 +454,13 @@
 					</div>
 					<h4 class="text-xl font-bold text-blue-600">
 						{score < 50
-							? '€1000/Tag mit dem YouTube Follower-zu-Einkommen-Plan'
+							? 'Wow! Mindestens 3 Abschlüsse am Tag dank Local SEO und Social Media'
 							: 'Mehr als €10.000/Monat durch strategisches Online Marketing'}
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
 							<span class="text-2xl">"</span>
-							Ich habe 5 Wochen gebraucht, um mit bewährten Funnels konsistentes Einkommen zu generieren.
+							Ich habe 5 Wochen gebraucht, um mit bewährten Funnels konsistente Neukundenumsätze zu generieren.
 							<span class="text-2xl">"</span>
 						</blockquote>
 					</div>
@@ -622,7 +483,7 @@
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
 							<span class="text-2xl">"</span>
-							Gott ist erstaunlich! Das Erreichen von konstanten Verkäufen kann ich nur empfehlen.
+							Erstaunliche Ergebnisse! Das Erreichen von konstanten Verkäufen kann ich nur empfehlen.
 							<span class="text-2xl">"</span>
 						</blockquote>
 					</div>

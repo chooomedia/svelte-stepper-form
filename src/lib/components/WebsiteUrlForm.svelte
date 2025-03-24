@@ -38,8 +38,14 @@
 		let url = $form.company_url;
 		if (!url.startsWith('http://') && !url.startsWith('https://')) {
 			url = 'https://' + url;
-			$form.company_url = url;
 		}
+
+		// Remove trailing slash if present
+		if (url.endsWith('/')) {
+			url = url.slice(0, -1);
+		}
+
+		$form.company_url = url;
 
 		isLoading = true;
 		showSeoTips = true;

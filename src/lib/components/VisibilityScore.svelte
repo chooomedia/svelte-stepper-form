@@ -18,7 +18,6 @@
 	}>();
 
 	let isAnimating = $state(true);
-	let remainingTime = $state(autoAdvance);
 	let intervalId: number | undefined;
 	let timeoutId: number | undefined;
 	let stepTriggered = false;
@@ -97,17 +96,6 @@
 	onMount(() => {
 		displayScore.set(score);
 		strokeDashoffset.set(circumference - (circumference * score) / 100);
-
-		intervalId = setInterval(() => {
-			if (remainingTime > 0) {
-				remainingTime--;
-			} else {
-				clearInterval(intervalId);
-				safeNextStep();
-			}
-		}, 1000);
-
-		timeoutId = setTimeout(safeNextStep, autoAdvance * 1000);
 	});
 
 	onDestroy(() => {
@@ -122,11 +110,6 @@
 	aria-live="polite"
 	transition:fade={{ duration: 500 }}
 >
-	<!-- Heading -->
-	<h2 class="text-center text-3xl font-bold text-gray-900" in:fade={{ delay: 200, duration: 800 }}>
-		Dein Digital Marketing Score
-	</h2>
-
 	<!-- Animierter SVG Doughnut -->
 	<div class="relative h-56 w-56" in:scale={{ delay: 300, duration: 800 }}>
 		<!-- Größerer Doughnut für bessere Lesbarkeit -->
@@ -289,9 +272,4 @@
 			</div>
 		</div>
 	{/if}
-
-	<!-- Auto-advance notice -->
-	<div class="mt-4 text-sm text-gray-500">
-		Weiterleitung in {remainingTime} Sekunden...
-	</div>
 </div>
