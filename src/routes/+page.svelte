@@ -5,7 +5,7 @@
 	import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 	import { z } from 'zod';
 	import { zod } from 'sveltekit-superforms/adapters';
-	import type { SuperValidated } from 'sveltekit-superforms';
+	// import type { SuperValidated } from 'sveltekit-superforms';
 
 	import Stepper from '$lib/components/Stepper.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -14,8 +14,9 @@
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import CompanyForm from '$lib/components/CompanyForm.svelte';
-	import WebsiteUrlForm from '$lib/components/WebsiteUrlForm.svelte';
 	import SeoTips from '$lib/components/SeoTips.svelte';
+	import ResultsPage from '$lib/components/ResultsPage.svelte';
+	import PricingOptions from '$lib/components/PricingOptions.svelte';
 
 	import {
 		FORM_STEPS,
@@ -594,17 +595,7 @@
 						</div>
 					{:else if currentStep === 13}
 						<div class="form-card">
-							<VisibilityScore
-								score={$form.visibility_score || calculatedScore}
-								autoAdvance={30}
-								nextStep={() => {
-									setTimeout(() => {
-										currentStep = 1;
-										validSteps = [];
-										$form = structuredClone(initialFormData);
-									}, 500);
-								}}
-							/>
+							<ResultsPage score={$form.visibility_score || calculatedScore} formData={$form} />
 						</div>
 					{/if}
 				</section>

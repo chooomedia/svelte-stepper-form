@@ -11,7 +11,7 @@ export default {
 	},
 	plugins: [require('daisyui')],
 	daisyui: {
-		themes: ['light'], // You can add more themes if needed
+		themes: ['light'],
 		base: true,
 		styled: true,
 		utils: true
