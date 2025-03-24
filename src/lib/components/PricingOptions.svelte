@@ -13,6 +13,7 @@
 		onPlanSelect: (plan: string, price: number) => void;
 		pricePlans: Array<{
 			name: string;
+			monthlyPrice?: number;
 			price: number;
 			originalPrice: number;
 			perDay: string;
@@ -30,6 +31,7 @@
 	let monthlyPrice: number = $state(0);
 	let discountedPrice: number = $state(0);
 	let savingsAmount: number = $state(0);
+	let lifetimeYears: number = $state(10); // Lifetime is calculated as 10 years
 
 	// State for selected plan and payment type
 	let selectedPlan = $state('3-MONATS-PLAN'); // Default to the most popular option
@@ -63,9 +65,9 @@
 		// Total price based on payment type
 		if (paymentMethod === 'monatlich') {
 			totalPrice = monthlyPrice;
-		} else {
-			// One-time payment with 8% discount
-			const fullPrice = Math.round(pricePerDay * days * 100) / 100;
+		} else if (paymentMethod === 'einmalig') {
+			// Calculate lifetime value (10 years) with 8% discount
+			const fullPrice = (Math.round(pricePerDay * days * 100) / 100) * lifetimeYears;
 			const discount = Math.round(fullPrice * 0.08 * 100) / 100;
 			discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
 			totalPrice = discountedPrice;
@@ -85,17 +87,17 @@
 		onPlanSelect(selectedPlan, totalPrice);
 	}
 
-	// Funktion zum Öffnen des Zahlungsmodals
+	// Function to open the payment modal
 	function openPaymentModal() {
 		showPaymentModal = true;
 	}
 
-	// Funktion zum Schließen des Zahlungsmodals
+	// Function to close the payment modal
 	function closePaymentModal() {
 		showPaymentModal = false;
 	}
 
-	// Funktion zum Verarbeiten der Zahlungsabsendung
+	// Function to process the payment submission
 	function handlePaymentSubmit() {
 		// Simulate successful payment
 		console.log('Payment submitted for', selectedPlan, 'with total price', totalPrice);
@@ -103,7 +105,7 @@
 		// Additional processing logic could be added here
 		// For example, sending data to a server or updating the user's account
 
-		// Modal nach erfolgreicher Zahlung schließen
+		// Close modal after successful payment
 		showPaymentModal = false;
 
 		// You could trigger a success message or redirect here
@@ -309,7 +311,7 @@
 				onclick={() => handlePaymentTypeChange('einmalig')}
 				type="button"
 			>
-				Einmalig (-8%)
+				Lifetime (-8%)
 			</button>
 		</div>
 	</div>
@@ -332,7 +334,7 @@
 			>
 				{#if plan.popular}
 					<div
-						class="absolute left-0 right-0 top-0 bg-gray-200 py-1 text-center text-xs font-semibold uppercase tracking-wide"
+						class="absolute left-0 right-0 top-0 bg-green-500 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white"
 					>
 						★ AM BELIEBTESTEN
 					</div>
@@ -356,7 +358,17 @@
 
 					<div class="mt-4 text-right">
 						<span class="text-sm text-gray-500 line-through">{plan.originalPrice.toFixed(2)}€</span>
-						<span class="ml-1 text-3xl font-bold text-gray-900">{plan.price.toFixed(2)}€</span>
+						<span class="ml-1 text-3xl font-bold text-gray-900">
+							{paymentType === 'monatlich'
+								? plan.price.toFixed(2)
+								: (
+										plan.price *
+										30 *
+										parseInt(plan.name.split('-')[0]) *
+										lifetimeYears *
+										0.92
+									).toFixed(2)}€
+						</span>
 						<span class="text-sm text-gray-500"
 							>{paymentType === 'monatlich' ? plan.perDay : 'einmalig'}</span
 						>
@@ -379,6 +391,36 @@
 								<span class="text-sm text-gray-700">{feature}</span>
 							</li>
 						{/each}
+						{#if paymentType === 'einmalig'}
+							<li class="flex items-start">
+								<svg
+									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
+									fill="currentColor"
+									viewBox="0 0 20 20"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+										clip-rule="evenodd"
+									></path>
+								</svg>
+								<span class="text-sm font-semibold text-gray-700">Lifetime-Zugang (10 Jahre)</span>
+							</li>
+							<li class="flex items-start">
+								<svg
+									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
+									fill="currentColor"
+									viewBox="0 0 20 20"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+										clip-rule="evenodd"
+									></path>
+								</svg>
+								<span class="text-sm font-semibold text-gray-700">Keine monatlichen Gebühren</span>
+							</li>
+						{/if}
 					</ul>
 				</div>
 			</div>
@@ -388,7 +430,7 @@
 	<!-- CTA Button -->
 	<div class="mt-8 text-center" in:fade={{ duration: 300, delay: 500 }}>
 		<button
-			class="order-button inline-block rounded-lg bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-blue-700"
+			class="order-button group inline-block rounded-lg bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
 			onclick={(e) => {
 				e.preventDefault(); // Prevents default button behavior
 				e.stopPropagation(); // Prevents event bubbling
@@ -396,7 +438,11 @@
 			}}
 			type="button"
 		>
-			{paymentType === 'monatlich' ? 'PLAN ABONNIEREN' : 'JETZT KAUFEN'} - {totalPrice.toFixed(2)}€
+			<span class="inline-block transform transition-transform duration-300 group-hover:scale-105">
+				{paymentType === 'monatlich' ? 'PLAN ABONNIEREN' : 'JETZT KAUFEN'} - {totalPrice.toFixed(
+					2
+				)}€
+			</span>
 			{#if paymentType === 'einmalig' && savingsAmount > 0}
 				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
 			{/if}
@@ -451,7 +497,7 @@
 			abo@digitalpusher.de kontaktierst falls du mehr als einen Abo Monat ausgewählt hast.
 		{:else}
 			Der Gesamtbetrag von {totalPrice.toFixed(2)}€ wird einmalig abgebucht. Es entstehen keine
-			weiteren Kosten oder automatischen Verlängerungen.
+			weiteren Kosten oder automatischen Verlängerungen. Dein Lifetime-Zugang gilt für 10 Jahre.
 		{/if}
 
 		{#if paymentType === 'monatlich'}
