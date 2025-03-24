@@ -578,12 +578,6 @@
 						</div>
 					{:else if currentStep === 11}
 						<div class="form-card">
-							<div class="space-y-4">
-								<ContactForm {form} errors={$errors} />
-							</div>
-						</div>
-					{:else if currentStep === 12}
-						<div class="form-card">
 							<WaitingScreen
 								autoAdvance={7}
 								nextStep={() => {
@@ -593,7 +587,7 @@
 								}}
 							/>
 						</div>
-					{:else if currentStep === 13}
+					{:else if currentStep === 12}
 						<div class="form-card">
 							<ResultsPage score={$form.visibility_score || calculatedScore} formData={$form} />
 						</div>
