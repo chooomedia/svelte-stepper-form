@@ -1,4 +1,3 @@
-<!-- src/lib/components/PaymentModal.svelte -->
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import type { FormData } from '$lib/schema';
@@ -10,7 +9,7 @@
 		selectedPlan: string;
 		paymentType: string;
 		totalPrice: number;
-		form: SuperValidated<FormData>;
+		form?: SuperValidated<FormData>;
 		errors?: Record<string, string>;
 		onClose: () => void;
 		onSubmit: () => void;
@@ -27,70 +26,231 @@
 		onSubmit
 	} = $props<Props>();
 
-	// State für Zahlungsart
-	let paymentMethod = $state('credit'); // Default zu PayPal für bessere Konversion
+	// State for payment method
+	let paymentMethod = $state('paypal'); // Default to PayPal for better conversion rate
 
-	// State für Formularvalidierung
+	// Form validation states
 	let cardNumber = $state('');
 	let cardHolder = $state('');
 	let expiryDate = $state('');
 	let cvc = $state('');
 	let isFormValid = $state(false);
 	let touchedFields = $state(new Set<string>());
+	let formErrors = $state<Record<string, string>>({});
 
-	// Scroll-Lock für Body setzen
+	// Set body scroll lock when modal is open
 	function setBodyScrollLock(lock: boolean) {
 		if (typeof document !== 'undefined') {
 			document.body.style.overflow = lock ? 'hidden' : '';
 		}
 	}
 
-	// Verwende effect für reaktive Logik (Ersatz für $: in Svelte 5)
+	// Use effect for reactive logic (Svelte 5 replacement for $:)
 	effect(() => {
 		if (showModal) {
 			setBodyScrollLock(true);
 		} else {
 			setBodyScrollLock(false);
 		}
+
+		// Reset form when modal opens
+		if (showModal) {
+			resetForm();
+		}
 	});
 
-	// Feld als "touched" markieren wenn Benutzer es verlässt
+	// Reset form fields
+	function resetForm() {
+		cardNumber = '';
+		cardHolder = '';
+		expiryDate = '';
+		cvc = '';
+		touchedFields.clear();
+		formErrors = {};
+		isFormValid = false;
+	}
+
+	// Mark field as "touched" when user leaves it
 	function handleBlur(fieldName: string) {
 		touchedFields.add(fieldName);
 		validateForm();
 	}
 
-	// Formular validieren
-	function validateForm() {
-		// Minimal validation logic
-		const creditCardValid =
-			paymentMethod !== 'credit' ||
-			(cardNumber.length >= 16 &&
-				expiryDate.length >= 5 &&
-				cvc.length >= 3 &&
-				cardHolder.length >= 3);
+	// Validate credit card number with Luhn algorithm
+	function validateCreditCardNumber(number: string): boolean {
+		// Remove spaces and non-digit characters
+		const digits = number.replace(/\D/g, '');
 
-		isFormValid = creditCardValid;
+		if (digits.length < 13 || digits.length > 19) {
+			return false;
+		}
+
+		// Luhn algorithm implementation
+		let sum = 0;
+		let shouldDouble = false;
+
+		// Loop from right to left
+		for (let i = digits.length - 1; i >= 0; i--) {
+			let digit = parseInt(digits.charAt(i));
+
+			if (shouldDouble) {
+				digit *= 2;
+				if (digit > 9) digit -= 9;
+			}
+
+			sum += digit;
+			shouldDouble = !shouldDouble;
+		}
+
+		return sum % 10 === 0;
 	}
 
-	// Zahlungsart wechseln
+	// Validate expiry date (MM/YY format)
+	function validateExpiryDate(date: string): boolean {
+		const regex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
+		if (!regex.test(date)) {
+			return false;
+		}
+
+		const [month, year] = date.split('/').map((part) => parseInt(part));
+		const currentDate = new Date();
+		const currentYear = currentDate.getFullYear() % 100;
+		const currentMonth = currentDate.getMonth() + 1;
+
+		// Check if the card is expired
+		if (year < currentYear || (year === currentYear && month < currentMonth)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	// Validate CVC code
+	function validateCVC(cvcValue: string): boolean {
+		// CVC should be 3-4 digits
+		return /^\d{3,4}$/.test(cvcValue);
+	}
+
+	// Validate the whole form
+	function validateForm() {
+		formErrors = {};
+
+		// Skip validation for PayPal
+		if (paymentMethod === 'paypal') {
+			isFormValid = true;
+			return;
+		}
+
+		// Credit card validation
+		if (touchedFields.has('card-number')) {
+			if (!cardNumber) {
+				formErrors['card-number'] = 'Bitte geben Sie Ihre Kartennummer ein';
+			} else if (!validateCreditCardNumber(cardNumber)) {
+				formErrors['card-number'] = 'Ungültige Kartennummer';
+			}
+		}
+
+		if (touchedFields.has('expiry')) {
+			if (!expiryDate) {
+				formErrors['expiry'] = 'Bitte geben Sie das Ablaufdatum ein';
+			} else if (!validateExpiryDate(expiryDate)) {
+				formErrors['expiry'] = 'Ungültiges oder abgelaufenes Datum';
+			}
+		}
+
+		if (touchedFields.has('cvc')) {
+			if (!cvc) {
+				formErrors['cvc'] = 'Bitte geben Sie den Sicherheitscode ein';
+			} else if (!validateCVC(cvc)) {
+				formErrors['cvc'] = 'Ungültiger Sicherheitscode';
+			}
+		}
+
+		if (touchedFields.has('card-holder')) {
+			if (!cardHolder) {
+				formErrors['card-holder'] = 'Bitte geben Sie den Karteninhaber ein';
+			} else if (cardHolder.length < 3) {
+				formErrors['card-holder'] = 'Name ist zu kurz';
+			}
+		}
+
+		// Form is valid if there are no errors
+		isFormValid = Object.keys(formErrors).length === 0;
+
+		// If all fields are touched, check if form is valid
+		const allFieldsTouched =
+			touchedFields.has('card-number') &&
+			touchedFields.has('expiry') &&
+			touchedFields.has('cvc') &&
+			touchedFields.has('card-holder');
+
+		if (allFieldsTouched) {
+			isFormValid =
+				cardNumber && expiryDate && cvc && cardHolder && Object.keys(formErrors).length === 0;
+		}
+	}
+
+	// Switch payment method
 	function setPaymentMethod(method: string) {
 		paymentMethod = method;
 		validateForm();
 	}
 
-	// Formular absenden
+	// Format credit card number with spaces
+	function formatCreditCardNumber(e: Event) {
+		const input = e.target as HTMLInputElement;
+		let value = input.value.replace(/\D/g, '');
+
+		if (value.length > 16) {
+			value = value.slice(0, 16);
+		}
+
+		// Add spaces after every 4 digits
+		const parts = [];
+		for (let i = 0; i < value.length; i += 4) {
+			parts.push(value.slice(i, i + 4));
+		}
+
+		cardNumber = parts.join(' ');
+	}
+
+	// Format expiry date as MM/YY
+	function formatExpiryDate(e: Event) {
+		const input = e.target as HTMLInputElement;
+		let value = input.value.replace(/\D/g, '');
+
+		if (value.length > 4) {
+			value = value.slice(0, 4);
+		}
+
+		if (value.length > 2) {
+			expiryDate = `${value.slice(0, 2)}/${value.slice(2)}`;
+		} else {
+			expiryDate = value;
+		}
+	}
+
+	// Handle form submission
 	function handleSubmit(e: Event) {
 		e.preventDefault();
+
+		// Mark all fields as touched for validation
+		if (paymentMethod === 'credit') {
+			touchedFields.add('card-number');
+			touchedFields.add('expiry');
+			touchedFields.add('cvc');
+			touchedFields.add('card-holder');
+		}
+
 		validateForm();
 
 		if (isFormValid) {
-			// Formular ist gültig, weiterleiten an Parent-Komponente
+			// Form is valid, proceed with submission
 			onSubmit();
 		}
 	}
 
-	// Modal schließen und Body-Scroll entsperren
+	// Close modal
 	function handleClose() {
 		onClose();
 	}
@@ -146,7 +306,7 @@
 		</div>
 
 		<form id="payment-form" class="space-y-6" method="post" onsubmit={handleSubmit} novalidate>
-			<!-- Zahlungsmethoden -->
+			<!-- Payment Methods -->
 			<div>
 				<h4 class="mb-4 text-lg font-semibold text-gray-900">Zahlungsmethode wählen</h4>
 
@@ -169,10 +329,10 @@
 							<span class="text-sm font-medium text-gray-900">Kreditkarte</span>
 						</div>
 						<div class="flex items-center space-x-2">
-							<img src="visa.svg" alt="Visa" class="h-6 w-6" />
-							<img src="mastercard.svg" alt="Mastercard" class="h-6 w-6" />
-							<img src="maestro.svg" alt="Maestro" class="h-6 w-6" />
-							<img src="amex.svg" alt="American Express" class="h-6 w-6" />
+							<img src="/visa.svg" alt="Visa" class="h-6 w-6" />
+							<img src="/mastercard.svg" alt="Mastercard" class="h-6 w-6" />
+							<img src="/maestro.svg" alt="Maestro" class="h-6 w-6" />
+							<img src="/amex.svg" alt="American Express" class="h-6 w-6" />
 						</div>
 					</label>
 
@@ -193,7 +353,7 @@
 						<div class="ml-3 flex-grow">
 							<span class="text-sm font-medium text-gray-900">PayPal</span>
 						</div>
-						<img src="paypal.svg" alt="PayPal" class="h-6" />
+						<img src="/paypal.svg" alt="PayPal" class="h-6" />
 					</label>
 				</div>
 			</div>
@@ -238,15 +398,16 @@
 							autocomplete="cc-number"
 							class="w-full rounded-lg border p-3 text-gray-700 focus:border-blue-500 focus:outline-none {touchedFields.has(
 								'card-number'
-							) && !cardNumber
+							) && formErrors['card-number']
 								? 'border-red-500'
 								: ''}"
-							bind:value={cardNumber}
+							value={cardNumber}
 							onblur={() => handleBlur('card-number')}
+							oninput={formatCreditCardNumber}
 							required
 						/>
-						{#if touchedFields.has('card-number') && !cardNumber}
-							<p class="mt-1 text-sm text-red-600">Bitte geben Sie Ihre Kartennummer ein</p>
+						{#if touchedFields.has('card-number') && formErrors['card-number']}
+							<p class="mt-1 text-sm text-red-600">{formErrors['card-number']}</p>
 						{/if}
 					</div>
 
@@ -263,15 +424,16 @@
 								autocomplete="cc-exp"
 								class="w-full rounded-lg border p-3 text-gray-700 focus:border-blue-500 focus:outline-none {touchedFields.has(
 									'expiry'
-								) && !expiryDate
+								) && formErrors['expiry']
 									? 'border-red-500'
 									: ''}"
-								bind:value={expiryDate}
+								value={expiryDate}
 								onblur={() => handleBlur('expiry')}
+								oninput={formatExpiryDate}
 								required
 							/>
-							{#if touchedFields.has('expiry') && !expiryDate}
-								<p class="mt-1 text-sm text-red-600">Bitte geben Sie das Ablaufdatum ein</p>
+							{#if touchedFields.has('expiry') && formErrors['expiry']}
+								<p class="mt-1 text-sm text-red-600">{formErrors['expiry']}</p>
 							{/if}
 						</div>
 						<div>
@@ -287,15 +449,16 @@
 								inputmode="numeric"
 								class="w-full rounded-lg border p-3 text-gray-700 focus:border-blue-500 focus:outline-none {touchedFields.has(
 									'cvc'
-								) && !cvc
+								) && formErrors['cvc']
 									? 'border-red-500'
 									: ''}"
 								bind:value={cvc}
 								onblur={() => handleBlur('cvc')}
+								maxlength="4"
 								required
 							/>
-							{#if touchedFields.has('cvc') && !cvc}
-								<p class="mt-1 text-sm text-red-600">Bitte geben Sie den Sicherheitscode ein</p>
+							{#if touchedFields.has('cvc') && formErrors['cvc']}
+								<p class="mt-1 text-sm text-red-600">{formErrors['cvc']}</p>
 							{/if}
 						</div>
 					</div>
@@ -312,15 +475,15 @@
 							autocomplete="cc-name"
 							class="w-full rounded-lg border p-3 text-gray-700 focus:border-blue-500 focus:outline-none {touchedFields.has(
 								'card-holder'
-							) && !cardHolder
+							) && formErrors['card-holder']
 								? 'border-red-500'
 								: ''}"
 							bind:value={cardHolder}
 							onblur={() => handleBlur('card-holder')}
 							required
 						/>
-						{#if touchedFields.has('card-holder') && !cardHolder}
-							<p class="mt-1 text-sm text-red-600">Bitte geben Sie den Namen auf der Karte ein</p>
+						{#if touchedFields.has('card-holder') && formErrors['card-holder']}
+							<p class="mt-1 text-sm text-red-600">{formErrors['card-holder']}</p>
 						{/if}
 					</div>
 				</div>
@@ -347,6 +510,7 @@
 				<button
 					type="submit"
 					class="rounded-lg bg-blue-600 px-6 py-3 font-bold text-white transition hover:bg-blue-700 disabled:bg-blue-300"
+					disabled={paymentMethod === 'credit' && !isFormValid}
 				>
 					{paymentMethod === 'paypal' ? 'WEITER ZU PAYPAL' : 'JETZT BEZAHLEN'}
 				</button>

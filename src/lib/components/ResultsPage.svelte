@@ -46,8 +46,8 @@
 		},
 		{
 			name: '3-MONATS-PLAN',
-			price: 4.98,
-			originalPrice: 9.99,
+			price: 5.98,
+			originalPrice: 10.99,
 			perDay: 'pro Tag',
 			popular: true,
 			features: [

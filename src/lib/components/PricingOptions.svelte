@@ -1,3 +1,4 @@
+<!-- src/lib/components/PricingOptions.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -23,7 +24,12 @@
 	}
 
 	let { score, formData, onPlanSelect, pricePlans, form, errors = {} } = $props<Props>();
-	let totalPrice: number = 0;
+
+	// Calculated total price based on selected plan and payment type
+	let totalPrice: number = $state(0);
+	let monthlyPrice: number = $state(0);
+	let discountedPrice: number = $state(0);
+	let savingsAmount: number = $state(0);
 
 	// State for selected plan and payment type
 	let selectedPlan = $state('3-MONATS-PLAN'); // Default to the most popular option
@@ -39,23 +45,68 @@
 		pricing: false
 	});
 
+	// Calculate pricing for a given plan and payment type
+	function calculatePricing(planName: string, paymentMethod: string) {
+		const selectedPlanData = pricePlans.find((p) => p.name === planName);
+		if (!selectedPlanData) return;
+
+		// Extract the number of months from the plan name
+		const months = parseInt(planName.split('-')[0]) || 1;
+
+		// Calculate prices with 2 decimal places precision
+		const pricePerDay = selectedPlanData.price;
+		const days = months * 30;
+
+		// Monthly price (base calculation)
+		monthlyPrice = Math.round(pricePerDay * 30 * 100) / 100;
+
+		// Total price based on payment type
+		if (paymentMethod === 'monatlich') {
+			totalPrice = monthlyPrice;
+		} else {
+			// One-time payment with 8% discount
+			const fullPrice = Math.round(pricePerDay * days * 100) / 100;
+			const discount = Math.round(fullPrice * 0.08 * 100) / 100;
+			discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
+			totalPrice = discountedPrice;
+			savingsAmount = discount;
+		}
+	}
+
 	function handlePlanChange(plan: string) {
 		selectedPlan = plan;
-		const selectedPlanData = pricePlans.find((p) => p.name === plan);
-		if (selectedPlanData) {
-			// Extrahiere die Anzahl der Monate aus dem Plan-Namen
-			const months = parseInt(plan.split('-')[0]);
+		calculatePricing(plan, paymentType);
+		onPlanSelect(plan, totalPrice);
+	}
 
-			// Berechnung des Gesamtpreises mit 2 Dezimalstellen Genauigkeit
-			// Verwende Math.round((x * 100)) / 100 für präzise Berechnungen mit 2 Dezimalstellen
-			const pricePerDay = selectedPlanData.price;
-			const days = months * 30;
+	function handlePaymentTypeChange(type: string) {
+		paymentType = type;
+		calculatePricing(selectedPlan, type);
+		onPlanSelect(selectedPlan, totalPrice);
+	}
 
-			// Berechne den Preis mit 2 Dezimalstellen Genauigkeit
-			totalPrice = Math.round(pricePerDay * days * 100) / 100;
+	// Funktion zum Öffnen des Zahlungsmodals
+	function openPaymentModal() {
+		showPaymentModal = true;
+	}
 
-			onPlanSelect(plan, totalPrice); // Funktion wird aufgerufen
-		}
+	// Funktion zum Schließen des Zahlungsmodals
+	function closePaymentModal() {
+		showPaymentModal = false;
+	}
+
+	// Funktion zum Verarbeiten der Zahlungsabsendung
+	function handlePaymentSubmit() {
+		// Simulate successful payment
+		console.log('Payment submitted for', selectedPlan, 'with total price', totalPrice);
+
+		// Additional processing logic could be added here
+		// For example, sending data to a server or updating the user's account
+
+		// Modal nach erfolgreicher Zahlung schließen
+		showPaymentModal = false;
+
+		// You could trigger a success message or redirect here
 	}
 
 	// Timer for discount
@@ -95,27 +146,7 @@
 		return () => clearInterval(interval);
 	}
 
-	// Funktion zum Öffnen des Zahlungsmodals
-	function openPaymentModal() {
-		showPaymentModal = true;
-	}
-
-	// Funktion zum Schließen des Zahlungsmodals
-	function closePaymentModal() {
-		showPaymentModal = false;
-	}
-
-	// Funktion zum Verarbeiten der Zahlungsabsendung
-	function handlePaymentSubmit() {
-		// Hier könnte die weitere Verarbeitung nach Zahlungsabschluss erfolgen
-		// z.B. Weiterleitung zur Dankesseite oder andere Aktionen
-		console.log('Payment submitted for', selectedPlan, 'with total price', totalPrice);
-
-		// Modal nach erfolgreicher Zahlung schließen
-		showPaymentModal = false;
-	}
-
-	// Intersection Observer für Animationen
+	// Intersection Observer for animations
 	function setupIntersectionObserver() {
 		if (!browser) return;
 
@@ -143,7 +174,7 @@
 			{ threshold: 0.2 }
 		);
 
-		// DOM-Elemente beobachten, sobald sie verfügbar sind
+		// Observe DOM elements once they're available
 		setTimeout(() => {
 			const bonusBoxElement = document.querySelector('.bonus-box');
 			const pricingElement = document.querySelector('.pricing-cards');
@@ -158,8 +189,8 @@
 		startCountdown();
 		setupIntersectionObserver();
 
-		// Initial plan berechnen
-		handlePlanChange(selectedPlan);
+		// Initial plan calculation
+		calculatePricing(selectedPlan, paymentType);
 	});
 </script>
 
@@ -263,24 +294,19 @@
 		</div>
 	</div>
 
+	<!-- Payment Type Toggle -->
 	<div class="mb-8 flex justify-center">
 		<div class="join rounded-lg border border-gray-200">
 			<button
 				class={`btn join-item ${paymentType === 'monatlich' ? 'btn-primary' : 'btn-ghost'}`}
-				onclick={() => {
-					paymentType = 'monatlich';
-					handlePlanChange(selectedPlan);
-				}}
+				onclick={() => handlePaymentTypeChange('monatlich')}
 				type="button"
 			>
 				Monatlich
 			</button>
 			<button
 				class={`btn join-item ${paymentType === 'einmalig' ? 'btn-primary' : 'btn-ghost'}`}
-				onclick={() => {
-					paymentType = 'einmalig';
-					handlePlanChange(selectedPlan);
-				}}
+				onclick={() => handlePaymentTypeChange('einmalig')}
 				type="button"
 			>
 				Einmalig (-8%)
@@ -364,13 +390,16 @@
 		<button
 			class="order-button inline-block rounded-lg bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-blue-700"
 			onclick={(e) => {
-				e.preventDefault(); // Verhindert das Standardverhalten des Buttons
-				e.stopPropagation(); // Verhindert Bubbling
+				e.preventDefault(); // Prevents default button behavior
+				e.stopPropagation(); // Prevents event bubbling
 				openPaymentModal();
 			}}
 			type="button"
 		>
 			{paymentType === 'monatlich' ? 'PLAN ABONNIEREN' : 'JETZT KAUFEN'} - {totalPrice.toFixed(2)}€
+			{#if paymentType === 'einmalig' && savingsAmount > 0}
+				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
+			{/if}
 		</button>
 	</div>
 
@@ -412,13 +441,23 @@
 
 	<!-- Terms -->
 	<div class="mt-8 text-center text-xs text-gray-500" in:fade={{ duration: 300, delay: 800 }}>
-		Indem auf „PLAN BESTELLEN" geklickt wird, werden die Allgemeinen Geschäftsbedingungen und die
-		Datenschutzrichtlinie akzeptiert. Um Unterbrechungen zu vermeiden, erklärst Du dich damit
-		einverstanden, dass der von Dir gewählte Plan {selectedPlan} automatisch zum vollen Preis für aufeinanderfolgende
-		Verlängerungszeiträume verlängert wird und Dir {totalPrice.toFixed(2)} € in Rechnung gestellt werden.
-		Du kannst Dein Abonnement kündigen, indem Du unser Serviceteam per E-Mail an abo@digitalpusher.de
-		kontaktierst falls du mehr als einen Abo Monat ausgewählt hast. Ansonsten erhälst du 5 Werktage vor
-		dem Ablauf des Abos eine E-Mail mit der Möglichkeit das Abo zu kündigen.
+		Indem auf „{paymentType === 'monatlich' ? 'PLAN ABONNIEREN' : 'JETZT KAUFEN'}" geklickt wird,
+		werden die Allgemeinen Geschäftsbedingungen und die Datenschutzrichtlinie akzeptiert.
+		{#if paymentType === 'monatlich'}
+			Um Unterbrechungen zu vermeiden, erklärst Du dich damit einverstanden, dass der von Dir
+			gewählte Plan {selectedPlan} automatisch zum vollen Preis für aufeinanderfolgende Verlängerungszeiträume
+			verlängert wird und Dir {monthlyPrice.toFixed(2)}€ monatlich in Rechnung gestellt werden. Du
+			kannst Dein Abonnement jederzeit kündigen, indem Du unser Serviceteam per E-Mail an
+			abo@digitalpusher.de kontaktierst falls du mehr als einen Abo Monat ausgewählt hast.
+		{:else}
+			Der Gesamtbetrag von {totalPrice.toFixed(2)}€ wird einmalig abgebucht. Es entstehen keine
+			weiteren Kosten oder automatischen Verlängerungen.
+		{/if}
+
+		{#if paymentType === 'monatlich'}
+			Ansonsten erhälst du 5 Werktage vor dem Ablauf des Abos eine E-Mail mit der Möglichkeit das
+			Abo zu kündigen.
+		{/if}
 	</div>
 </div>
 
