@@ -381,7 +381,7 @@
 		</div>
 
 		{#if currentStep !== 1}
-			<main class="mt-8 w-full">
+			<main class="w-full">
 				<Stepper
 					steps={formSteps}
 					{currentStep}
@@ -411,7 +411,9 @@
 					out:fade={{ duration: 550 }}
 				>
 					<h2
-						class="mb-6 text-center {currentStep !== 1 ? 'text-4xl font-bold text-gray-900' : ''}"
+						class="mb-6 text-center {currentStep !== 1
+							? 'text-4xl font-bold text-gray-900'
+							: 'text-lg'}"
 						itemprop="question"
 					>
 						{currentStep === 12

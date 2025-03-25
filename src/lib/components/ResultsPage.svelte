@@ -436,56 +436,73 @@
 	<PricingOptions {score} {formData} onPlanSelect={handlePlanSelection} {pricePlans} />
 
 	<!-- Before/After Comparison with Real Results -->
-	<div class="mt-8" in:fade={{ duration: 500, delay: 1600 }}>
-		<h3 class="mb-6 text-center text-2xl font-bold text-gray-900">
-			Echte Ergebnisse von Menschen wie Dir
+	<div class="mt-12" in:fade={{ duration: 500, delay: 1600 }}>
+		<h3 class="relative mb-8 text-center text-3xl font-bold text-gray-900">
+			<span
+				class="absolute -top-6 left-1/2 -translate-x-1/2 transform text-lg font-normal text-blue-500"
+				>INSPIRATIONEN</span
+			>
+			Erfolgsgeschichten, die Dich motivieren werden
 		</h3>
 
 		<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 			<!-- Testimonial/Case Study 1 -->
-			<div class="flex flex-col rounded-lg bg-gray-50 p-4">
+			<div
+				class="flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-4 shadow-md transition-all duration-300 hover:shadow-lg"
+			>
 				<div class="flex-1">
-					<div class="mb-4">
+					<div class="mb-4 overflow-hidden rounded-lg">
 						<img
-							src="https://digitalpusher.de/wp-content/uploads/2024/09/digital-analytics-chart-example.jpg"
-							alt="Verkaufsstatistik"
-							class="h-40 w-full rounded-lg object-cover"
+							src="https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+							alt="Steigende Verkaufszahlen"
+							class="h-40 w-full rounded-lg object-cover transition-transform duration-500 hover:scale-105"
 						/>
 					</div>
 					<h4 class="text-xl font-bold text-blue-600">
 						{score < 50
-							? 'Wow! Mindestens 3 Abschlüsse am Tag dank Local SEO und Social Media'
-							: 'Mehr als €10.000/Monat durch strategisches Online Marketing'}
+							? 'Von 0 auf 100: Mindestens 3 Abschlüsse täglich durch maximierte Online-Präsenz'
+							: 'Durchbruch: Über €10.000 monatlich durch durchdachte Marketing-Strategie'}
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
-							<span class="text-2xl">"</span>
-							Ich habe 5 Wochen gebraucht, um mit bewährten Funnels konsistente Neukundenumsätze zu generieren.
-							<span class="text-2xl">"</span>
+							<span class="text-2xl text-blue-300">"</span>
+							Ich habe in nur 5 Wochen meine digitale Strategie komplett umgestellt. Mit den richtigen
+							Funnels und einer klaren Positionierung generiere ich jetzt konstante Neukundenumsätze.
+							<span class="text-2xl text-blue-300">"</span>
 						</blockquote>
+						<p class="mt-2 text-right text-sm font-medium text-gray-500">
+							- Michael K., Unternehmensberater
+						</p>
 					</div>
 				</div>
 			</div>
 
 			<!-- Testimonial/Case Study 2 -->
-			<div class="flex flex-col rounded-lg bg-gray-50 p-4">
+			<div
+				class="flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-4 shadow-md transition-all duration-300 hover:shadow-lg"
+			>
 				<div class="flex-1">
-					<div class="mb-4">
+					<div class="mb-4 overflow-hidden rounded-lg">
 						<img
-							src="https://digitalpusher.de/wp-content/uploads/2024/09/social-media-analytics-chart.jpg"
-							alt="Social Media Statistik"
-							class="h-40 w-full rounded-lg object-cover"
+							src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+							alt="Wachsende Online-Präsenz"
+							class="h-40 w-full rounded-lg object-cover transition-transform duration-500 hover:scale-105"
 						/>
 					</div>
 					<h4 class="text-xl font-bold text-blue-600">
-						Ich habe bewährte Strategien verwendet, um stetiges Wachstum zu erreichen
+						Von skeptisch zu begeistert: Wie ich mit bewährten Strategien nachhaltiges Wachstum
+						erreichte
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
-							<span class="text-2xl">"</span>
-							Erstaunliche Ergebnisse! Das Erreichen von konstanten Verkäufen kann ich nur empfehlen.
-							<span class="text-2xl">"</span>
+							<span class="text-2xl text-blue-300">"</span>
+							Am Anfang war ich unsicher, ob das alles funktionieren wird. Nach nur 3 Monaten konnte
+							ich meine Kundenbasis verdreifachen und verzeichne jetzt konstante Umsatzsteigerungen.
+							<span class="text-2xl text-blue-300">"</span>
 						</blockquote>
+						<p class="mt-2 text-right text-sm font-medium text-gray-500">
+							- Sarah L., Einzelhandel
+						</p>
 					</div>
 				</div>
 			</div>

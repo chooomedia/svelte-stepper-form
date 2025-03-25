@@ -1,4 +1,3 @@
-<!-- src/lib/components/PricingOptions.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -413,12 +412,29 @@
 							onchange={() => handlePlanChange(plan.name)}
 						/>
 						<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
-							{paymentType === 'longtime' ? 'LONGTIME-ZUGANG' : plan.name}
+							{paymentType === 'longtime'
+								? plan.name === '1-MONATS-PLAN'
+									? 'BASIS LONGTIME'
+									: plan.name === '3-MONATS-PLAN'
+										? 'PREMIUM LONGTIME'
+										: 'BUSINESS LONGTIME'
+								: plan.name}
 						</label>
 					</div>
 
 					<div class="mt-4 text-right">
-						<span class="text-sm text-gray-500 line-through">{plan.originalPrice.toFixed(2)}€</span>
+						{#if paymentType === 'einmalig' && savingsAmount > 0}
+							<span class="text-sm text-gray-500 line-through"
+								>{(plan.originalPrice * 30 * parseInt(plan.name.split('-')[0]) * 0.92).toFixed(
+									2
+								)}€</span
+							>
+						{:else if paymentType === 'monatlich' && savingsAmount > 0}
+							<span class="text-sm text-gray-500 line-through"
+								>{plan.originalPrice.toFixed(2)}€</span
+							>
+						{/if}
+
 						<span class="ml-1 text-3xl font-bold text-gray-900">
 							{paymentType === 'monatlich'
 								? plan.price.toFixed(2)
@@ -668,7 +684,7 @@
 				<div class="p-2 md:w-3/4">
 					<h3 class="mb-2 text-xl font-bold text-white">Longtime-Zugang mit 20% Rabatt!</h3>
 					<p class="text-sm text-indigo-100">
-						Sichere Dir <span class="font-bold">JETZT</span> Deinen lebenslangen Zugang zu allen Features
+						Sichere Dir <span class="font-bold">JETZT</span> Deinen 5 Jahre langen Zugang zu allen Features
 						und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.
 					</p>
 				</div>

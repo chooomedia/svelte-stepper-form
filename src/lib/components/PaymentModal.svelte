@@ -37,6 +37,17 @@
 	let touchedFields = $state(new Set<string>());
 	let formErrors = $state<Record<string, string>>({});
 
+	// Helper function to generate prettier plan name display
+	function getPlanDisplayName(planName: string, payType: string): string {
+		if (payType === 'longtime') {
+			if (planName === '1-MONATS-PLAN') return 'BASIS LONGTIME-ZUGANG';
+			if (planName === '3-MONATS-PLAN') return 'PREMIUM LONGTIME-ZUGANG';
+			if (planName === '6-MONATS-PLAN') return 'BUSINESS LONGTIME-ZUGANG';
+			return 'LONGTIME-ZUGANG';
+		}
+		return planName;
+	}
+
 	// Set body scroll lock when modal is open
 	function setBodyScrollLock(lock: boolean) {
 		if (typeof document !== 'undefined') {
@@ -289,15 +300,23 @@
 		<div class="mb-6 rounded-lg bg-blue-50 p-4">
 			<div class="flex items-center justify-between">
 				<div>
-					<span class="text-lg font-semibold text-gray-900">{selectedPlan}</span>
+					<span class="text-lg font-semibold text-gray-900"
+						>{getPlanDisplayName(selectedPlan, paymentType)}</span
+					>
 					<p class="text-sm text-gray-600">
-						{paymentType === 'monatlich' ? 'Monatliche Zahlung' : 'Einmalige Zahlung'}
+						{paymentType === 'monatlich'
+							? 'Monatliche Zahlung'
+							: paymentType === 'einmalig'
+								? 'Einmalige Zahlung'
+								: 'Longtime Zugang (5 Jahre)'}
 					</p>
 				</div>
 				<div class="text-right">
 					<div class="text-2xl font-bold text-gray-900">{totalPrice.toFixed(2)}€</div>
 					{#if paymentType === 'einmalig'}
 						<span class="text-xs text-green-600">8% Rabatt eingerechnet</span>
+					{:else if paymentType === 'longtime'}
+						<span class="text-xs text-green-600">20% Rabatt eingerechnet</span>
 					{/if}
 				</div>
 			</div>
@@ -521,5 +540,14 @@
 			>
 			und <a href="#" class="text-blue-600 underline">Datenschutzrichtlinien</a>.
 		</div>
+
+		{#if paymentType === 'longtime'}
+			<div class="mt-4 rounded-lg bg-blue-50 p-3 text-center">
+				<p class="text-sm text-blue-800">
+					<span class="font-bold">Longtime Zugang: </span>
+					Dein Vorteil bei einmaliger Zahlung – kein Abo, keine versteckten Kosten!
+				</p>
+			</div>
+		{/if}
 	</div>
 </div>
