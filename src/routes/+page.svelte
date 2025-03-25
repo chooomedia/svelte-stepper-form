@@ -36,6 +36,7 @@
 
 	// Debug mode detection
 	const isDev = import.meta.env.DEV;
+	const formSteps = [...FORM_STEPS];
 
 	// Debug function to jump to specific steps
 	function jumpToStep(step: number) {
@@ -47,10 +48,9 @@
 		}
 	}
 
-	const formSteps = [...FORM_STEPS];
-
 	interface PageData {
 		form: FormData;
+		showIndicator: boolean;
 	}
 
 	let { data } = $props<{ data: PageData }>();
@@ -67,24 +67,6 @@
 	let websiteHealthData = $state(null);
 	let showSeoTips = $state(false);
 	let websiteAnalysisError = $state('');
-
-	// Initial form data
-	const initialFormData = structuredClone(defaultValues);
-
-	const stepSchemas = [
-		step_1,
-		step_2,
-		step_3,
-		step_4,
-		step_5,
-		step_6,
-		step_7,
-		step_8,
-		step_9,
-		last_step,
-		zod(z.object({})),
-		zod(z.object({}))
-	] as const;
 
 	// Validiere den aktuellen Schritt
 	function validateCurrentStep(step: number, formData: FormData): boolean {
@@ -388,23 +370,28 @@
 </div>
 
 <div class="p-lg-4 mx-auto mb-8" itemscope itemtype="https://schema.org/Service">
-	<header class="my-8 text-center">
-		<h1 class="mb-6 text-5xl font-bold text-gray-900" itemprop="name">Marketing Check Quiz</h1>
-		<p class="text-lg text-gray-600" itemprop="description">
-			Ermittle Deinen digitalen Marketing-Score und erhalte exklusive Empfehlungen aus Deiner
-			Branche für Dein Unternehmen.
-		</p>
+	<!-- Updated header with different visibility conditions for each section -->
+	<header class="my-8 text-center {currentStep >= 11 ? 'sr-only' : ''}">
+		<div class={currentStep > 1 ? 'sr-only' : ''}>
+			<h1 class="mb-6 text-5xl font-bold text-gray-900" itemprop="name">Marketing Check Quiz</h1>
+			<p class="text-lg text-gray-600" itemprop="description">
+				Ermittle Deinen digitalen Marketing-Score und erhalte exklusive Empfehlungen aus Deiner
+				Branche für Dein Unternehmen.
+			</p>
+		</div>
 
-		<main class="mt-8 w-full">
-			<Stepper
-				steps={formSteps}
-				{currentStep}
-				{validSteps}
-				{invalidRequiredSteps}
-				{incompleteSteps}
-				on:change={(e) => jumpToStep(e.detail)}
-			/>
-		</main>
+		{#if currentStep !== 1}
+			<main class="mt-8 w-full">
+				<Stepper
+					steps={formSteps}
+					{currentStep}
+					{validSteps}
+					{invalidRequiredSteps}
+					{incompleteSteps}
+					on:change={(e) => jumpToStep(e.detail)}
+				/>
+			</main>
+		{/if}
 	</header>
 
 	<form
@@ -417,19 +404,22 @@
 	>
 		<div class="relative">
 			{#key currentStep}
-				<h2 class="mb-6 text-center text-2xl font-bold text-gray-900" itemprop="question">
-					{currentStep === 12
-						? 'Vielen Dank für Deine Teilnahme!'
-						: currentStep === 11
-							? 'Deine Daten werden verarbeitet...'
-							: `${FORM_STEPS[currentStep - 1].description}`}
-				</h2>
 				<section
 					class="form-wrapper space-y-4"
 					aria-labelledby={`step-${currentStep}-heading`}
 					in:fade={{ duration: 550, delay: 550 }}
 					out:fade={{ duration: 550 }}
 				>
+					<h2
+						class="mb-6 text-center {currentStep !== 1 ? 'text-4xl font-bold text-gray-900' : ''}"
+						itemprop="question"
+					>
+						{currentStep === 12
+							? 'Vielen Dank für Deine Teilnahme!'
+							: currentStep === 11
+								? 'Deine Daten werden verarbeitet...'
+								: `${FORM_STEPS[currentStep - 1].description}`}
+					</h2>
 					{#if currentStep === 1}
 						<div class="form-card">
 							<ImageOption
@@ -444,7 +434,6 @@
 						<div class="form-card">
 							<!-- Website URL Form Component -->
 							<div class="space-y-4">
-								<h2 class="text-2xl font-bold text-gray-900">Website-Analyse</h2>
 								<p class="text-gray-600">
 									Gib die URL Deiner Website ein, um eine sofortige SEO-Analyse zu erhalten.
 								</p>
@@ -457,7 +446,7 @@
 											id="company_url"
 											bind:value={$form.company_url}
 											class="input-field flex-grow {$errors.company_url ? 'error' : ''}"
-											placeholder="https://www.example.com"
+											placeholder="https://www.deinewebseite.com"
 											disabled={isWebsiteLoading}
 										/>
 										<button

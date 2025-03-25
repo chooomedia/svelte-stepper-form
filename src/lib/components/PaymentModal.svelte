@@ -2,7 +2,6 @@
 	import { fade, fly } from 'svelte/transition';
 	import type { FormData } from '$lib/schema';
 	import type { SuperValidated } from 'sveltekit-superforms';
-	import { effect } from 'zod';
 
 	interface Props {
 		showModal: boolean;
@@ -41,21 +40,20 @@
 	// Set body scroll lock when modal is open
 	function setBodyScrollLock(lock: boolean) {
 		if (typeof document !== 'undefined') {
-			document.body.style.overflow = lock ? 'hidden' : '';
+			if (lock) {
+				document.body.classList.add('overflow-hidden');
+			} else {
+				document.body.classList.remove('overflow-hidden');
+			}
 		}
 	}
 
-	// Use effect for reactive logic (Svelte 5 replacement for $:)
-	effect(() => {
+	$effect(() => {
 		if (showModal) {
 			setBodyScrollLock(true);
+			resetForm();
 		} else {
 			setBodyScrollLock(false);
-		}
-
-		// Reset form when modal opens
-		if (showModal) {
-			resetForm();
 		}
 	});
 

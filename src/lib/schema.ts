@@ -37,12 +37,7 @@ export const baseFormSchema = z.object({
 	company_name: z
 		.string({ required_error: 'Unternehmensname wird benötigt' })
 		.min(2, 'Name muss mindestens 2 Zeichen lang sein'),
-	company_url: z
-		.string()
-		.url('Bitte gültige URL angeben')
-		.refine((url) => !url.endsWith('/'), {
-			message: 'Die URL sollte keinen abschließenden Schrägstrich (/) enthalten'
-		}),
+	company_url: z.string().url('Bitte gültige URL angeben'),
 	salutation: z.enum(['Herr', 'Frau', 'Divers']).optional(),
 	first_name: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein').optional(),
 	last_name: z.string().min(2, 'Nachname muss mindestens 2 Zeichen lang sein'),
@@ -145,8 +140,6 @@ export const last_step = baseFormSchema.pick({
 	privacy_agreement: true,
 	marketing_consent: true
 });
-
-export type FormData = z.infer<typeof baseFormSchema>;
 
 export const formOptions = {
 	visibility: [
@@ -414,80 +407,71 @@ export const defaultValues: FormData = {
 	phone: '',
 	privacy_agreement: false,
 	marketing_consent: false,
-	visibility_score: 0
+	visibility_score: 0,
+	show_indicator: false
 };
 
 export const FORM_STEPS = [
 	{
 		title: 'visibility',
 		description: 'Wo ist Dein Unternehmen zu finden?',
-		schema: step_1,
-		showInIndicator: true
+		schema: step_1
 	},
 	{
 		title: 'company_url',
 		description: 'Deine Website URL für die Analyse',
-		schema: step_2,
-		showInIndicator: true
+		schema: step_2
 	},
 	{
 		title: 'advertising_frequency',
 		description: 'Wie oft schaltest Du Werbung?',
-		schema: step_3,
-		showInIndicator: true
+		schema: step_3
 	},
 	{
 		title: 'goals',
 		description: 'Was möchtest Du unternehmerisch erreichen?',
-		schema: step_4,
-		showInIndicator: true
+		schema: step_4
 	},
 	{
 		title: 'campaign_management',
 		description: 'Wer soll Deine Werbung betreuen?',
-		schema: step_5,
-		showInIndicator: true
+		schema: step_5
 	},
 	{
 		title: 'online_reviews',
-		description: 'Wie bewerten Deine Kunden Sie?',
-		schema: step_6,
-		showInIndicator: true
+		description: 'Wie bewerten Deine Kunden Dich?',
+		schema: step_6
 	},
 	{
 		title: 'previous_campaigns',
 		description: 'Deine Erfahrung mit Online-Werbung',
-		schema: step_7,
-		showInIndicator: true
+		schema: step_7
 	},
 	{
 		title: 'business_phase',
 		description: 'In welcher Phase befindet sich Dein Unternehmen?',
-		schema: step_8,
-		showInIndicator: true
+		schema: step_8
 	},
 	{
 		title: 'implementation_time',
 		description: 'Dein gewünschter Implementierungszeitraum',
-		schema: step_9,
-		showInIndicator: true
+		schema: step_9
 	},
 	{
 		title: 'company_info',
 		description: 'Informationen zu Deinem Unternehmen',
-		schema: step_10,
-		showInIndicator: true
+		schema: step_10
 	},
 	{
-		title: 'contact',
+		title: 'result',
 		description: 'Deine persönlichen Informationen',
-		schema: last_step,
-		showInIndicator: true
+		schema: last_step
 	}
 ] as const;
 
 export type StepSchema = (typeof FORM_STEPS)[number];
 export type StepName = keyof FormData;
+export type FormData = z.infer<typeof baseFormSchema>;
 
 export const TOTAL_STEPS = 12;
 export const LAST_STEP_INDEX = TOTAL_STEPS - 1;

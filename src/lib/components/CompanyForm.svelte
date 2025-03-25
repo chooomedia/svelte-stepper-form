@@ -1,14 +1,11 @@
-<!-- src/lib/components/CompanyForm.svelte -->
 <script lang="ts">
+	import { slide } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
+	import { $state, $effect } from 'svelte/motion';
 
-	interface Props {
-		form: SuperValidated<FormData>;
-		errors: Record<string, string>;
-	}
-
-	let { form, errors } = $props<Props>();
+	export let form: SuperValidated<FormData>;
+	export let errors: Record<string, string>;
 
 	// Track field focus for enhanced validation UX
 	let touchedFields = $state(new Set<string>());
@@ -26,7 +23,7 @@
 	// Get ARIA attributes for field
 	function getAriaAttrs(fieldName: string, label: string) {
 		return {
-			'aria-invalid': shouldShowError(fieldName) ? 'true' : undefined,
+			'aria-invalid': shouldShowError(fieldName) ? 'true' : 'false',
 			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
 			'aria-label': label
 		};

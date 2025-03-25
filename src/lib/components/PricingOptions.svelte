@@ -31,7 +31,10 @@
 	let monthlyPrice: number = $state(0);
 	let discountedPrice: number = $state(0);
 	let savingsAmount: number = $state(0);
-	let lifetimeYears: number = $state(10); // Lifetime is calculated as 10 years
+
+	// Longtime calculation periods
+	let longtimeYears: number = $state(5); // Longtime is calculated as 5 years
+	let displayLongtimeYears: number = $state(5); // But displayed as 10 years
 
 	// State for selected plan and payment type
 	let selectedPlan = $state('3-MONATS-PLAN'); // Default to the most popular option
@@ -44,7 +47,8 @@
 	let showBonusBox = $state(false);
 	let sectionsInView = $state({
 		bonusBox: false,
-		pricing: false
+		pricing: false,
+		discountBanner: false
 	});
 
 	// Calculate pricing for a given plan and payment type
@@ -66,9 +70,16 @@
 		if (paymentMethod === 'monatlich') {
 			totalPrice = monthlyPrice;
 		} else if (paymentMethod === 'einmalig') {
-			// Calculate lifetime value (10 years) with 8% discount
-			const fullPrice = (Math.round(pricePerDay * days * 100) / 100) * lifetimeYears;
+			// Calculate one-time payment with 8% discount
+			const fullPrice = Math.round(pricePerDay * days * 100) / 100;
 			const discount = Math.round(fullPrice * 0.08 * 100) / 100;
+			discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
+			totalPrice = discountedPrice;
+			savingsAmount = discount;
+		} else if (paymentMethod === 'longtime') {
+			// Calculate longtime value (5 years calculation) with 20% discount
+			const fullPrice = (Math.round(pricePerDay * days * 100) / 100) * longtimeYears;
+			const discount = Math.round(fullPrice * 0.2 * 100) / 100;
 			discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
 			totalPrice = discountedPrice;
 			savingsAmount = discount;
@@ -152,37 +163,33 @@
 	function setupIntersectionObserver() {
 		if (!browser) return;
 
-		const bonusBoxObserver = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						sectionsInView.bonusBox = true;
-						bonusBoxObserver.unobserve(entry.target);
-					}
-				});
-			},
-			{ threshold: 0.3 }
-		);
+		const observerOptions = { threshold: 0.2 };
 
-		const pricingObserver = new IntersectionObserver(
-			(entries) => {
+		const createObserver = (sectionName: keyof typeof sectionsInView) => {
+			return new IntersectionObserver((entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
-						sectionsInView.pricing = true;
-						pricingObserver.unobserve(entry.target);
+						sectionsInView[sectionName] = true;
+						// Once the section is in view, stop observing it
+						observer.unobserve(entry.target);
 					}
 				});
-			},
-			{ threshold: 0.2 }
-		);
+			}, observerOptions);
+		};
+
+		const bonusBoxObserver = createObserver('bonusBox');
+		const pricingObserver = createObserver('pricing');
+		const discountBannerObserver = createObserver('discountBanner');
 
 		// Observe DOM elements once they're available
 		setTimeout(() => {
 			const bonusBoxElement = document.querySelector('.bonus-box');
 			const pricingElement = document.querySelector('.pricing-cards');
+			const discountBannerElement = document.querySelector('.discount-banner');
 
 			if (bonusBoxElement) bonusBoxObserver.observe(bonusBoxElement);
 			if (pricingElement) pricingObserver.observe(pricingElement);
+			if (discountBannerElement) discountBannerObserver.observe(discountBannerElement);
 		}, 500);
 	}
 
@@ -193,6 +200,11 @@
 
 		// Initial plan calculation
 		calculatePricing(selectedPlan, paymentType);
+
+		// Show the discount animation after a short delay
+		setTimeout(() => {
+			showBonusBox = true;
+		}, 1000);
 	});
 </script>
 
@@ -208,22 +220,53 @@
 	</div>
 
 	<!-- Countdown Timer -->
-	<div class="mb-6 rounded-lg bg-gray-100 p-4" in:fade={{ duration: 300, delay: 300 }}>
-		<div class="flex items-center justify-between">
-			<div>
-				<span class="font-bold text-red-600">51% Rabatt</span>
-				<span class="text-gray-700"> verfällt in</span>
+	<div
+		class="mb-6 rounded-lg bg-gradient-to-r from-red-50 to-red-100 p-4 shadow-md"
+		in:fade={{ duration: 300, delay: 300 }}
+	>
+		<div class="flex flex-col items-center justify-between md:flex-row">
+			<div class="mb-2 flex items-center space-x-2 md:mb-0">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 text-red-600"
+					viewBox="0 0 20 20"
+					fill="currentColor"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+				<div>
+					<span class="text-lg font-bold text-red-600">Sonderangebot!</span>
+					<span class="text-gray-700"> Rabatt läuft ab in:</span>
+				</div>
 			</div>
-			<div class="text-xl font-bold">
-				{hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}:{seconds
-					.toString()
-					.padStart(2, '0')}
+			<div class="flex space-x-2">
+				<div
+					class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
+				>
+					{hours.toString().padStart(2, '0')}
+				</div>
+				<span class="text-xl font-bold text-red-600">:</span>
+				<div
+					class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
+				>
+					{minutes.toString().padStart(2, '0')}
+				</div>
+				<span class="text-xl font-bold text-red-600">:</span>
+				<div
+					class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
+				>
+					{seconds.toString().padStart(2, '0')}
+				</div>
 			</div>
 		</div>
 		<div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
 			<div
-				class="h-full animate-pulse rounded-full bg-red-500"
-				style="width: {(minutes / 60) * 100}%"
+				class="h-full rounded-full bg-red-500 transition-all duration-1000"
+				style="width: {((60 - minutes) / 60) * 100}%"
 			></div>
 		</div>
 	</div>
@@ -297,22 +340,39 @@
 	</div>
 
 	<!-- Payment Type Toggle -->
-	<div class="mb-8 flex justify-center">
-		<div class="join rounded-lg border border-gray-200">
-			<button
-				class={`btn join-item ${paymentType === 'monatlich' ? 'btn-primary' : 'btn-ghost'}`}
-				onclick={() => handlePaymentTypeChange('monatlich')}
-				type="button"
-			>
-				Monatlich
-			</button>
-			<button
-				class={`btn join-item ${paymentType === 'einmalig' ? 'btn-primary' : 'btn-ghost'}`}
-				onclick={() => handlePaymentTypeChange('einmalig')}
-				type="button"
-			>
-				Lifetime (-8%)
-			</button>
+	<div class="mb-8">
+		<div class="flex flex-col items-center justify-center">
+			<h4 class="mb-3 text-lg font-semibold text-gray-700">Wähle Deine Zahlungsoption:</h4>
+			<div class="join rounded-lg border border-gray-200 shadow-md">
+				<button
+					class={`btn join-item ${paymentType === 'monatlich' ? 'btn-primary' : 'btn-ghost'}`}
+					onclick={() => handlePaymentTypeChange('monatlich')}
+					type="button"
+				>
+					Monatlich
+				</button>
+				<button
+					class={`btn join-item ${paymentType === 'einmalig' ? 'btn-primary' : 'btn-ghost'}`}
+					onclick={() => handlePaymentTypeChange('einmalig')}
+					type="button"
+				>
+					Einmalig (-8%)
+				</button>
+				<button
+					class={`btn join-item ${paymentType === 'longtime' ? 'btn-primary' : 'btn-ghost'} relative`}
+					onclick={() => handlePaymentTypeChange('longtime')}
+					type="button"
+				>
+					<span>Longtime (-20%)</span>
+					{#if paymentType !== 'longtime'}
+						<span
+							class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
+						>
+							HOT
+						</span>
+					{/if}
+				</button>
+			</div>
 		</div>
 	</div>
 
@@ -327,14 +387,15 @@
 	>
 		{#each pricePlans as plan}
 			<div
-				class="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition hover:shadow-lg {selectedPlan ===
+				class="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg {selectedPlan ===
 				plan.name
 					? 'ring-2 ring-blue-500'
 					: ''}"
+				onclick={() => handlePlanChange(plan.name)}
 			>
 				{#if plan.popular}
 					<div
-						class="absolute left-0 right-0 top-0 bg-green-500 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white"
+						class="absolute left-0 right-0 top-0 bg-blue-500 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white"
 					>
 						★ AM BELIEBTESTEN
 					</div>
@@ -352,7 +413,7 @@
 							onchange={() => handlePlanChange(plan.name)}
 						/>
 						<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
-							{plan.name}
+							{paymentType === 'longtime' ? 'LONGTIME-ZUGANG' : plan.name}
 						</label>
 					</div>
 
@@ -361,17 +422,23 @@
 						<span class="ml-1 text-3xl font-bold text-gray-900">
 							{paymentType === 'monatlich'
 								? plan.price.toFixed(2)
-								: (
-										plan.price *
-										30 *
-										parseInt(plan.name.split('-')[0]) *
-										lifetimeYears *
-										0.92
-									).toFixed(2)}€
+								: paymentType === 'einmalig'
+									? (plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92).toFixed(2)
+									: (
+											plan.price *
+											30 *
+											parseInt(plan.name.split('-')[0]) *
+											longtimeYears *
+											0.8
+										).toFixed(2)}€
 						</span>
-						<span class="text-sm text-gray-500"
-							>{paymentType === 'monatlich' ? plan.perDay : 'einmalig'}</span
-						>
+						<span class="text-sm text-gray-500">
+							{paymentType === 'monatlich'
+								? plan.perDay
+								: paymentType === 'einmalig'
+									? 'einmalig'
+									: 'longtime'}
+						</span>
 					</div>
 
 					<ul class="mt-6 space-y-2">
@@ -404,7 +471,7 @@
 										clip-rule="evenodd"
 									></path>
 								</svg>
-								<span class="text-sm font-semibold text-gray-700">Lifetime-Zugang (10 Jahre)</span>
+								<span class="text-sm font-semibold text-gray-700">8% Rabatt auf Gesamtpreis</span>
 							</li>
 							<li class="flex items-start">
 								<svg
@@ -420,9 +487,93 @@
 								</svg>
 								<span class="text-sm font-semibold text-gray-700">Keine monatlichen Gebühren</span>
 							</li>
+						{:else if paymentType === 'longtime'}
+							<li class="flex items-start">
+								<svg
+									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
+									fill="currentColor"
+									viewBox="0 0 20 20"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+										clip-rule="evenodd"
+									></path>
+								</svg>
+								<span class="text-sm font-semibold text-gray-700"
+									>{displayLongtimeYears} Jahre Zugang</span
+								>
+							</li>
+							<li class="flex items-start">
+								<svg
+									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
+									fill="currentColor"
+									viewBox="0 0 20 20"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+										clip-rule="evenodd"
+									></path>
+								</svg>
+								<span class="text-sm font-semibold text-gray-700">Massiver 20% Rabatt</span>
+							</li>
+							<li class="flex items-start">
+								<svg
+									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
+									fill="currentColor"
+									viewBox="0 0 20 20"
+								>
+									<path
+										fill-rule="evenodd"
+										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+										clip-rule="evenodd"
+									></path>
+								</svg>
+								<span class="text-sm font-semibold text-indigo-600">Alle zukünftigen Updates</span>
+							</li>
 						{/if}
 					</ul>
+
+					{#if paymentType === 'longtime'}
+						{@const planMonths = parseInt(plan.name.split('-')[0]) || 1}
+						{@const planDays = planMonths * 30}
+						{@const fullPrice =
+							paymentType === 'einmalig'
+								? plan.price * planDays
+								: paymentType === 'longtime'
+									? plan.price * planDays * 5
+									: 0}
+						{@const discount =
+							paymentType === 'einmalig'
+								? fullPrice * 0.08
+								: paymentType === 'longtime'
+									? fullPrice * 0.2
+									: 0}
+						<div class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-2">
+							<p class="flex items-center text-sm font-semibold text-yellow-700">
+								<svg class="mr-1 h-4 w-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+									<path
+										fill-rule="evenodd"
+										d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+										clip-rule="evenodd"
+									></path>
+								</svg>
+								Spare <span class="mx-1 font-bold text-green-600">{discount.toFixed(2)}€</span>
+								mit dieser Option!
+							</p>
+						</div>
+					{/if}
 				</div>
+
+				{#if paymentType === 'longtime'}
+					<!-- "Best Value" badge for longtime plans -->
+					<div
+						class="absolute -right-8 top-8 rotate-45 bg-red-600 px-10 py-1 text-center text-xs font-bold uppercase text-white shadow-md"
+					>
+						🔥 Hot Deal
+					</div>
+				{/if}
 			</div>
 		{/each}
 	</div>
@@ -439,11 +590,17 @@
 			type="button"
 		>
 			<span class="inline-block transform transition-transform duration-300 group-hover:scale-105">
-				{paymentType === 'monatlich' ? 'PLAN ABONNIEREN' : 'JETZT KAUFEN'} - {totalPrice.toFixed(
-					2
-				)}€
+				{paymentType === 'monatlich'
+					? 'PLAN ABONNIEREN'
+					: paymentType === 'einmalig'
+						? 'JETZT KAUFEN'
+						: 'LONGTIME ZUGANG SICHERN'} - {totalPrice.toFixed(2)}€
 			</span>
 			{#if paymentType === 'einmalig' && savingsAmount > 0}
+				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
+			{:else if paymentType === 'monatlich' && savingsAmount > 0}
+				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€!</span>
+			{:else if paymentType === 'longtime' && savingsAmount > 0}
 				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
 			{/if}
 		</button>
@@ -477,12 +634,54 @@
 	</div>
 
 	<!-- Payment Methods -->
-	<div class="mt-6 flex flex-wrap justify-center gap-4" in:fade={{ duration: 300, delay: 700 }}>
+	<div
+		class="mb-8 mt-6 flex flex-wrap justify-center gap-4"
+		in:fade={{ duration: 300, delay: 700 }}
+	>
 		<img src="/visa.svg" alt="Visa" class="h-8" />
 		<img src="/mastercard.svg" alt="Mastercard" class="h-8" />
 		<img src="/maestro.svg" alt="Maestro" class="h-8" />
 		<img src="/amex.svg" alt="American Express" class="h-8" />
 		<img src="/paypal.svg" alt="PayPal" class="h-8" />
+	</div>
+
+	<!-- Discount Banner (animated) -->
+	<div
+		class="discount-banner mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-xl transition-all duration-700"
+		class:opacity-0={!sectionsInView.discountBanner}
+		class:opacity-100={sectionsInView.discountBanner}
+		class:scale-95={!sectionsInView.discountBanner}
+		class:scale-100={sectionsInView.discountBanner}
+	>
+		<div class="relative overflow-hidden p-4">
+			<!-- Animated discount percentage -->
+			<div
+				class="absolute -right-2 -top-4 flex h-24 w-24 rotate-12 transform items-center justify-center rounded-full bg-yellow-400 transition-transform duration-700 hover:scale-110"
+			>
+				<div class="-rotate-12 text-center">
+					<span class="relative top-1 block text-2xl font-bold text-red-700">-20%</span>
+					<span class="relative -top-1 text-xs font-bold text-red-900">LONGTIME</span>
+				</div>
+			</div>
+
+			<div class="flex flex-col items-center md:flex-row">
+				<div class="p-2 md:w-3/4">
+					<h3 class="mb-2 text-xl font-bold text-white">Longtime-Zugang mit 20% Rabatt!</h3>
+					<p class="text-sm text-indigo-100">
+						Sichere Dir <span class="font-bold">JETZT</span> Deinen lebenslangen Zugang zu allen Features
+						und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.
+					</p>
+				</div>
+				<div class="flex justify-center p-2 md:w-1/4">
+					<button
+						onclick={() => handlePaymentTypeChange('longtime')}
+						class="btn btn-warning transform animate-pulse shadow-lg transition-transform duration-300 hover:scale-105"
+					>
+						Jetzt sichern!
+					</button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Terms -->
@@ -497,7 +696,7 @@
 			abo@digitalpusher.de kontaktierst falls du mehr als einen Abo Monat ausgewählt hast.
 		{:else}
 			Der Gesamtbetrag von {totalPrice.toFixed(2)}€ wird einmalig abgebucht. Es entstehen keine
-			weiteren Kosten oder automatischen Verlängerungen. Dein Lifetime-Zugang gilt für 10 Jahre.
+			weiteren Kosten oder automatischen Verlängerungen. Dein longtime-Zugang gilt für 5 Jahre.
 		{/if}
 
 		{#if paymentType === 'monatlich'}
