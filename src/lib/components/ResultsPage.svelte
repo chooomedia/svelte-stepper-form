@@ -2,32 +2,171 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { tweened } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
 	import type { FormData } from '$lib/schema';
-	import Chart from 'chart.js/auto';
 	import VisibilityScore from './VisibilityScore.svelte';
+	import PerformanceChart from './PerformanceChart.svelte';
 	import PricingOptions from './PricingOptions.svelte';
 
 	interface Props {
 		score: number;
 		formData: FormData;
+		auditData: any;
 		nextStep: () => void;
 		restartAssessment: () => void;
 	}
 
-	let { score, formData, nextStep, restartAssessment } = $props<Props>();
-
-	// Chart elements
-	let radarChartCanvas: HTMLCanvasElement;
-	let radarChart: Chart;
+	let { score, formData, auditData, nextStep, restartAssessment } = $props<Props>();
 
 	// Define the benefits and recommendations based on score
 	let benefits = $state<string[]>([]);
 	let recommendations = $state<string[]>([]);
-	let selectedPlan = $state('');
-	let selectedPrice = $state(0);
 	let showPlanSelector = $state(false);
+	let pageLoaded = $state(false);
+
+	// Process the score value to ensure it's valid
+	let processedScore = $derived(isNaN(score) || score < 0 || score > 100 ? 50 : score);
+
+	// Ensure auditData has default values if not provided
+	let processedAuditData = $derived(() => {
+		// If auditData is empty or invalid, use the fallback data
+		if (!auditData || typeof auditData !== 'object' || Object.keys(auditData).length === 0) {
+			return getFallbackAuditData(processedScore);
+		}
+
+		// If auditData exists but is missing some required properties, merge with fallback
+		const fallbackData = getFallbackAuditData(processedScore);
+		return {
+			...fallbackData,
+			...auditData,
+			// Ensure lighthouse report exists
+			lighthouse_report: auditData.lighthouse_report || fallbackData.lighthouse_report,
+			// Ensure score is set
+			score: auditData.score || processedScore
+		};
+	});
+
+	// Fallback data generation function
+	function getFallbackAuditData(score: number) {
+		// Default performance score based on overall score
+		const performanceScore = Math.min(0.9, Math.max(0.4, score / 100));
+
+		return {
+			url: formData?.website || 'example.com',
+			score: score,
+			lighthouse_report: {
+				categories: {
+					performance: { score: performanceScore },
+					seo: { score: score >= 70 ? 0.85 : score >= 50 ? 0.65 : 0.45 },
+					accessibility: { score: score >= 70 ? 0.75 : score >= 50 ? 0.55 : 0.35 },
+					'best-practices': { score: score >= 70 ? 0.8 : score >= 50 ? 0.6 : 0.4 }
+				}
+			},
+			security_headers: {
+				grade: score >= 80 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : 'D'
+			},
+			technologies: ['Svelte', 'Tailwind CSS', 'Vercel'],
+			traffic: {
+				monthly_visitors: Math.round(score * 100),
+				bounce_rate: Math.max(0.3, 1 - score / 100)
+			},
+			social_media: {
+				followers: Math.round(score * 20),
+				engagement_rate: Math.min(0.1, score / 1000)
+			},
+			competitors: ['competitor1.com', 'competitor2.com', 'competitor3.com'],
+			goals: formData?.goals || ['new_clients'],
+			visibility: formData?.visibility || 'search_engines',
+			content: {
+				blog_posts: Math.round(score / 10),
+				videos: Math.round(score / 20),
+				infographics: Math.round(score / 25)
+			}
+		};
+	}
+
+	// Generate benefits based on form data and score
+	function generateBenefits() {
+		const baseBenefits = [
+			'Höhere Sichtbarkeit in Google & Co.',
+			'Mehr qualifizierte Besucher auf Deiner Website',
+			'Bessere Konversionsraten durch optimierte Inhalte'
+		];
+
+		const additionalBenefits = [];
+
+		// Add specific benefits based on user selections
+		if (formData?.visibility === 'search_engines') {
+			additionalBenefits.push('Optimierte Suchmaschinenplatzierungen für relevante Keywords');
+		}
+
+		if (formData?.visibility === 'social_media') {
+			additionalBenefits.push('Verbesserte Social-Media-Präsenz und Engagement');
+		}
+
+		if (formData?.goals === 'new_clients') {
+			additionalBenefits.push('Zielgerichtete Strategien zur Neukundengewinnung');
+		}
+
+		if (formData?.goals === 'new_employees') {
+			additionalBenefits.push('Optimierte Karriereseite zur Mitarbeitergewinnung');
+		}
+
+		// Ensure we have at least the base benefits
+		return [...new Set([...baseBenefits, ...additionalBenefits])].slice(0, 5);
+	}
+
+	// Generate recommendations based on score and form data
+	function generateRecommendations() {
+		const baseRecommendations = [
+			'Website-Optimierung für bessere Nutzererfahrung',
+			'Content-Strategie zur Steigerung der Sichtbarkeit'
+		];
+
+		const additionalRecommendations = [];
+
+		// Add specific recommendations based on score
+		if (processedScore < 40) {
+			additionalRecommendations.push('Grundlegende SEO-Optimierung Deiner Website');
+			additionalRecommendations.push('Erstellung eines Google Business Profils');
+		} else if (processedScore < 60) {
+			additionalRecommendations.push('Erweiterte SEO-Maßnahmen für mehr organischen Traffic');
+			additionalRecommendations.push('Lokale SEO-Optimierung für regionale Sichtbarkeit');
+		} else if (processedScore < 80) {
+			additionalRecommendations.push(
+				'Content-Marketing-Strategie zur Stärkung Deiner Marktposition'
+			);
+			additionalRecommendations.push('Backlinkaufbau zur Steigerung der Domain-Autorität');
+		} else {
+			additionalRecommendations.push('Erweiterte Content-Strategie für maximale Sichtbarkeit');
+			additionalRecommendations.push('Wettbewerbsanalyse zur Identifizierung von Wachstumschancen');
+		}
+
+		return [...new Set([...baseRecommendations, ...additionalRecommendations])].slice(0, 5);
+	}
+
+	// Initialize chart and data on mount
+	onMount(() => {
+		// Generate benefits and recommendations
+		benefits = generateBenefits();
+		recommendations = generateRecommendations();
+
+		// Show plan selector after a delay
+		setTimeout(() => {
+			pageLoaded = true;
+		}, 500);
+	});
+
+	function handlePlanSelection(plan: string, price: number) {
+		console.log(`Selected plan: ${plan}, price: ${price}€`);
+		// Add your logic here
+	}
+
+	function refreshAnimations() {
+		pageLoaded = false;
+		setTimeout(() => {
+			pageLoaded = true;
+		}, 50);
+	}
 
 	// Price plans based on score range
 	export const pricePlans = [
@@ -91,177 +230,40 @@
 		'Unerprobte Strategien für den Erfolg über Nacht',
 		'MLM, Dropshipping oder Wiederverkauf von Pyramidensystemen'
 	];
-
-	// Generate benefits based on form data and score
-	function generateBenefits() {
-		const baseBenefits = [
-			'Höhere Sichtbarkeit in Google & Co.',
-			'Mehr qualifizierte Besucher auf Deiner Website',
-			'Bessere Konversionsraten durch optimierte Inhalte'
-		];
-
-		// Add specific benefits based on user selections
-		if (formData.visibility === 'search_engines') {
-			benefits.push('Optimierte Suchmaschinenplatzierungen für relevante Keywords');
-		}
-
-		if (formData.visibility === 'social_media') {
-			benefits.push('Verbesserte Social-Media-Präsenz und Engagement');
-		}
-
-		if (formData.goals === 'new_clients') {
-			benefits.push('Zielgerichtete Strategien zur Neukundengewinnung');
-		}
-
-		if (formData.goals === 'new_employees') {
-			benefits.push('Optimierte Karriereseite zur Mitarbeitergewinnung');
-		}
-
-		// Ensure we have at least the base benefits
-		return [...new Set([...baseBenefits, ...benefits])].slice(0, 5);
-	}
-
-	// Generate recommendations based on score and form data
-	function generateRecommendations() {
-		const baseRecommendations = [
-			'Website-Optimierung für bessere Nutzererfahrung',
-			'Content-Strategie zur Steigerung der Sichtbarkeit'
-		];
-
-		// Add specific recommendations based on score
-		if (score < 40) {
-			recommendations.push('Grundlegende SEO-Optimierung Deiner Website');
-			recommendations.push('Erstellung eines Google Business Profils');
-		} else if (score < 60) {
-			recommendations.push('Erweiterte SEO-Maßnahmen für mehr organischen Traffic');
-			recommendations.push('Lokale SEO-Optimierung für regionale Sichtbarkeit');
-		} else if (score < 80) {
-			recommendations.push('Content-Marketing-Strategie zur Stärkung Deiner Marktposition');
-			recommendations.push('Backlinkaufbau zur Steigerung der Domain-Autorität');
-		} else {
-			recommendations.push('Erweiterte Content-Strategie für maximale Sichtbarkeit');
-			recommendations.push('Wettbewerbsanalyse zur Identifizierung von Wachstumschancen');
-		}
-
-		return [...new Set([...baseRecommendations, ...recommendations])].slice(0, 5);
-	}
-
-	// Initialize chart on mount
-	onMount(() => {
-		// Generate benefits and recommendations
-		benefits = generateBenefits();
-		recommendations = generateRecommendations();
-
-		// Show plan selector after a delay
-		setTimeout(() => {
-			showPlanSelector = true;
-		}, 3000);
-
-		// Initialize radar chart
-		if (radarChartCanvas) {
-			const ctx = radarChartCanvas.getContext('2d');
-			if (ctx) {
-				// The radar chart data represents different aspects of online presence
-				radarChart = new Chart(ctx, {
-					type: 'radar',
-					data: {
-						labels: [
-							'SEO-Optimierung',
-							'Social Media',
-							'Website-Qualität',
-							'Content-Strategie',
-							'Lokale Präsenz'
-						],
-						datasets: [
-							{
-								label: 'Deine aktuelle Sichtbarkeit',
-								data: [
-									Math.min(Math.round(score * 0.7), 100),
-									Math.min(Math.round(score * 0.8), 100),
-									Math.min(Math.round(score * 0.6), 100),
-									Math.min(Math.round(score * 0.5), 100),
-									Math.min(Math.round(score * 0.9), 100)
-								],
-								backgroundColor: 'rgba(255, 99, 132, 0.2)',
-								borderColor: 'rgba(255, 99, 132, 1)',
-								borderWidth: 2
-							},
-							{
-								label: 'Potenzial mit unserer Lösung',
-								data: [85, 90, 80, 85, 95],
-								backgroundColor: 'rgba(54, 162, 235, 0.2)',
-								borderColor: 'rgba(54, 162, 235, 1)',
-								borderWidth: 2
-							}
-						]
-					},
-					options: {
-						scales: {
-							r: {
-								angleLines: {
-									display: true
-								},
-								ticks: {
-									display: false,
-									max: 100,
-									min: 0
-								}
-							}
-						}
-					}
-				});
-			}
-		}
-	});
-
-	// Clean up chart on destroy
-	onDestroy(() => {
-		if (radarChart) {
-			radarChart.destroy();
-		}
-	});
-
-	function handlePlanSelection(plan: string, price: number) {
-		console.log(`Selected plan: ${plan}, price: ${price}€`);
-		// Add your logic here
-	}
 </script>
 
 <div class="results-page mb-16">
+	<a
+		href="#"
+		class="mt-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+		on:click|preventDefault={refreshAnimations}
+	>
+		Refresh Animations
+	</a>
 	<!-- Score Section -->
-
-	<div class="grid grid-cols-1 gap-8 md:grid-cols-2" in:fade={{ duration: 500, delay: 700 }}>
-		<!-- Modern score visualization -->
-		<div class="flex flex-col rounded-lg bg-white p-6 shadow-lg">
+	<div class="grid grid-cols-1 gap-8 md:grid-cols-3" in:fade={{ duration: 500, delay: 700 }}>
+		<!-- Modern score visualization (1/3 width on desktop) -->
+		<div
+			class="flex flex-col rounded-lg bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
+		>
 			<h3 class="mb-4 text-xl font-bold">Dein Performance Score</h3>
-			<VisibilityScore {score} autoAdvance={300} {nextStep} showComparison={false} />
+			<VisibilityScore score={processedScore} animateOnResultLoad={pageLoaded} />
 		</div>
 
-		<!-- Improved Radar Chart -->
-		<div class="rounded-lg bg-white p-6 shadow-lg">
-			<h3 class="mb-4 text-xl font-bold">Deine digitale Performance im Detail</h3>
-			<div class="chart-container h-auto w-full">
-				<canvas bind:this={radarChartCanvas}></canvas>
-				<!-- Add interactive tooltips that appear on hover -->
-				<div class="mt-4 flex flex-wrap justify-center gap-3">
-					{#each ['SEO', 'Social', 'Website', 'Content', 'Lokal'] as area, i}
-						<div class="flex items-center">
-							<span
-								class="mr-2 inline-block h-3 w-3 rounded-full"
-								style="background-color: {i === 0
-									? 'rgba(255, 99, 132, 0.8)'
-									: 'rgba(54, 162, 235, 0.8)'}"
-							></span>
-							<span class="text-sm">{area}</span>
-						</div>
-					{/each}
-				</div>
-			</div>
+		<!-- Improved Radar Chart (2/3 width on desktop) -->
+		<div
+			class="overflow-hidden rounded-lg bg-white shadow-lg transition-all duration-300 hover:shadow-xl md:col-span-2"
+		>
+			<PerformanceChart
+				score={processedScore}
+				auditData={processedAuditData}
+				animateOnResultLoad={pageLoaded}
+			/>
 		</div>
 	</div>
 
 	<!-- Chart & Analysis Section -->
-	<div class="my-8 grid grid-cols-2 gap-8" in:fade={{ duration: 500, delay: 900 }}>
+	<div class="my-8 grid grid-cols-1 gap-8 md:grid-cols-2" in:fade={{ duration: 500, delay: 900 }}>
 		<!-- Stärken -->
 		<div class="p-6">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
@@ -282,7 +284,7 @@
 				Deine Stärken
 			</h3>
 			<ul class="space-y-3">
-				{#each [...(score > 60 ? ['Gute Grundlagen in digitaler Präsenz', 'Regelmäßige Content-Erstellung'] : score > 40 ? ['Grundverständnis für digitales Marketing', 'Potenzial für schnelle Verbesserungen'] : ['Großes Wachstumspotenzial', 'Möglichkeit für schnelle Sichtbarkeitssteigerung']), formData.visibility === 'social_media' ? 'Bestehende Social-Media-Präsenz' : formData.visibility === 'search_engines' ? 'Verständnis für Suchmaschinenoptimierung' : 'Bereitschaft für digitale Transformation'] as strength, i}
+				{#each [...(processedScore > 60 ? ['Gute Grundlagen in digitaler Präsenz', 'Regelmäßige Content-Erstellung'] : processedScore > 40 ? ['Grundverständnis für digitales Marketing', 'Potenzial für schnelle Verbesserungen'] : ['Großes Wachstumspotenzial', 'Möglichkeit für schnelle Sichtbarkeitssteigerung']), formData?.visibility === 'social_media' ? 'Bestehende Social-Media-Präsenz' : formData?.visibility === 'search_engines' ? 'Verständnis für Suchmaschinenoptimierung' : 'Bereitschaft für digitale Transformation'] as strength, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -324,7 +326,7 @@
 				Verbesserungspotenzial
 			</h3>
 			<ul class="space-y-3">
-				{#each [...(score < 40 ? ['Geringe digitale Sichtbarkeit', 'Fehlende Online-Marketingstrategie', 'Unzureichende Website-Optimierung'] : score < 60 ? ['Begrenzte Reichweite in Suchmaschinen', 'Unterentwickelte Content-Strategie', 'Mangelnde Conversion-Optimierung'] : ['Lücken in der Content-Distribution', 'Begrenzte Konkurrenzanalyse', 'Optimierungspotenzial in der Conversion Rate'])] as weakness, i}
+				{#each [...(processedScore < 40 ? ['Geringe digitale Sichtbarkeit', 'Fehlende Online-Marketingstrategie', 'Unzureichende Website-Optimierung'] : processedScore < 60 ? ['Begrenzte Reichweite in Suchmaschinen', 'Unterentwickelte Content-Strategie', 'Mangelnde Conversion-Optimierung'] : ['Lücken in der Content-Distribution', 'Begrenzte Konkurrenzanalyse', 'Optimierungspotenzial in der Conversion Rate'])] as weakness, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -433,7 +435,12 @@
 	</div>
 
 	<!-- Pricing Section -->
-	<PricingOptions {score} {formData} onPlanSelect={handlePlanSelection} {pricePlans} />
+	<PricingOptions
+		score={processedScore}
+		{formData}
+		onPlanSelect={handlePlanSelection}
+		{pricePlans}
+	/>
 
 	<!-- Before/After Comparison with Real Results -->
 	<div class="mt-12" in:fade={{ duration: 500, delay: 1600 }}>
@@ -459,13 +466,13 @@
 						/>
 					</div>
 					<h4 class="text-xl font-bold text-blue-600">
-						{score < 50
+						{processedScore < 50
 							? 'Von 0 auf 100: Mindestens 3 Abschlüsse täglich durch maximierte Online-Präsenz'
 							: 'Durchbruch: Über €10.000 monatlich durch durchdachte Marketing-Strategie'}
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
-							<span class="text-2xl text-blue-300">"</span>
+							<span class="text-xl text-blue-300">"</span>
 							Wir wurden im vollen Umfang bestens beraten und entschieden uns neben der Webapp und der
 							neuen Webseite uns vom Dienstleister eine zielstrebige und langfristige Kampagne auf Social
 							Media planen und realisieren zu lassen. Wir sind mit den Conversions nach zwei Jahren sehr

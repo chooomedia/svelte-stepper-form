@@ -9,7 +9,6 @@
 
 	interface Props {
 		score: number;
-		formData: FormData;
 		onPlanSelect: (plan: string, price: number) => void;
 		pricePlans: Array<{
 			name: string;
@@ -24,7 +23,7 @@
 		errors?: Record<string, string>;
 	}
 
-	let { score, formData, onPlanSelect, pricePlans, form, errors = {} } = $props<Props>();
+	let { score, onPlanSelect, pricePlans, form, errors = {} } = $props<Props>();
 
 	// Calculated total price based on selected plan and payment type
 	let totalPrice: number = $state(0);

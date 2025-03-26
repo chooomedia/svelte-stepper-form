@@ -415,7 +415,7 @@
 						itemprop="question"
 					>
 						{currentStep === 12
-							? 'Vielen Dank für Deine Teilnahme!'
+							? 'Deine Onlinemarketing Bewertung'
 							: currentStep === 11
 								? 'Deine Daten werden verarbeitet...'
 								: `${FORM_STEPS[currentStep - 1].description}`}

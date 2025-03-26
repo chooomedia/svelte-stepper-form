@@ -2,7 +2,6 @@
 	import { slide } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
-	import { $state, $effect } from 'svelte/motion';
 
 	export let form: SuperValidated<FormData>;
 	export let errors: Record<string, string>;
