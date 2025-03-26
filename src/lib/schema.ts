@@ -475,3 +475,36 @@ export type FormData = z.infer<typeof baseFormSchema>;
 
 export const TOTAL_STEPS = 12;
 export const LAST_STEP_INDEX = TOTAL_STEPS - 1;
+
+export interface FormStep {
+	title: string;
+	description: string;
+	required?: boolean;
+}
+
+export interface FormOptions {
+	[key: string]: {
+		[key: string]: {
+			label: string;
+			weight: number;
+			image?: string;
+		};
+	};
+}
+
+export interface AuditData {
+	lighthouse_report?: {
+		categories?: Record<string, { score?: number }>;
+	};
+	security_headers?: {
+		grade?: string;
+	};
+	// Weitere Felder...
+}
+
+export interface Metric {
+	label: string;
+	value: number;
+	color: string;
+	category: string;
+}

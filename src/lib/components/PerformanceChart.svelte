@@ -200,17 +200,20 @@
 	async function initializeChart() {
 		if (!chartCanvas) return;
 
-		try {
-			const ctx = chartCanvas.getContext('2d');
-			if (!ctx) throw new Error('Canvas context not available');
+		const ctx = chartCanvas.getContext('2d');
+		if (!ctx) return;
 
-			chart = new Chart(ctx, chartConfig);
-			await startAnimation();
-			chartLoaded = true;
-		} catch (error) {
-			console.error('Chart initialization failed:', error);
-			noDataAvailable = true;
+		// Destroy existing chart instance
+		if (chart) {
+			chart.destroy();
 		}
+
+		chart = new Chart(ctx, {
+			...chartConfig,
+			data: getChartData(metrics, averageValue)
+		});
+
+		await startAnimation();
 	}
 
 	async function startAnimation() {
@@ -359,39 +362,19 @@
 				<!-- Button zum Laden von Demo-Daten -->
 				<button
 					type="button"
-					class="relative mt-6 inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 active:scale-95 active:transform active:bg-blue-800"
+					class="btn btn-primary ml-2"
 					on:click={(e) => {
 						e.preventDefault();
 						loadInitialData();
 					}}
 				>
-					<span class="flex items-center gap-2">
-						{#if isAnimating}
-							<svg
-								class="h-5 w-5 animate-spin text-white"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-							>
-								<circle
-									class="opacity-25"
-									cx="12"
-									cy="12"
-									r="10"
-									stroke="currentColor"
-									stroke-width="4"
-								></circle>
-								<path
-									class="opacity-75"
-									fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-								></path>
-							</svg>
-							Laden...
-						{:else}
-							{noDataAvailable ? 'Demo-Daten laden' : 'Daten neu laden'}
-						{/if}
-					</span>
+					{#if isAnimating}
+						<span class="loading loading-spinner loading-sm"></span>
+						Fetch Data...
+					{:else}
+						{noDataAvailable ? 'Demo-Daten laden' : 'Daten neu laden'}
+						Load Data
+					{/if}
 				</button>
 			</div>
 		</div>

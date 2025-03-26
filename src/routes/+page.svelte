@@ -4,51 +4,34 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 	import { zod } from 'sveltekit-superforms/adapters';
-
-	import Stepper from '$lib/components/Stepper.svelte';
+	import PageMeta from '$lib/components/PageMeta.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import ImageOption from '$lib/components/ImageOption.svelte';
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import SeoTips from '$lib/components/SeoTips.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
+	import { setSteps, setCurrentStep } from '$lib/stores/stepStore';
 
 	import {
 		FORM_STEPS,
-		step_1,
-		step_2,
-		step_3,
-		step_4,
-		step_5,
-		step_6,
-		step_7,
-		step_8,
-		step_9,
 		last_step,
 		TOTAL_STEPS,
 		formOptions,
-		getFormOptionWeight,
-		baseFormSchema,
-		defaultValues
+		getFormOptionWeight
 	} from '$lib/schema';
+
+	let formSteps = FORM_STEPS;
+
+	// Set steps when page loads
+	setSteps(formSteps);
 
 	// Debug mode detection
 	const isDev = import.meta.env.DEV;
-	const formSteps = [...FORM_STEPS];
 
 	// Debug function to jump to specific steps
-	function jumpToStep(step: number) {
-		if (step >= 1 && step <= TOTAL_STEPS) {
-			currentStep = step;
-			console.log(`Jumping to step: ${step}`);
-		} else {
-			console.warn('Invalid step number');
-		}
-	}
-
 	interface PageData {
 		form: FormData;
-		showIndicator: boolean;
 	}
 
 	let { data } = $props<{ data: PageData }>();
@@ -154,7 +137,7 @@
 			console.log('Website analysis data:', data);
 
 			// Calculate score based on the response data
-			let overallScore = 70; // Default score
+			let overallScore = 10; // Default score
 
 			// Extract overall_score from response if available
 			if (data && Array.isArray(data) && data.length > 0) {
@@ -172,16 +155,11 @@
 			if (!validSteps.includes(2)) {
 				validSteps = [...validSteps, 2];
 			}
-
-			currentStep = 3;
 		} catch (error) {
-			console.error('Error analyzing website:', error);
-			websiteAnalysisError =
-				'Es gab ein Problem bei der Analyse Ihrer Website. Bitte versuchen Sie es erneut.';
-
-			// Still assign a default score and move forward
-			$form.visibility_score = 50;
-			calculatedScore = 50;
+			console.error('Website analysis failed:', error);
+			websiteAnalysisError = 'Analyse fehlgeschlagen. Bitte manuell fortfahren.';
+			$form.visibility_score = calculateVisibilityScore($form);
+			currentStep = 3;
 
 			// Still consider the step completed
 			if (!validSteps.includes(2)) {
@@ -198,6 +176,13 @@
 			setTimeout(() => {
 				showSeoTips = false;
 			}, 2000);
+		}
+
+		function getFallbackMetrics(score: number): Metric[] {
+			return [
+				{ label: 'SEO', value: score * 0.9, color: '#4CAF50', category: 'lighthouse' }
+				// ... other metrics ...
+			].map((m) => ({ ...m, value: Math.min(Math.max(m.value, 0), 100) }));
 		}
 	}
 
@@ -285,7 +270,7 @@
 	}
 
 	// In +page.svelte, add this function for better score calculation
-	function calculateFinalScore(websiteScore, formData) {
+	function calculateFinalScore(websiteScore: any, formData: any) {
 		// Use website score if available, with a weight of 70%
 		if (websiteScore && websiteScore > 0) {
 			const formScore = calculateVisibilityScore(formData);
@@ -378,26 +363,19 @@
 
 <div class="p-lg-4 mx-auto mb-8" itemscope itemtype="https://schema.org/Service">
 	<!-- Updated header with different visibility conditions for each section -->
-	<header class="my-8 text-center {currentStep >= 11 ? 'sr-only' : ''}">
+	<header class="my-4 text-center {currentStep >= 11 ? 'sr-only' : ''}">
 		<div class={currentStep > 1 ? 'sr-only' : ''}>
 			<h1 class="mb-6 text-5xl font-bold text-gray-900" itemprop="name">Marketing Check Quiz</h1>
-			<p class="text-lg text-gray-600" itemprop="description">
-				Ermittle Deinen digitalen Marketing-Score und erhalte exklusive Empfehlungen aus Deiner
-				Branche für Dein Unternehmen.
+			<p class="mx-auto max-w-[33rem] text-base text-gray-600" itemprop="description">
+				Jetzt <strong>Onlinesichtbarkeit berechnen</strong> lassen,
+				<strong>Reichweite erhöhen</strong> sowie
+				<strong>Ressourcen sparen</strong> und <strong>Umsätze steigern</strong>.
 			</p>
+			<PageMeta />
 		</div>
 
 		{#if currentStep !== 1}
-			<main class="w-full">
-				<Stepper
-					steps={formSteps}
-					{currentStep}
-					{validSteps}
-					{invalidRequiredSteps}
-					{incompleteSteps}
-					on:change={(e) => jumpToStep(e.detail)}
-				/>
-			</main>
+			<main class="w-full"></main>
 		{/if}
 	</header>
 
@@ -419,8 +397,8 @@
 				>
 					<h2
 						class="mb-6 text-center {currentStep !== 1
-							? 'text-4xl font-bold text-gray-900'
-							: 'text-lg'}"
+							? 'text-4xl font-bold text-gray-800'
+							: 'font-base text-base text-gray-500'}"
 						itemprop="question"
 					>
 						{currentStep === 12
@@ -658,28 +636,27 @@
 </div>
 
 {#if isDev}
-	<div class="mt-8 rounded border bg-gray-100 p-4">
-		<h3 class="font-semibold">🔧 Debugging-Steuerung</h3>
-		<label for="jumpStep" class="mt-2 block text-sm text-gray-700">Springe zu Schritt:</label>
-		<input
-			id="jumpStep"
-			type="number"
-			min="1"
-			max={TOTAL_STEPS}
-			bind:value={currentStep}
-			class="w-16 rounded border p-2 text-center"
-		/>
-		<button
-			on:click={() => jumpToStep(currentStep)}
-			class="ml-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-		>
-			Springen
-		</button>
-	</div>
-{/if}
-
-{#if import.meta.env.DEV}
 	<div class="my-10">
+		<div class="mb-3 mt-8 rounded-lg bg-[#1e293b26] p-4" style="border:1px solid #999999">
+			<div
+				class="flex flex-row justify-between"
+				style="font-family: Inconsolata, Monaco, Consolas, 'Lucida Console', 'Courier New', Courier, monospace;"
+			>
+				<div class="flex flex-col">
+					<h3 class="font-semibold">🔧 Debugging-Steuerung</h3>
+					<label for="jumpStep" class="block text-sm text-gray-700">Springe zu Schritt:</label>
+				</div>
+				<input
+					id="jumpStep"
+					type="number"
+					min="1"
+					max={TOTAL_STEPS}
+					bind:value={currentStep}
+					style="border:1px solid #1e293bb0;"
+					class="w-16 rounded bg-[#1e293b] p-2 text-center text-[#eab308]"
+				/>
+			</div>
+		</div>
 		<SuperDebug data={$form} />
 	</div>
 {/if}
