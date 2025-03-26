@@ -3,9 +3,7 @@
 	import { onMount } from 'svelte';
 	import { superForm } from 'sveltekit-superforms/client';
 	import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
-	import { z } from 'zod';
 	import { zod } from 'sveltekit-superforms/adapters';
-	// import type { SuperValidated } from 'sveltekit-superforms';
 
 	import Stepper from '$lib/components/Stepper.svelte';
 	import Button from '$lib/components/Button.svelte';

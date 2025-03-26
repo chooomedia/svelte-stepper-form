@@ -261,7 +261,7 @@
 	</div>
 
 	<!-- Chart & Analysis Section -->
-	<div class="grid grid-cols-2 gap-8" in:fade={{ duration: 500, delay: 900 }}>
+	<div class="my-8 grid grid-cols-2 gap-8" in:fade={{ duration: 500, delay: 900 }}>
 		<!-- Stärken -->
 		<div class="p-6">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
@@ -453,9 +453,9 @@
 				<div class="flex-1">
 					<div class="mb-4 overflow-hidden rounded-lg">
 						<img
-							src="https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-							alt="Steigende Verkaufszahlen"
-							class="h-40 w-full rounded-lg object-cover transition-transform duration-500 hover:scale-105"
+							src="https://digitalpusher.de/wp-content/uploads/2024/08/chooomedia-showcase-smartphone-desktop-tablet-munich-expogate-aschheim-dornach-ev-website-relaunch-2022-min.png"
+							alt="Expogate Showcase Website SEO und Soical Media"
+							class="object- h-96 w-full rounded-lg object-cover object-top transition-transform duration-500 hover:scale-105"
 						/>
 					</div>
 					<h4 class="text-xl font-bold text-blue-600">
@@ -466,12 +466,14 @@
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
 							<span class="text-2xl text-blue-300">"</span>
-							Ich habe in nur 5 Wochen meine digitale Strategie komplett umgestellt. Mit den richtigen
-							Funnels und einer klaren Positionierung generiere ich jetzt konstante Neukundenumsätze.
+							Wir wurden im vollen Umfang bestens beraten und entschieden uns neben der Webapp und der
+							neuen Webseite uns vom Dienstleister eine zielstrebige und langfristige Kampagne auf Social
+							Media planen und realisieren zu lassen. Wir sind mit den Conversions nach zwei Jahren sehr
+							zufrieden.
 							<span class="text-2xl text-blue-300">"</span>
 						</blockquote>
 						<p class="mt-2 text-right text-sm font-medium text-gray-500">
-							- Michael K., Unternehmensberater
+							- Dr. P. Ullrich, Geschäftsführer
 						</p>
 					</div>
 				</div>
@@ -484,24 +486,24 @@
 				<div class="flex-1">
 					<div class="mb-4 overflow-hidden rounded-lg">
 						<img
-							src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+							src="https://digitalpusher.de/wp-content/uploads/2024/08/chooomedia-de-showcase-03-2023-zirkulin-bittergesicht-gewinnspiel.png"
 							alt="Wachsende Online-Präsenz"
-							class="h-40 w-full rounded-lg object-cover transition-transform duration-500 hover:scale-105"
+							class="h-96 w-full rounded-lg object-cover object-top transition-transform duration-500 hover:scale-105"
 						/>
 					</div>
 					<h4 class="text-xl font-bold text-blue-600">
-						Von skeptisch zu begeistert: Wie ich mit bewährten Strategien nachhaltiges Wachstum
-						erreichte
+						Rekordverdächtige Umsetzung: Landingpage, SEO und full Channel Ads Kampange
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
 							<span class="text-2xl text-blue-300">"</span>
-							Am Anfang war ich unsicher, ob das alles funktionieren wird. Nach nur 3 Monaten konnte
-							ich meine Kundenbasis verdreifachen und verzeichne jetzt konstante Umsatzsteigerungen.
+							Durch einen Ausfall für eine groß angelegte Kampagne suchten wir nach einen fähigen Dienstleister.
+							Die Landingpage wurde auf unser E-Commerce Netzwerk basierend auf Shopware schnell umgesetzt
+							und die Kampagne war ein voller Erfolg.
 							<span class="text-2xl text-blue-300">"</span>
 						</blockquote>
 						<p class="mt-2 text-right text-sm font-medium text-gray-500">
-							- Sarah L., Einzelhandel
+							- M. Keller, Senior Brand Manager
 						</p>
 					</div>
 				</div>

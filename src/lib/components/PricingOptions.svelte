@@ -1,3 +1,4 @@
+<!-- src/lib/components/PricingOptions.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
@@ -365,7 +366,7 @@
 					<span>Longtime (-20%)</span>
 					{#if paymentType !== 'longtime'}
 						<span
-							class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
+							class="absolute -right-1 -top-1 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
 						>
 							HOT
 						</span>
@@ -423,13 +424,13 @@
 					</div>
 
 					<div class="mt-4 text-right">
-						{#if paymentType === 'einmalig' && savingsAmount > 0}
+						{#if paymentType === 'einmalig'}
 							<span class="text-sm text-gray-500 line-through"
 								>{(plan.originalPrice * 30 * parseInt(plan.name.split('-')[0]) * 0.92).toFixed(
 									2
 								)}€</span
 							>
-						{:else if paymentType === 'monatlich' && savingsAmount > 0}
+						{:else if paymentType === 'monatlich'}
 							<span class="text-sm text-gray-500 line-through"
 								>{plan.originalPrice.toFixed(2)}€</span
 							>
@@ -596,30 +597,35 @@
 
 	<!-- CTA Button -->
 	<div class="mt-8 text-center" in:fade={{ duration: 300, delay: 500 }}>
-		<button
-			class="order-button group inline-block rounded-lg bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
-			onclick={(e) => {
-				e.preventDefault(); // Prevents default button behavior
-				e.stopPropagation(); // Prevents event bubbling
-				openPaymentModal();
-			}}
-			type="button"
-		>
-			<span class="inline-block transform transition-transform duration-300 group-hover:scale-105">
-				{paymentType === 'monatlich'
-					? 'PLAN ABONNIEREN'
-					: paymentType === 'einmalig'
-						? 'JETZT KAUFEN'
-						: 'LONGTIME ZUGANG SICHERN'} - {totalPrice.toFixed(2)}€
-			</span>
-			{#if paymentType === 'einmalig' && savingsAmount > 0}
-				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
-			{:else if paymentType === 'monatlich' && savingsAmount > 0}
-				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€!</span>
-			{:else if paymentType === 'longtime' && savingsAmount > 0}
-				<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
-			{/if}
-		</button>
+		<div class="relative">
+			<button
+				class="order-button relative inline-flex cursor-pointer flex-col items-center justify-center rounded-lg bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
+				onclick={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					openPaymentModal();
+				}}
+				type="button"
+			>
+				<span
+					class="relative inline-block transform transition-transform duration-300 group-hover:scale-105"
+				>
+					{paymentType === 'monatlich'
+						? 'PLAN ABONNIEREN'
+						: paymentType === 'einmalig'
+							? 'JETZT KAUFEN'
+							: 'LONGTIME ZUGANG SICHERN'} - {totalPrice.toFixed(2)}€
+				</span>
+
+				{#if paymentType === 'einmalig' && savingsAmount > 0}
+					<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
+				{:else if paymentType === 'monatlich' && savingsAmount > 0}
+					<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€!</span>
+				{:else if paymentType === 'longtime' && savingsAmount > 0}
+					<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
+				{/if}
+			</button>
+		</div>
 	</div>
 
 	<!-- Trust Badges -->
@@ -672,10 +678,10 @@
 		<div class="relative overflow-hidden p-4">
 			<!-- Animated discount percentage -->
 			<div
-				class="absolute -right-2 -top-4 flex h-24 w-24 rotate-12 transform items-center justify-center rounded-full bg-yellow-400 transition-transform duration-700 hover:scale-110"
+				class="sm-top-4 absolute -right-2 -top-4 flex h-24 w-24 rotate-12 transform items-center justify-center rounded-full bg-yellow-400 transition-transform duration-700 hover:scale-110"
 			>
 				<div class="-rotate-12 text-center">
-					<span class="relative top-1 block text-2xl font-bold text-red-700">-20%</span>
+					<span class="relative top-1 block text-2xl font-bold text-red-400">-20%</span>
 					<span class="relative -top-1 text-xs font-bold text-red-900">LONGTIME</span>
 				</div>
 			</div>
