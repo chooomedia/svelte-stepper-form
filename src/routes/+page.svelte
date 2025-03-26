@@ -11,7 +11,21 @@
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import SeoTips from '$lib/components/SeoTips.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
-	import { setSteps, setCurrentStep } from '$lib/stores/stepStore';
+	import { websiteLoading, formSubmitting } from '$lib/stores/loadingStore';
+
+	import {
+		setSteps,
+		setCurrentStep,
+		markStepValid,
+		markStepInvalid,
+		markStepIncomplete
+	} from '$lib/stores/stepStore';
+
+	// Instead of local state, use the stores
+	$effect(() => {
+		$websiteLoading = isWebsiteLoading;
+		$formSubmitting = isSubmitting;
+	});
 
 	import {
 		FORM_STEPS,
@@ -23,8 +37,86 @@
 
 	let formSteps = FORM_STEPS;
 
+	$effect(() => {
+		setCurrentStep(currentStep);
+	});
+
+	function validateCurrentStep(step: number, formData: FormData): boolean {
+		const stepData = FORM_STEPS[step - 1];
+		if (!stepData) return false;
+
+		const stepKey = stepData.title.toLowerCase() as keyof FormData;
+		const currentStepData = formData[stepKey];
+
+		if (step <= 9) {
+			if (!currentStepData) {
+				if (validSteps.includes(step)) {
+					// Was valid, now incomplete
+					markStepIncomplete(step);
+					incompleteSteps = [...incompleteSteps, step].filter((v, i, a) => a.indexOf(v) === i);
+					validSteps = validSteps.filter((s) => s !== step);
+				} else {
+					// Required but invalid
+					markStepInvalid(step);
+					invalidRequiredSteps = [...invalidRequiredSteps, step].filter(
+						(v, i, a) => a.indexOf(v) === i
+					);
+				}
+				return false;
+			} else {
+				// Valid step
+				markStepValid(step);
+				validSteps = [...validSteps, step].filter((v, i, a) => a.indexOf(v) === i);
+				incompleteSteps = incompleteSteps.filter((s) => s !== step);
+				invalidRequiredSteps = invalidRequiredSteps.filter((s) => s !== step);
+				return true;
+			}
+		}
+		return true;
+	}
+
+	onMount(() => {
+		// Set up initial steps
+		setSteps(formSteps);
+		validateCurrentStep(currentStep, $form);
+
+		const script = document.createElement('script');
+		script.setAttribute('type', 'application/ld+json');
+		script.innerHTML = JSON.stringify({
+			'@context': 'https://schema.org',
+			'@graph': [formSchema, breadcrumbSchema]
+		});
+		document.head.appendChild(script);
+
+		// Listen for navigation events from the Stepper
+		const handleNavigateToStep = (event) => {
+			const targetStep = event.detail.step;
+			navigateToStep(targetStep);
+		};
+
+		window.addEventListener('navigateToStep', handleNavigateToStep);
+
+		return () => {
+			window.removeEventListener('navigateToStep', handleNavigateToStep);
+		};
+	});
+
+	function handleImageOptionSelect(step: number, value: string) {
+		const stepData = FORM_STEPS[step - 1];
+		const stepKey = stepData.title.toLowerCase();
+		$form[stepKey] = value;
+
+		if (validateCurrentStep(step, $form)) {
+			markStepValid(step);
+			currentStep = step + 1;
+			setCurrentStep(step + 1);
+		}
+	}
+
 	// Set steps when page loads
-	setSteps(formSteps);
+	$effect(() => {
+		setCurrentStep(currentStep);
+	});
 
 	// Debug mode detection
 	const isDev = import.meta.env.DEV;
@@ -45,36 +137,10 @@
 
 	// Website analysis state
 	let isWebsiteLoading = $state(false);
+	let isSubmitting = $state(false);
 	let websiteHealthData = $state(null);
 	let showSeoTips = $state(false);
 	let websiteAnalysisError = $state('');
-
-	// Validiere den aktuellen Schritt
-	function validateCurrentStep(step: number, formData: FormData): boolean {
-		const stepData = FORM_STEPS[step - 1];
-		const stepKey = stepData.title.toLowerCase() as keyof FormData;
-		const currentStepData = formData[stepKey];
-
-		if (step <= 9) {
-			if (!currentStepData) {
-				if (validSteps.includes(step)) {
-					incompleteSteps = [...incompleteSteps, step];
-					validSteps = validSteps.filter((s) => s !== step);
-				} else {
-					invalidRequiredSteps = [...invalidRequiredSteps, step];
-				}
-				return false;
-			} else {
-				incompleteSteps = incompleteSteps.filter((s) => s !== step);
-				invalidRequiredSteps = invalidRequiredSteps.filter((s) => s !== step);
-				if (!validSteps.includes(step)) {
-					validSteps = [...validSteps, step];
-				}
-				return true;
-			}
-		}
-		return true;
-	}
 
 	// Prüfen, ob der aktuelle Step ein ImageOption-Step ist
 	const getCurrentStepData = $derived(FORM_STEPS[currentStep - 1]);
@@ -89,17 +155,6 @@
 			cancel();
 		}
 	});
-
-	function handleImageOptionSelect(step: number, value: string) {
-		const stepData = FORM_STEPS[step - 1];
-		const stepKey = stepData.title.toLowerCase();
-		$form[stepKey] = value;
-
-		if (validateCurrentStep(step, $form)) {
-			validSteps = [...validSteps, step];
-			currentStep = step + 1;
-		}
-	}
 
 	// Website URL analysis function
 	async function handleWebsiteAnalysis(url: string) {
@@ -171,6 +226,9 @@
 			}, 2000);
 		} finally {
 			isWebsiteLoading = false;
+			markStepValid($form.step);
+			currentStep = $form.step + 1;
+			setCurrentStep($form.step + 1);
 
 			// Keep SEO tips visible for a moment
 			setTimeout(() => {
@@ -316,17 +374,6 @@
 			}
 		]
 	};
-
-	onMount(() => {
-		// Schema Markup für die Seite hinzufügen
-		const script = document.createElement('script');
-		script.setAttribute('type', 'application/ld+json');
-		script.innerHTML = JSON.stringify({
-			'@context': 'https://schema.org',
-			'@graph': [formSchema, breadcrumbSchema]
-		});
-		document.head.appendChild(script);
-	});
 </script>
 
 <svelte:head>
@@ -547,7 +594,7 @@
 					{:else if currentStep === 10}
 						<div class="form-card">
 							<div class="space-y-4">
-								<ContactForm {form} errors={$errors} />
+								<ContactForm {form} {errors} />
 							</div>
 						</div>
 					{:else if currentStep === 11}

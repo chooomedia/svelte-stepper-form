@@ -3,12 +3,14 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import Stepper from '$lib/components/Stepper.svelte';
+	import { websiteLoading, formSubmitting } from '$lib/stores/loadingStore';
 	import {
 		steps,
 		currentStep,
 		validSteps,
 		invalidRequiredSteps,
-		incompleteSteps
+		incompleteSteps,
+		setCurrentStep
 	} from '$lib/stores/stepStore';
 
 	const logoMain =
@@ -22,12 +24,20 @@
 	let isEmbedded = false;
 	let isIframe = false;
 
-	function jumpToStep(step: number) {
-		if (step >= 1 && step <= TOTAL_STEPS) {
-			$currentStep = step;
-			console.log(`Jumping to step: ${step}`);
-		} else {
-			console.warn('Invalid step number');
+	export let isWebsiteLoading = false;
+	export let isSubmitting = false;
+
+	function handleStepChange(event) {
+		// Access the target step from the custom event
+		const targetStep = event.detail.step;
+
+		// Navigate to that step - this might need to be implemented in your route component
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(
+				new CustomEvent('navigateToStep', {
+					detail: { step: targetStep }
+				})
+			);
 		}
 	}
 
@@ -180,7 +190,9 @@
 					{validSteps}
 					{invalidRequiredSteps}
 					{incompleteSteps}
-					on:change={(e) => jumpToStep(e.detail)}
+					isWebsiteLoading={$websiteLoading}
+					isSubmitting={$formSubmitting}
+					on:stepChange={handleStepChange}
 				/>
 			</div>
 		</header>
