@@ -8,7 +8,7 @@
 			{$page.status}: {$page.error?.message || 'Ein Fehler ist aufgetreten'}
 		</h1>
 		<p class="mb-8 text-gray-600">
-			Bitte versuchen Sie es später erneut oder kontaktieren Sie unseren Support.
+			Bitte versuche es später erneut oder kontaktiere unseren Support.
 		</p>
 		<a href="/" class="btn btn-primary"> Zurück zur Startseite </a>
 	</div>

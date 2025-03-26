@@ -24,13 +24,13 @@ export const baseFormSchema = z.object({
 		.string({ required_error: 'Bitte angeben wie durchschnittlich Deine Online-Bewertungen sind' })
 		.optional(),
 	previous_campaigns: z
-		.string({ required_error: 'Bitte geben an, ob Sie bereits Onlinewerbung geschaltet haben' })
+		.string({ required_error: 'Bitte geben an, ob bereits Onlinewerbung geschaltet haben' })
 		.optional(),
 	business_phase: z
 		.string({ required_error: 'Bitte wählen Deine Unternehmensphase aus' })
 		.optional(),
 	implementation_time: z
-		.string({ required_error: 'Bitte wählen Sie den gewünschten Implementierungszeitraum' })
+		.string({ required_error: 'Bitte wähle den gewünschten Implementierungszeitraum' })
 		.optional(),
 
 	// Company and contact details

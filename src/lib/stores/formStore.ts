@@ -2,9 +2,10 @@
 import { writable, derived, get } from 'svelte/store';
 import type { FormData } from '$lib/schema';
 import { calculateVisibilityScore } from '$lib/utils/scoring';
+import { defaultValues } from '$lib/schema';
 
 // Core form data
-export const formData = writable<Partial<FormData>>({});
+export const formData = writable<Partial<FormData>>(defaultValues);
 
 // Analysis-related state
 export const analysisState = writable({
@@ -32,7 +33,6 @@ export function updateFormField(field: keyof FormData, value: any) {
 	formData.update((data) => ({ ...data, [field]: value }));
 }
 
-// In src/lib/stores/formStore.ts
 export function setAnalysisResults(results: any) {
 	analysisState.update((state) => ({
 		...state,
@@ -41,6 +41,17 @@ export function setAnalysisResults(results: any) {
 		data: results,
 		score: extractScoreFromResults(results)
 	}));
+}
+
+export function resetFormData() {
+	formData.set(defaultValues);
+	analysisState.set({
+		isLoading: false,
+		isComplete: false,
+		score: 0,
+		error: '',
+		data: null
+	});
 }
 
 function extractScoreFromResults(results: any) {

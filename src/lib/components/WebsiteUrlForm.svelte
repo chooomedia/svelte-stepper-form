@@ -82,8 +82,7 @@
 			onAnalysisComplete(data, overallScore);
 		} catch (error) {
 			console.error('Error analyzing website:', error);
-			analysisError =
-				'Es gab ein Problem bei der Analyse Ihrer Website. Bitte versuchen Sie es erneut.';
+			analysisError = 'Es gab ein Problem bei der Analyse Ihrer Website. Bitte versuche es erneut.';
 
 			// Call the callback with a default score
 			onAnalysisComplete(null, 50);
@@ -97,40 +96,39 @@
 	}
 </script>
 
-// src/lib/components/WebsiteUrlForm.svelte
-
 <div class="website-url-form space-y-6">
-	<h2 class="text-2xl font-bold text-gray-900">Lassen Sie uns Ihre Website analysieren</h2>
+	<h2 class="text-2xl font-bold text-gray-900">Onlinereichweite Analyse</h2>
 	<p class="text-gray-600">
-		Geben Sie Ihre Website-URL ein, um eine sofortige SEO-Analyse zu erhalten
+		Gebe Deine Website-URL ein, um eine umfangreiche SEO-Analyse sofort zu erhalten
 	</p>
 
 	<div class="form-group">
-		<label for="company_url" class="form-label">Website URL</label>
-		<div class="flex">
-			<input
-				type="url"
-				id="company_url"
-				bind:value={$form.company_url}
-				class="input-field flex-grow {shouldShowError('company_url') ? 'error' : ''}"
-				onblur={() => handleBlur('company_url')}
-				placeholder="https://www.example.com"
-				disabled={isLoading}
-			/>
-			<button
-				type="button"
-				class="btn btn-primary ml-2"
-				disabled={isLoading || !$form.company_url}
-				onclick={analyzeWebsite}
-			>
-				{#if isLoading}
-					<span class="loading loading-spinner loading-sm"></span>
-					Analysiere...
-				{:else}
-					Analysieren
-				{/if}
-			</button>
-		</div>
+		<label for="company_url" class="form-label">
+			<div class="flex">
+				<input
+					type="url"
+					id="company_url"
+					bind:value={$form.company_url}
+					class="input-field flex-grow {shouldShowError('company_url') ? 'error' : ''}"
+					onblur={() => handleBlur('company_url')}
+					placeholder="https://www.example.com"
+					disabled={isLoading}
+				/>
+				<button
+					type="button"
+					class="btn btn-primary ml-2"
+					disabled={isLoading || !$form.company_url}
+					onclick={analyzeWebsite}
+				>
+					{#if isLoading}
+						<span class="loading loading-spinner loading-sm"></span>
+						Analysiere...
+					{:else}
+						Analysieren
+					{/if}
+				</button>
+			</div>
+		</label>
 		{#if shouldShowError('company_url')}
 			<p class="error-text" id="company_url-error" role="alert" transition:fade>
 				{errors.company_url}
@@ -143,7 +141,7 @@
 		{/if}
 		{#if !shouldShowError('company_url') && $form.company_url && !isLoading && !analysisError}
 			<p class="mt-1 text-sm text-gray-500" id="company_url-description">
-				Klicken Sie auf "Analysieren", um Ihre Website zu überprüfen
+				Klicke auf "Analysieren", um Ihre Website zu überprüfen
 			</p>
 		{/if}
 	</div>

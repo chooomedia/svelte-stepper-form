@@ -58,7 +58,7 @@
 			bind:value={$form.salutation}
 			class="input-field {shouldShowError('salutation') ? 'error' : ''}"
 			onblur={() => handleBlur('salutation')}
-			{...getAriaAttrs('salutation', 'Bitte wählen Sie Ihre Anrede')}
+			{...getAriaAttrs('salutation', 'Bitte wähle Ihre Anrede')}
 		>
 			<option value="">Bitte wählen</option>
 			<option value="Herr">Herr</option>
@@ -82,7 +82,7 @@
 				bind:value={$form.first_name}
 				class="input-field {shouldShowError('first_name') ? 'error' : ''}"
 				onblur={() => handleBlur('first_name')}
-				{...getAriaAttrs('first_name', 'Bitte geben Sie Ihren Vornamen ein')}
+				{...getAriaAttrs('first_name', 'Bitte gebe Deinen Vornamen ein')}
 			/>
 			{#if shouldShowError('first_name')}
 				<p class="error-text" id="first_name-error" role="alert" transition:slide>
@@ -99,7 +99,7 @@
 				bind:value={$form.last_name}
 				class="input-field {shouldShowError('last_name') ? 'error' : ''}"
 				onblur={() => handleBlur('last_name')}
-				{...getAriaAttrs('last_name', 'Bitte geben Sie Ihren Nachnamen ein')}
+				{...getAriaAttrs('last_name', 'Bitte geben Deinen Nachnamen ein')}
 			/>
 			{#if shouldShowError('last_name')}
 				<p class="error-text" id="last_name-error" role="alert" transition:slide>
@@ -118,7 +118,7 @@
 			bind:value={$form.email}
 			class="input-field {shouldShowError('email') ? 'error' : ''}"
 			onblur={() => handleBlur('email')}
-			{...getAriaAttrs('email', 'Bitte geben Sie Ihre E-Mail-Adresse ein')}
+			{...getAriaAttrs('email', 'Bitte geben Deine E-Mail-Adresse ein')}
 		/>
 		{#if shouldShowError('email')}
 			<p class="error-text" id="email-error" role="alert" transition:slide>

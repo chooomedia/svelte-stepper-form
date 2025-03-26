@@ -1,33 +1,6 @@
+// src/lib/stores/stepperStore.ts
 import { writable, derived, get } from 'svelte/store';
 import { FORM_STEPS } from '$lib/schema';
-import {
-	step_1,
-	step_2,
-	step_3,
-	step_4,
-	step_5,
-	step_6,
-	step_7,
-	step_8,
-	step_9,
-	step_10,
-	last_step
-} from '$lib/schema';
-
-// Mapping steps to their Zod schemas
-const stepSchemas = [
-	step_1,
-	step_2,
-	step_3,
-	step_4,
-	step_5,
-	step_6,
-	step_7,
-	step_8,
-	step_9,
-	step_10,
-	last_step
-];
 
 // Core stepper state
 export const currentStepIndex = writable(1);
@@ -40,10 +13,19 @@ export const stepValidity = writable<
 
 // Derived store for current step data
 export const currentStep = derived(currentStepIndex, ($currentStepIndex) => {
-	// Stelle sicher, dass $currentStepIndex immer gültig ist
+	// Ensure $currentStepIndex is always valid
 	const index = Math.max(1, Math.min($currentStepIndex, FORM_STEPS.length));
-	return FORM_STEPS[index - 1]; // Hole das entsprechende Step-Datenobjekt
+	return FORM_STEPS[index - 1]; // Get the corresponding step data object
 });
+
+export function jumpToStep(step: number) {
+	if (step >= 1 && step <= FORM_STEPS.length) {
+		currentStep.set(step);
+		console.log(`Jumping to step:  ${step}`);
+	} else {
+		console.warn('Invalid step number');
+	}
+}
 
 // Step status for display
 export const stepStatuses = derived(
@@ -68,9 +50,6 @@ export function goToStep(step: number) {
 }
 
 export function nextStep() {
-	const currentStep = get(currentStepIndex);
-	validateCurrentStep(); // Validate the current step before moving forward
-
 	currentStepIndex.update((step) => {
 		const next = step + 1;
 		if (next <= FORM_STEPS.length) {
@@ -82,27 +61,7 @@ export function nextStep() {
 }
 
 export function prevStep() {
-	const currentStep = get(currentStepIndex);
-	validateCurrentStep(); // Optionally validate before going backward
-
 	currentStepIndex.update((step) => Math.max(1, step - 1));
-}
-
-// Step validation
-export function validateCurrentStep() {
-	const step = get(currentStepIndex); // Get the current step index
-	const schema = stepSchemas[step - 1]; // Map to the correct schema for validation
-
-	const currentStepData = get(stepperStore); // Get current step data from the store
-
-	try {
-		// Validate the data for the current step using the corresponding schema
-		schema.parse(currentStepData);
-		markStepValid(step); // Mark the step as valid if validation passes
-	} catch (error) {
-		markStepInvalid(step); // Mark the step as invalid if validation fails
-		console.error('Validation failed for step:', error.errors); // Handle validation errors
-	}
 }
 
 // Step marking functions
@@ -127,28 +86,24 @@ export function markStepIncomplete(step: number) {
 	}));
 }
 
+// Create a store with a readable interface and methods
 function createStepperStore() {
-	// This is the key part that makes it work with $ prefix
 	const { subscribe } = derived(
 		[currentStepIndex, currentStep, stepStatuses],
-		([$currentStepIndex, $currentStep, $stepStatuses]) => {
-			// Sicherstellen, dass der aktuelle Step valide ist
-			const currentStep = FORM_STEPS[$currentStepIndex - 1] || FORM_STEPS[0];
-			return {
-				currentStepIndex: $currentStepIndex,
-				currentStep,
-				stepStatuses: $stepStatuses
-			};
-		}
+		([$currentStepIndex, $currentStep, $stepStatuses]) => ({
+			current: {
+				index: $currentStepIndex,
+				...$currentStep
+			},
+			status: $stepStatuses
+		})
 	);
 
-	// Return a store with subscribe method and all the functions
 	return {
 		subscribe,
 		goToStep,
 		nextStep,
 		prevStep,
-		validateCurrentStep,
 		markStepValid,
 		markStepInvalid,
 		markStepIncomplete
@@ -157,8 +112,10 @@ function createStepperStore() {
 
 // Export the main store
 export const stepperStore = createStepperStore();
-export const resetForm = () => {
+
+// Reset function
+export function resetStepper() {
 	currentStepIndex.set(1);
 	maxReachedStep.set(1);
 	stepValidity.set({ 1: 'untouched' });
-};
+}

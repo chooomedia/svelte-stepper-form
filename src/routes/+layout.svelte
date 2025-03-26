@@ -190,6 +190,28 @@
 			<!-- Improved Stepper with proper store connections -->
 			<Stepper on:stepChange={handleStepChange} />
 		</div>
+		<!-- Breadcrumb Navigation für SEO -->
+		<div class="p-lg-2 sr-only mx-auto mb-8 max-w-4xl">
+			<nav aria-label="Breadcrumb" class="mb-4">
+				<ol
+					class="flex text-sm text-gray-500"
+					itemscope
+					itemtype="https://schema.org/BreadcrumbList"
+				>
+					<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+						<a href="/" itemprop="item" class="hover:text-gray-700">
+							<span itemprop="name">Home</span>
+						</a>
+						<meta itemprop="position" content="1" />
+					</li>
+					<li class="mx-2">/</li>
+					<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+						<span itemprop="name" class="text-gray-900">Marketing Assessment</span>
+						<meta itemprop="position" content="2" />
+					</li>
+				</ol>
+			</nav>
+		</div>
 	</header>
 
 	<section

@@ -421,8 +421,8 @@
 							>
 								<div class="heart-icon text-2xl">❤️</div>
 								<p class="text-xs text-emerald-700">
-									Mit jedem Euro unterstützen Sie direkt [konkrete Maßnahme].
-									<span class="font-semibold">93% Ihrer Spende</span> fließen unmittelbar in [konkreten
+									Mit jedem Euro unterstützst Du direkt [konkrete Maßnahme].
+									<span class="font-semibold">93% Deine Spende</span> fließt unmittelbar in [konkreten
 									Zweck] - nachweislich und transparent!
 								</p>
 							</div>
