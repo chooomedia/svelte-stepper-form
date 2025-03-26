@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
+	import { tweened } from 'svelte/motion';
+	import { cubicInOut } from 'svelte/easing';
 	import type { FormData } from '$lib/schema';
 	import type { SuperValidated } from 'sveltekit-superforms';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		showModal: boolean;
@@ -32,6 +33,11 @@
 	let paymentSuccess = $state(false);
 	let paymentError = $state('');
 	let redirectUrl = $state('');
+	let showBetterplace = $state(false);
+	let includeDonation = $state(false);
+	let totalWithDonation = $derived(
+		includeDonation ? parseFloat(((totalPrice / 100) * 3).toFixed(2)) : totalPrice
+	);
 
 	// Helper function to generate plan name
 	function getPlanDisplayName(planName: string, payType: string): string {
@@ -44,16 +50,15 @@
 		return planName;
 	}
 
-	// Scroll lock handling
-	function setBodyScrollLock(lock: boolean) {
-		if (typeof document !== 'undefined') {
-			document.body.classList.toggle('overflow-hidden', lock);
-		}
-	}
+	// 3% Spendenberechnung
+	const animatedDonation = tweened(0, {
+		easing: cubicInOut,
+		interpolate: (current) => parseFloat(current.toFixed(2))
+	});
 
 	$effect(() => {
-		setBodyScrollLock(showModal);
 		loadPaymentScripts();
+		animatedDonation.set(includeDonation ? totalPrice * 0.03 : 0);
 		if (showModal) resetForm();
 	});
 
@@ -63,34 +68,57 @@
 		paymentSuccess = false;
 		paymentError = '';
 		redirectUrl = '';
+		showBetterplace = false;
+	}
+
+	// Handle payment method change with animation trigger
+	function handlePaymentMethodChange(method: string) {
+		paymentMethod = method;
+
+		// Show donation info automatically when selecting Betterplace
+		if (method === 'betterplace') {
+			setTimeout(() => {
+				showBetterplace = true;
+			}, 300);
+		} else {
+			showBetterplace = false;
+		}
+	}
+
+	function generateClientReference() {
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const random = crypto.getRandomValues(new Uint16Array(1))[0];
+
+		return `dp-${year}${month}-${String(random).padStart(7, '0')}`;
 	}
 
 	// Payment processing
 	async function handleBetterplacePayment() {
-		isProcessing = true;
-		paymentError = '';
-
 		try {
-			const paymentData = {
-				title: getPlanDisplayName(selectedPlan, paymentType),
-				amount_in_cents: totalPrice * 100, // in cents
-				currency: 'EUR',
-				email: form?.data.email || '',
-				project_id: 'DEIN_BETTERPLACE_PROJEKT_ID' // Replace with your actual project ID
-			};
+			isProcessing = true;
+			const clientReference = generateClientReference();
+			const donationAmount = parseFloat($animatedDonation.toFixed(2)) * 100;
 
-			const response = await fetch('https://api.betterplace.org/de/api_v4/donations.json', {
+			const response = await fetch('https://api.betterplace.org/de/api_v4/', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: 'Bearer DEIN_BETTERPLACE_API_KEY' // Replace with your actual API key
+					Authorization: `Bearer ${import.meta.env.VITE_BETTERPLACE_API_KEY}`
 				},
-				body: JSON.stringify(paymentData)
+				body: JSON.stringify({
+					project_id: import.meta.env.VITE_BETTERPLACE_PROJECT_ID,
+					amount_in_cents: donationAmount,
+					currency: 'EUR',
+					email: form?.data.email,
+					message: `3% Spende für IT-Dienstleistungen für ${getPlanDisplayName(selectedPlan, paymentType)}`,
+					client_reference: clientReference,
+					name: form?.data.name
+				})
 			});
 
-			if (!response.ok) {
-				throw new Error('Fehler bei der Zahlungsabwicklung');
-			}
+			if (!response.ok) throw new Error('Payment failed');
 
 			const result = await response.json();
 			if (result.redirect_url) {
@@ -100,8 +128,8 @@
 				paymentSuccess = true;
 				onSubmit();
 			}
-		} catch (error) {
-			paymentError = error instanceof Error ? error.message : 'Zahlungsfehler';
+		} catch (err) {
+			paymentError = 'Spende konnte nicht verarbeitet werden';
 		} finally {
 			isProcessing = false;
 		}
@@ -119,7 +147,6 @@
 		resetForm();
 	}
 
-	// Initialize PayPal and GreenPay buttons
 	function loadPaymentScripts() {
 		if (!document.getElementById('paypal-script')) {
 			const paypalScript = document.createElement('script');
@@ -178,17 +205,21 @@
 <!-- Modal Structure -->
 <div
 	class="modal backdrop-blur-[2px] {showModal ? 'modal-open' : ''}"
-	transition:fade
+	transition:fade={{ duration: 300 }}
 	onclick={handleClose}
 >
-	<div class="modal-box relative" transition:fly={{ y: 20 }} onclick={(e) => e.stopPropagation()}>
+	<div
+		class="modal-box relative max-w-xl"
+		transition:fly={{ y: 20 }}
+		onclick={(e) => e.stopPropagation()}
+	>
 		<div class="mb-6 flex items-center justify-between">
 			<h3 class="text-2xl font-bold">Bezahlung abschließen</h3>
 			<div class="btn btn-circle btn-sm" onclick={handleClose} aria-label="Schließen">✕</div>
 		</div>
 		{#if paymentSuccess}
 			<!-- Success State -->
-			<div class="flex flex-col items-center py-8 text-center">
+			<div class="flex flex-col items-center py-8 text-center" in:scale={{ duration: 400 }}>
 				<div class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100">
 					<svg
 						class="h-16 w-16 text-green-600"
@@ -208,6 +239,20 @@
 
 				<h2 class="mb-2 text-2xl font-bold text-gray-900">Zahlung erfolgreich!</h2>
 				<p class="mb-6 text-gray-600">Vielen Dank für Deinen Kauf.</p>
+
+				{#if includeDonation}
+					<div
+						class="mb-6 max-w-md rounded-lg bg-emerald-50 p-4 text-center"
+						in:fly={{ y: 20, delay: 200 }}
+					>
+						<p class="text-emerald-700">
+							Deine Spende von <strong class="font-mono">
+								{$animatedDonation.toFixed(2).replace('.', ',')}€
+							</strong> trägt dazu bei, unsere Welt ein Stück besser zu machen. Vielen Dank für Deine
+							Unterstützung!
+						</p>
+					</div>
+				{/if}
 
 				{#if redirectUrl}
 					<a
@@ -254,20 +299,23 @@
 								Monatliche Zahlung
 							{:else if paymentType === 'einmalig'}
 								Einmalige Zahlung
-							{:else}
+							{:else if paymentType === 'longtime'}
 								5 Jahre exklusiven Zugang
+							{/if}
+
+							{#if includeDonation}
+								<span class="mt-1 text-sm text-emerald-600">
+									inkl. {totalWithDonation.toFixed(2).replace('.', ',')}€ Spende
+								</span>
 							{/if}
 						</p>
 					</div>
 					<div class="text-right">
-						<div class="text-2xl font-bold">{totalPrice.toFixed(2)}€</div>
+						<div class="text-2xl font-bold">{totalPrice.toFixed(2).replace('.', ',')}€</div>
 						{#if paymentType === 'einmalig'}
-							<span class="text-xs text-green-600">8% Rabatt</span>
+							<span class="text-sm text-green-600">8% Rabatt</span>
 						{:else if paymentType === 'longtime'}
-							<span class="text-xs text-green-600">20% Rabatt</span>
-							<div class="mt-1 text-xs text-emerald-600">
-								inkl. {(totalPrice * 0.07).toFixed(2)}€ Spende
-							</div>
+							<span class="text-sm text-green-600">20% Rabatt</span>
 						{/if}
 					</div>
 				</div>
@@ -276,24 +324,44 @@
 			<form id="payment-form" onsubmit={handleSubmit} novalidate>
 				<!-- Payment Method Selection -->
 				<div class="mb-6 space-y-3">
-					<!-- PayPal Option -->
+					<!-- PayPal Input -->
 					<label
-						class="flex cursor-pointer items-center rounded-lg border p-4 transition-colors hover:bg-blue-50 {paymentMethod ===
-							'paypal' && 'border-blue-500 bg-blue-50'}"
+						class="group relative flex cursor-pointer items-center rounded-lg border p-4 transition-all
+       duration-200 hover:border-blue-200 hover:bg-blue-50
+       {paymentMethod === 'paypal' ? 'bg-blue-50 ring-2 ring-blue-500' : ''}"
 						for="payment-paypal"
 					>
-						<input
-							type="radio"
-							id="payment-paypal"
-							name="payment"
-							value="paypal"
-							checked={paymentMethod === 'paypal'}
-							class="h-5 w-5 text-blue-600"
-							onclick={() => (paymentMethod = 'paypal')}
-						/>
-						<span class="ml-3 flex-grow text-sm font-medium">PayPal</span>
-						<div class="flex items-center gap-2">
-							<!-- Payment Methods -->
+						<div class="flex items-center">
+							<div class="relative h-6 w-6">
+								<input
+									type="checkbox"
+									id="payment-paypal"
+									name="payment"
+									value="paypal"
+									checked={paymentMethod === 'paypal'}
+									onchange={() => handlePaymentMethodChange('paypal')}
+								/>
+								<div
+									class="absolute inset-0 rounded-md border-2 border-blue-500 bg-blue-500 transition-all"
+								>
+									<svg
+										class="absolute inset-0 m-auto h-4 w-4 text-white"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="3"
+											d="M5 13l4 4L19 7"
+										/>
+									</svg>
+								</div>
+							</div>
+							<span class="ml-3 text-sm font-medium">PayPal</span>
+						</div>
+						<div class="ml-auto flex items-center gap-2 pl-4">
 							<img src="/paypal.svg" alt="PayPal" class="h-6" />
 							<img src="/visa.svg" alt="Visa" class="h-6" />
 							<img src="/mastercard.svg" alt="Mastercard" class="h-6" />
@@ -302,62 +370,72 @@
 						</div>
 					</label>
 
-					<!-- GreenPay Option -->
+					<!-- Betterplace Input -->
 					<label
-						class="flex cursor-pointer items-center rounded-lg border p-4 transition-colors hover:bg-blue-50 {paymentMethod ===
-							'betterplace' && 'border-blue-500 bg-blue-50'}"
+						class="group relative flex cursor-pointer items-center rounded-lg border p-4 transition-all
+       duration-200 hover:border-emerald-200 hover:bg-emerald-50
+       {includeDonation ? 'bg-emerald-50 ring-2 ring-emerald-500' : ''}"
 						for="payment-betterplace"
 					>
-						<input
-							type="radio"
-							id="payment-betterplace"
-							name="payment"
-							value="betterplace"
-							checked={paymentMethod === 'betterplace'}
-							class="h-5 w-5 text-blue-600"
-							onclick={() => (paymentMethod = 'betterplace')}
-						/>
-						<span class="ml-3 flex-grow text-sm font-medium">7% Betterplace Spende</span>
-						<img src="/betterplace.svg" alt="Betterplace" class="h-6" />
-					</label>
-				</div>
-
-				<!-- Payment Method Content -->
-				<div class="mb-8">
-					{#if paymentMethod === 'paypal'}
-						<!-- PayPal Button Container -->
-						<div id="paypal-button-container" class="mb-4"></div>
-					{:else if paymentMethod === 'betterplace'}
-						<div id="betterplace-button-container" class="mb-4">
-							<!-- Betterplace button will render here -->
-							<button
-								class="btn btn-lg relative w-full transform overflow-hidden
-         bg-emerald-600 text-white shadow-lg transition-all hover:scale-[1.02]
-         hover:bg-emerald-700 hover:shadow-emerald-200"
-								onclick={handleBetterplacePayment}
-								disabled={isProcessing}
-							>
-								{#if isProcessing}
-									<span class="loading loading-spinner"></span>
-									Zahlung wird verarbeitet...
-								{:else}
-									<div class="flex items-center gap-3">
-										<svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+						<div class="flex items-center">
+							<div class="relative h-6 w-6">
+								<input
+									type="checkbox"
+									id="payment-betterplace"
+									name="payment"
+									value="betterplace"
+									bind:checked={includeDonation}
+									onchange={() => handlePaymentMethodChange('betterplace')}
+								/>
+								<div
+									class="absolute inset-0 rounded-md border-2 border-emerald-500 transition-all
+             {includeDonation ? 'bg-emerald-500' : 'bg-white'}"
+								>
+									{#if includeDonation}
+										<svg
+											class="absolute inset-0 m-auto h-4 w-4 text-white"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
 											<path
-												d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.18 5 4.05 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="3"
+												d="M5 13l4 4L19 7"
 											/>
 										</svg>
-										<span>Jetzt spenden &amp; freischalten</span>
-									</div>
-								{/if}
-							</button>
+									{/if}
+								</div>
+							</div>
+							<span class="ml-3 text-sm font-medium">3% Spende</span>
 						</div>
-					{/if}
+						<div class="ml-auto pl-4">
+							<img src="/betterplace.svg" alt="Betterplace" class="h-6" />
+						</div>
+					</label>
+					<!-- Payment Method Content -->
+					<div class="mb-8">
+						{#if includeDonation}
+							<div
+								class="mb-4 mt-4 flex items-start gap-3 rounded-lg bg-emerald-50 p-4 text-sm"
+								transition:fly={{ y: 20 }}
+							>
+								<div class="heart-icon text-2xl">❤️</div>
+								<p class="text-xs text-emerald-700">
+									Mit jedem Euro unterstützen Sie direkt [konkrete Maßnahme].
+									<span class="font-semibold">93% Ihrer Spende</span> fließen unmittelbar in [konkreten
+									Zweck] - nachweislich und transparent!
+								</p>
+							</div>
+						{/if}
+						<div id="paypal-button-container" class="mb-4"></div>
+					</div>
 				</div>
 
 				<!-- Security Indicators -->
 				<div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-					<div class="flex items-center gap-1 text-xs text-gray-600">
+					<div class="flex items-center justify-center gap-1 text-xs text-gray-600">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-5 w-5 text-green-500"
@@ -389,7 +467,7 @@
 						</svg>
 						<span>Käuferschutz</span>
 					</div>
-					<div class="flex items-center gap-1 text-xs text-gray-600">
+					<div class="flex items-center justify-center gap-1 text-xs text-gray-600">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-5 w-5 text-green-500"
