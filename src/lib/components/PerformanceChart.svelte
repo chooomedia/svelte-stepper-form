@@ -151,7 +151,6 @@
 						label: 'Optimalwert',
 						data: metrics.map(() => 95),
 						borderColor: '#10B981',
-						// src/lib/components/PerformanceChart.svelte (continued)
 						borderDash: [3, 3],
 						borderWidth: 1.5,
 						pointRadius: 0
@@ -170,7 +169,7 @@
 						grid: { color: 'rgba(209, 213, 219, 0.2)' }
 					},
 					x: {
-						ticks: { color: '#6B7280', font: { weight: '500' } },
+						ticks: { color: '#6B7280', font: { weight: 'normal' } },
 						grid: { display: false }
 					}
 				},
@@ -218,7 +217,7 @@
 			// Update chart data
 			chart.data.datasets[0].data = updatedMetrics.map((m) => m.value * $animationTween);
 			chart.data.datasets[1].data = updatedMetrics.map(() => updatedAverage);
-			chart.data.datasets[0].pointBackgroundColor = updatedMetrics.map((m) => m.color);
+			chart.data.datasets[0].backgroundColor = updatedMetrics.map((m) => m.color);
 
 			chart.update('none');
 
@@ -257,7 +256,6 @@
 	}
 </script>
 
-// src/lib/components/PerformanceChart.svelte (Improved data handling)
 <div class="performance-chart relative rounded-xl bg-white p-6 shadow-lg">
 	<!-- Custom legend above the chart -->
 	<div class="mb-4 flex flex-wrap items-center justify-center gap-6">

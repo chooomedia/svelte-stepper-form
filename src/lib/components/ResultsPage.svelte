@@ -5,6 +5,7 @@
 	import VisibilityScore from './VisibilityScore.svelte';
 	import PerformanceChart from './PerformanceChart.svelte';
 	import PricingOptions from './PricingOptions.svelte';
+	import { getFallbackAuditData } from '$lib/utils/scoring';
 
 	interface Props {
 		score: number;
@@ -42,45 +43,6 @@
 			score: auditData.score || processedScore
 		};
 	});
-
-	// Fallback data generation function
-	function getFallbackAuditData(score: number) {
-		// Default performance score based on overall score
-		const performanceScore = Math.min(0.9, Math.max(0.4, score / 100));
-
-		return {
-			url: formData?.website || 'example.com',
-			score: score,
-			lighthouse_report: {
-				categories: {
-					performance: { score: performanceScore },
-					seo: { score: score >= 70 ? 0.85 : score >= 50 ? 0.65 : 0.45 },
-					accessibility: { score: score >= 70 ? 0.75 : score >= 50 ? 0.55 : 0.35 },
-					'best-practices': { score: score >= 70 ? 0.8 : score >= 50 ? 0.6 : 0.4 }
-				}
-			},
-			security_headers: {
-				grade: score >= 80 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : 'D'
-			},
-			technologies: ['Svelte', 'Tailwind CSS', 'Vercel'],
-			traffic: {
-				monthly_visitors: Math.round(score * 100),
-				bounce_rate: Math.max(0.3, 1 - score / 100)
-			},
-			social_media: {
-				followers: Math.round(score * 20),
-				engagement_rate: Math.min(0.1, score / 1000)
-			},
-			competitors: ['competitor1.com', 'competitor2.com', 'competitor3.com'],
-			goals: formData?.goals || ['new_clients'],
-			visibility: formData?.visibility || 'search_engines',
-			content: {
-				blog_posts: Math.round(score / 10),
-				videos: Math.round(score / 20),
-				infographics: Math.round(score / 25)
-			}
-		};
-	}
 
 	// Generate benefits based on form data and score
 	function generateBenefits() {

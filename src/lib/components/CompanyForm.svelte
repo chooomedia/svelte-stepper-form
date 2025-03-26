@@ -3,8 +3,12 @@
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
 
-	export let form: SuperValidated<FormData>;
-	export let errors: Record<string, string>;
+	interface Props {
+		form: SuperValidated<FormData>;
+		errors: Record<string, string>;
+	}
+
+	let { form, errors } = $props<Props>();
 
 	// Track field focus for enhanced validation UX
 	let touchedFields = $state(new Set<string>());

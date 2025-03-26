@@ -1,49 +1,76 @@
-// src/lib/stores/stepperStore.ts (Consolidated)
 import { writable, derived, get } from 'svelte/store';
 import { FORM_STEPS } from '$lib/schema';
-import type { FormData } from '$lib/schema';
-import { formData } from './formStore';
+import {
+	step_1,
+	step_2,
+	step_3,
+	step_4,
+	step_5,
+	step_6,
+	step_7,
+	step_8,
+	step_9,
+	step_10,
+	last_step
+} from '$lib/schema';
+
+// Mapping steps to their Zod schemas
+const stepSchemas = [
+	step_1,
+	step_2,
+	step_3,
+	step_4,
+	step_5,
+	step_6,
+	step_7,
+	step_8,
+	step_9,
+	step_10,
+	last_step
+];
 
 // Core stepper state
-const currentStepIndex = writable(1);
-const maxReachedStep = writable(1);
-const stepValidity = writable<Record<number, 'valid' | 'invalid' | 'incomplete' | 'untouched'>>({
+export const currentStepIndex = writable(1);
+export const maxReachedStep = writable(1);
+export const stepValidity = writable<
+	Record<number, 'valid' | 'invalid' | 'incomplete' | 'untouched'>
+>({
 	1: 'untouched'
 });
 
 // Derived store for current step data
-const currentStep = derived(
-	[currentStepIndex],
-	([$currentStepIndex]) => FORM_STEPS[$currentStepIndex - 1]
-);
+export const currentStep = derived(currentStepIndex, ($currentStepIndex) => {
+	// Stelle sicher, dass $currentStepIndex immer gültig ist
+	const index = Math.max(1, Math.min($currentStepIndex, FORM_STEPS.length));
+	return FORM_STEPS[index - 1]; // Hole das entsprechende Step-Datenobjekt
+});
 
 // Step status for display
-const stepStatuses = derived(
+export const stepStatuses = derived(
 	[currentStepIndex, stepValidity, maxReachedStep],
 	([$currentStepIndex, $stepValidity, $maxReachedStep]) => {
-		return FORM_STEPS.map((_, index) => {
-			const stepNumber = index + 1;
-			return {
-				index: stepNumber,
-				isValid: $stepValidity[stepNumber] === 'valid',
-				isIncomplete: $stepValidity[stepNumber] === 'incomplete',
-				isInvalid: $stepValidity[stepNumber] === 'invalid',
-				isCurrent: $currentStepIndex === stepNumber,
-				isReachable: stepNumber <= $maxReachedStep
-			};
-		});
+		return FORM_STEPS.map((_, index) => ({
+			index: index + 1,
+			isValid: $stepValidity[index + 1] === 'valid',
+			isIncomplete: $stepValidity[index + 1] === 'incomplete',
+			isInvalid: $stepValidity[index + 1] === 'invalid',
+			isCurrent: $currentStepIndex === index + 1,
+			isReachable: index + 1 <= $maxReachedStep
+		}));
 	}
 );
 
 // Navigation functions
-function goToStep(step: number) {
+export function goToStep(step: number) {
 	if (step < 1 || step > FORM_STEPS.length) return;
-
 	currentStepIndex.set(step);
 	maxReachedStep.update((value) => Math.max(value, step));
 }
 
-function nextStep() {
+export function nextStep() {
+	const currentStep = get(currentStepIndex);
+	validateCurrentStep(); // Validate the current step before moving forward
+
 	currentStepIndex.update((step) => {
 		const next = step + 1;
 		if (next <= FORM_STEPS.length) {
@@ -54,70 +81,84 @@ function nextStep() {
 	});
 }
 
-function prevStep() {
+export function prevStep() {
+	const currentStep = get(currentStepIndex);
+	validateCurrentStep(); // Optionally validate before going backward
+
 	currentStepIndex.update((step) => Math.max(1, step - 1));
 }
 
-// Validate the current step
-function validateCurrentStep() {
-	const step = get(currentStepIndex);
-	const stepData = FORM_STEPS[step - 1];
-	const data = get(formData);
+// Step validation
+export function validateCurrentStep() {
+	const step = get(currentStepIndex); // Get the current step index
+	const schema = stepSchemas[step - 1]; // Map to the correct schema for validation
 
-	if (!stepData) return false;
+	const currentStepData = get(stepperStore); // Get current step data from the store
 
-	const stepKey = stepData.title.toLowerCase() as keyof FormData;
-	const currentStepData = data[stepKey];
-
-	if (!currentStepData && step <= 9) {
-		stepValidity.update((validity) => ({
-			...validity,
-			[step]: 'invalid'
-		}));
-		return false;
-	} else {
-		stepValidity.update((validity) => ({
-			...validity,
-			[step]: 'valid'
-		}));
-		return true;
+	try {
+		// Validate the data for the current step using the corresponding schema
+		schema.parse(currentStepData);
+		markStepValid(step); // Mark the step as valid if validation passes
+	} catch (error) {
+		markStepInvalid(step); // Mark the step as invalid if validation fails
+		console.error('Validation failed for step:', error.errors); // Handle validation errors
 	}
 }
 
-// Mark step with specific status
-function markStepValid(step: number) {
+// Step marking functions
+export function markStepValid(step: number) {
 	stepValidity.update((validity) => ({
 		...validity,
 		[step]: 'valid'
 	}));
 }
 
-function markStepInvalid(step: number) {
+export function markStepInvalid(step: number) {
 	stepValidity.update((validity) => ({
 		...validity,
 		[step]: 'invalid'
 	}));
 }
 
-function markStepIncomplete(step: number) {
+export function markStepIncomplete(step: number) {
 	stepValidity.update((validity) => ({
 		...validity,
 		[step]: 'incomplete'
 	}));
 }
 
-// Export stepper store with all functions
-export const stepperStore = {
-	currentStepIndex,
-	maxReachedStep,
-	stepValidity,
-	currentStep,
-	stepStatuses,
-	goToStep,
-	nextStep,
-	prevStep,
-	validateCurrentStep,
-	markStepValid,
-	markStepInvalid,
-	markStepIncomplete
+function createStepperStore() {
+	// This is the key part that makes it work with $ prefix
+	const { subscribe } = derived(
+		[currentStepIndex, currentStep, stepStatuses],
+		([$currentStepIndex, $currentStep, $stepStatuses]) => {
+			// Sicherstellen, dass der aktuelle Step valide ist
+			const currentStep = FORM_STEPS[$currentStepIndex - 1] || FORM_STEPS[0];
+			return {
+				currentStepIndex: $currentStepIndex,
+				currentStep,
+				stepStatuses: $stepStatuses
+			};
+		}
+	);
+
+	// Return a store with subscribe method and all the functions
+	return {
+		subscribe,
+		goToStep,
+		nextStep,
+		prevStep,
+		validateCurrentStep,
+		markStepValid,
+		markStepInvalid,
+		markStepIncomplete
+	};
+}
+
+// Export the main store
+export const stepperStore = createStepperStore();
+export const resetForm = () => {
+	currentStepIndex.set(1);
+	maxReachedStep.set(1);
+	stepValidity.set({ 1: 'untouched' });
 };

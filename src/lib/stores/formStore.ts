@@ -32,6 +32,7 @@ export function updateFormField(field: keyof FormData, value: any) {
 	formData.update((data) => ({ ...data, [field]: value }));
 }
 
+// In src/lib/stores/formStore.ts
 export function setAnalysisResults(results: any) {
 	analysisState.update((state) => ({
 		...state,

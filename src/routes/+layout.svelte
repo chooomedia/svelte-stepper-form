@@ -14,7 +14,7 @@
 		console.log('Layout mounted, initializing stepper with', FORM_STEPS.length, 'steps');
 
 		// Listen for navigation events from the Stepper
-		const handleNavigateToStep = (event) => {
+		const handleNavigateToStep = (event: any) => {
 			const targetStep = event.detail.step;
 			stepperStore.goToStep(targetStep);
 		};
@@ -27,7 +27,7 @@
 	});
 
 	// Event handler for step change
-	function handleStepChange(event) {
+	function handleStepChange(event: any) {
 		const targetStep = event.detail.step;
 
 		// Dispatch a global event to coordinate with page.svelte
@@ -42,6 +42,7 @@
 
 	let isEmbedded = false;
 	let isIframe = false;
+	let parentFontFamily = 'Baron Neue';
 
 	onMount(() => {
 		isIframe = window.self !== window.top;
@@ -70,22 +71,6 @@
 			} catch (e) {
 				console.warn('Could not communicate with parent frame', e);
 			}
-		}
-
-		// Schema Markup hinzufügen
-		const script = document.createElement('script');
-		script.setAttribute('type', 'application/ld+json');
-		script.innerHTML = JSON.stringify(schemaMarkup);
-		document.head.appendChild(script);
-
-		// Meta Description dynamisch aktualisieren
-		const metaDesc = document.querySelector('meta[name="description"]');
-		if (!metaDesc) {
-			const meta = document.createElement('meta');
-			meta.name = 'description';
-			meta.content =
-				'Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher.';
-			document.head.appendChild(meta);
 		}
 
 		// Erweitertes Schema Markup
@@ -138,6 +123,22 @@
 				}
 			]
 		};
+
+		// Schema Markup hinzufügen
+		const script = document.createElement('script');
+		script.setAttribute('type', 'application/ld+json');
+		script.innerHTML = JSON.stringify(schemaMarkup);
+		document.head.appendChild(script);
+
+		// Meta Description dynamisch aktualisieren
+		const metaDesc = document.querySelector('meta[name="description"]');
+		if (!metaDesc) {
+			const meta = document.createElement('meta');
+			meta.name = 'description';
+			meta.content =
+				'Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher.';
+			document.head.appendChild(meta);
+		}
 	});
 </script>
 
@@ -240,7 +241,6 @@
 		background: transparent !important;
 	}
 
-	/* Ensure smooth transitions when resizing iframe */
 	:global(body) {
 		transition: height 0.3s ease;
 	}
