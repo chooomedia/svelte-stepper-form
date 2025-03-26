@@ -248,12 +248,10 @@
 
 	// Function to handle final form submission
 	async function handleFormSubmit() {
-		if (calculatedScore === 0) {
-			// Calculate the score based on form values if not set from website analysis
-			calculatedScore = calculateVisibilityScore($form);
-			$form.visibility_score = calculatedScore;
-		}
+		// Calculate the score based on form values if not set from website analysis
 
+		calculatedScore = calculateFinalScore($form.visibility_score, $form);
+		$form.visibility_score = calculatedScore;
 		try {
 			// Prepare data to send to the webhook
 			const submissionData = {
@@ -284,6 +282,17 @@
 				'Es gab ein Problem beim Absenden des Formulars. Bitte versuchen Sie es später erneut.'
 			);
 		}
+	}
+
+	// In +page.svelte, add this function for better score calculation
+	function calculateFinalScore(websiteScore, formData) {
+		// Use website score if available, with a weight of 70%
+		if (websiteScore && websiteScore > 0) {
+			const formScore = calculateVisibilityScore(formData);
+			return Math.round(websiteScore * 0.7 + formScore * 0.3);
+		}
+		// Fall back to just form-based score
+		return calculateVisibilityScore(formData);
 	}
 
 	// Schema for SEO

@@ -326,8 +326,7 @@
 				<div class="mb-6 space-y-3">
 					<!-- PayPal Input -->
 					<label
-						class="group relative flex cursor-pointer items-center rounded-lg border p-4 transition-all
-       duration-200 hover:border-blue-200 hover:bg-blue-50
+						class="form-input group
        {paymentMethod === 'paypal' ? 'bg-blue-50 ring-2 ring-blue-500' : ''}"
 						for="payment-paypal"
 					>
@@ -372,8 +371,7 @@
 
 					<!-- Betterplace Input -->
 					<label
-						class="group relative flex cursor-pointer items-center rounded-lg border p-4 transition-all
-       duration-200 hover:border-emerald-200 hover:bg-emerald-50
+						class="form-input group hover:border-emerald-200 hover:bg-emerald-50
        {includeDonation ? 'bg-emerald-50 ring-2 ring-emerald-500' : ''}"
 						for="payment-betterplace"
 					>

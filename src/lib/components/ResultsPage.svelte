@@ -20,7 +20,6 @@
 	// Define the benefits and recommendations based on score
 	let benefits = $state<string[]>([]);
 	let recommendations = $state<string[]>([]);
-	let showPlanSelector = $state(false);
 	let pageLoaded = $state(false);
 
 	// Process the score value to ensure it's valid
@@ -144,28 +143,9 @@
 		return [...new Set([...baseRecommendations, ...additionalRecommendations])].slice(0, 5);
 	}
 
-	// Initialize chart and data on mount
-	onMount(() => {
-		// Generate benefits and recommendations
-		benefits = generateBenefits();
-		recommendations = generateRecommendations();
-
-		// Show plan selector after a delay
-		setTimeout(() => {
-			pageLoaded = true;
-		}, 500);
-	});
-
 	function handlePlanSelection(plan: string, price: number) {
 		console.log(`Selected plan: ${plan}, price: ${price}€`);
 		// Add your logic here
-	}
-
-	function refreshAnimations() {
-		pageLoaded = false;
-		setTimeout(() => {
-			pageLoaded = true;
-		}, 50);
 	}
 
 	// Price plans based on score range
@@ -230,16 +210,21 @@
 		'Unerprobte Strategien für den Erfolg über Nacht',
 		'MLM, Dropshipping oder Wiederverkauf von Pyramidensystemen'
 	];
+
+	// Initialize chart and data on mount
+	onMount(() => {
+		// Generate benefits and recommendations
+		benefits = generateBenefits();
+		recommendations = generateRecommendations();
+
+		// Show plan selector after a delay
+		setTimeout(() => {
+			pageLoaded = true;
+		}, 500);
+	});
 </script>
 
 <div class="results-page mb-16">
-	<a
-		href="#"
-		class="mt-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-		on:click|preventDefault={refreshAnimations}
-	>
-		Refresh Animations
-	</a>
 	<!-- Score Section -->
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-3" in:fade={{ duration: 500, delay: 700 }}>
 		<!-- Modern score visualization (1/3 width on desktop) -->

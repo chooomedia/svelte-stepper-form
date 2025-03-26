@@ -156,10 +156,10 @@
 
 	<!-- Score Message & Lösung -->
 	<div class="mx-auto max-w-2xl space-y-3 text-center" in:fade={{ delay: 800, duration: 800 }}>
-		<h3 class="text-2xl font-semibold text-gray-900">
+		<h3 class="text-xl font-semibold text-gray-900">
 			{getScoreMessage(score).message}
 		</h3>
-		<p class="text-gray-600">
+		<p class="text-base text-gray-600">
 			{getScoreMessage(score).solution}
 		</p>
 	</div>

@@ -61,4 +61,14 @@
     .form-label {
         @apply block text-sm font-medium text-gray-900;
     }
+
+    .spinner {
+        @apply h-20 w-20 rounded-full;
+        border: 5px solid rgba(59, 130, 246, 0.2);
+        border-top-color: #3b82f6;
+    }
+
+    .form-input {
+        @apply relative flex cursor-pointer items-center rounded-lg border p-4 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50;
+    }
 }

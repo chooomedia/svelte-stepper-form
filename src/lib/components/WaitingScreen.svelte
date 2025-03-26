@@ -40,27 +40,9 @@
 </script>
 
 <div class="waiting-screen flex flex-col items-center justify-center space-y-4 p-8">
-	<div class="spinner"></div>
-	<p class="text-lg text-gray-600">
-		⏳ Angaben werden analysieren - Bitte habe einen Moment Geduld.
-	</p>
+	<div class="spinner animate-spin"></div>
+	<p class="text-lg text-gray-600">Angaben werden analysieren - Bitte habe einen Moment Geduld.</p>
 	<p class="text-sm text-gray-500">
 		Weiterleitung in {remainingTime} Sekunden
 	</p>
 </div>
-
-<style>
-	.spinner {
-		width: 80px;
-		height: 80px;
-		border: 5px solid rgba(0, 0, 0, 0.1);
-		border-top-color: #00c853;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-	}
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-</style>
