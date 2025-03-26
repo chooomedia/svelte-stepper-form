@@ -19,7 +19,7 @@
 		markStepValid,
 		markStepInvalid,
 		markStepIncomplete
-	} from '$lib/stores/stepStore';
+	} from '$lib/stores/stepperStore';
 
 	// Instead of local state, use the stores
 	$effect(() => {

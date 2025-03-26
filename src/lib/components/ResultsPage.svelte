@@ -1,4 +1,3 @@
-<!-- src/lib/components/ResultsPage.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';

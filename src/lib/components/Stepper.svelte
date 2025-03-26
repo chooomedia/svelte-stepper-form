@@ -1,56 +1,60 @@
 <script lang="ts">
-	import { stepStatuses, currentStep } from '$lib/stores/stepStore';
 	import { createEventDispatcher } from 'svelte';
+	import { stepperStore } from '$lib/stores/stepperStore';
+	import { websiteLoading, formSubmitting } from '$lib/stores/loadingStore';
 
 	// Create an event dispatcher for navigation events
 	const dispatch = createEventDispatcher();
 
-	// Props to receive the loading state
-	export let isWebsiteLoading = false;
-	export let isSubmitting = false;
+	// Reactive declarations for the stepper state
+	const { stepStatuses, currentStepIndex, goToStep } = stepperStore;
 
-	// Berechnung der Fortschrittsanzeige
-	let progressValue = 0;
-	$: {
-		if ($stepStatuses.length > 1) {
-			progressValue = (($currentStep - 1) / ($stepStatuses.length - 1)) * 100;
-		}
-	}
+	// Calculate progress value
+	let progressValue = $derived(
+		$stepStatuses.length > 1 ? (($currentStepIndex - 1) / ($stepStatuses.length - 1)) * 100 : 0
+	);
 
+	// Get appropriate class for a step based on its status
 	function getStepClass(stepStatus): string {
 		const baseClasses =
 			'relative z-10 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-300 ease-in-out';
 
 		// Special case: Loading state for step 2 (website analysis)
-		if (stepStatus.index === 2 && isWebsiteLoading) {
+		if (stepStatus.index === 2 && $websiteLoading) {
 			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300 animate-pulse`;
 		}
 
 		// Special case: Loading state for step 10 (form submission)
-		if (stepStatus.index === 10 && isSubmitting) {
+		if (stepStatus.index === 10 && $formSubmitting) {
 			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300 animate-pulse`;
 		}
 
 		if (stepStatus.isValid) {
 			return `${baseClasses} !h-4 !w-4 scale-110 !border-green-500 !bg-green-500`;
 		}
+
 		if (stepStatus.isInvalid) {
 			return `${baseClasses} !h-4 !w-4 border-2 border-red-500 bg-red-500`;
 		}
+
 		if (stepStatus.isIncomplete) {
 			return `${baseClasses} !h-4 !w-4 border-2 border-orange-400 bg-orange-400`;
 		}
+
 		if (stepStatus.isCurrent) {
 			return `${baseClasses} border-2 border-blue-500 bg-blue-500`;
 		}
+
 		return `${baseClasses} border-2 border-gray-200 bg-gray-200`;
 	}
 
+	// Handle step click with improved navigation
 	function handleStepClick(stepIndex: number) {
 		// Only allow clicking on valid steps or the current one
 		const status = $stepStatuses[stepIndex];
-		if (status && (status.isValid || status.index <= $currentStep)) {
-			currentStep.set(status.index);
+		if (status && (status.isValid || status.isReachable)) {
+			goToStep(status.index);
+
 			// Dispatch an event to notify parent component
 			dispatch('stepChange', { step: status.index });
 		}
@@ -72,12 +76,12 @@
 		{#each $stepStatuses as stepStatus, index}
 			<button
 				class={getStepClass(stepStatus)}
-				disabled={!stepStatus.isValid && stepStatus.index > $currentStep}
+				disabled={!stepStatus.isValid && !stepStatus.isReachable}
 				on:click={() => handleStepClick(index)}
 				aria-label="Schritt {stepStatus.index} von {$stepStatuses.length}"
-				title={stepStatus.index === 2 && isWebsiteLoading
+				title={stepStatus.index === 2 && $websiteLoading
 					? 'Website wird analysiert...'
-					: stepStatus.index === 10 && isSubmitting
+					: stepStatus.index === 10 && $formSubmitting
 						? 'Formular wird gesendet...'
 						: stepStatus.isValid
 							? 'Abgeschlossen'
@@ -95,7 +99,7 @@
 					<span class="text-[10px] text-white">!</span>
 				{:else if stepStatus.isIncomplete}
 					<span class="text-[10px] text-white">⋯</span>
-				{:else if (stepStatus.index === 2 && isWebsiteLoading) || (stepStatus.index === 10 && isSubmitting)}
+				{:else if (stepStatus.index === 2 && $websiteLoading) || (stepStatus.index === 10 && $formSubmitting)}
 					<span class="text-[8px] text-white">
 						<svg class="h-2 w-2 animate-spin" viewBox="0 0 24 24">
 							<circle

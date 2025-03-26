@@ -20,7 +20,6 @@
 
 	let isAnimating = $state(true);
 	let isInitialized = $state(false);
-	let intervalId: number | undefined;
 	let timeoutId: number | undefined;
 	let stepTriggered = $state(false);
 	let lastAnimatedValue = $state(0);
@@ -29,19 +28,18 @@
 	const strokeWidth = 14;
 	const circumference = 2 * Math.PI * radius;
 
-	// 🚀 Langsame Animation: 6000ms für smoothere Bewegung
+	// Animation with tweened store
 	const displayScore = tweened(0, { duration: 6000, easing: cubicInOut });
 	const strokeDashoffset = tweened(circumference, { duration: 6000, easing: cubicInOut });
 
-	// Ampel-Farben für den Score
+	// Utility functions
 	function getScoreColor(score: number): string {
-		if (score >= 80) return '#16a34a'; // Grün
-		if (score >= 60) return '#eab308'; // Gelb
+		if (score >= 80) return '#16a34a'; // Green
+		if (score >= 60) return '#eab308'; // Yellow
 		if (score >= 40) return '#f97316'; // Orange
-		return '#dc2626'; // Rot
+		return '#dc2626'; // Red
 	}
 
-	// Kundenansprache + Lösung
 	function getScoreMessage(score: number): { message: string; solution: string } {
 		if (score >= 80) {
 			return {
@@ -67,7 +65,7 @@
 		};
 	}
 
-	// Function to start animation
+	// Animation function
 	function startAnimation() {
 		// Cancel any previous animations
 		clearTimeout(timeoutId);
@@ -92,6 +90,7 @@
 		}
 	}
 
+	// Lifecycle hooks
 	onMount(() => {
 		// Initial animation
 		startAnimation();
@@ -99,11 +98,10 @@
 	});
 
 	onDestroy(() => {
-		clearInterval(intervalId);
 		clearTimeout(timeoutId);
 	});
 
-	// Watch for animateOnResultLoad changes using $: reactive statement
+	// Watch for animateOnResultLoad changes
 	$effect(() => {
 		if (isInitialized && animateOnResultLoad && lastAnimatedValue !== score) {
 			startAnimation();
@@ -117,11 +115,10 @@
 	aria-live="polite"
 	transition:fade={{ duration: 500 }}
 >
-	<!-- Animierter SVG Doughnut -->
+	<!-- Animated SVG Donut -->
 	<div class="relative h-56 w-56" in:scale={{ delay: 300, duration: 800 }}>
-		<!-- Größerer Doughnut für bessere Lesbarkeit -->
 		<svg width="220" height="220" viewBox="0 0 220 220" class="absolute inset-0">
-			<!-- Hintergrund-Grauer Ring -->
+			<!-- Background gray ring -->
 			<circle
 				cx="110"
 				cy="110"
@@ -130,7 +127,7 @@
 				stroke="#f6f7f8"
 				stroke-width={strokeWidth}
 			/>
-			<!-- Fortschrittsring (animiert von oben nach rechts) -->
+			<!-- Progress ring (animated from top to right) -->
 			<circle
 				cx="110"
 				cy="110"
@@ -145,7 +142,7 @@
 			/>
 		</svg>
 
-		<!-- Score-Text ABSOLUT positioniert -->
+		<!-- Score text - absolutely positioned -->
 		<div class="absolute inset-0 flex flex-col items-center justify-center">
 			<span class="text-6xl font-bold" style="color: {getScoreColor(score)}">
 				{Math.round($displayScore)}
@@ -154,7 +151,7 @@
 		</div>
 	</div>
 
-	<!-- Score Message & Lösung -->
+	<!-- Score Message & Solution -->
 	<div class="mx-auto max-w-2xl space-y-3 text-center" in:fade={{ delay: 800, duration: 800 }}>
 		<h3 class="text-xl font-semibold text-gray-900">
 			{getScoreMessage(score).message}
