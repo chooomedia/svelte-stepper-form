@@ -97,12 +97,12 @@
 </script>
 
 <div
-	class="relative flex flex-col items-center justify-center gap-6"
+	class="relative flex flex-col items-center justify-center gap-2"
 	role="alert"
 	aria-live="polite"
 	transition:fade={{ duration: 300 }}
 >
-	<div class="relative h-52 w-52" in:scale={{ duration: 500 }}>
+	<div class="relative h-44 w-44" in:scale={{ duration: 500 }}>
 		<svg viewBox="0 0 220 220" class="absolute inset-0">
 			<circle
 				cx="110"
