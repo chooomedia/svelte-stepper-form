@@ -10,7 +10,8 @@
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
 	import CompanyForm from '$lib/components/CompanyForm.svelte';
 	import WebsiteUrlForm from '$lib/components/WebsiteUrlForm.svelte';
-	import { TOTAL_STEPS } from '$lib/schema';
+	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
+	import { last_step, TOTAL_STEPS } from '$lib/schema';
 
 	// Import stores
 	import { currentStep, stepperStore } from '$lib/stores/stepperStore';
@@ -100,7 +101,6 @@
 </svelte:head>
 
 <div class="form-container" itemscope itemtype="https://schema.org/WebApplication">
-	<!-- Page Meta -->
 	<header>
 		<div
 			class={$stepperStore.current.index > 1 ? 'sr-only' : 'text-center'}
@@ -118,166 +118,158 @@
 				<strong>Reichweite erhöhen</strong> sowie
 				<strong>Ressourcen sparen</strong> und <strong>Umsätze steigern</strong>.
 			</p>
+			<!-- Page Meta -->
 			<PageMeta totalSteps={FORM_STEPS.length} />
 		</div>
 	</header>
 
 	<!-- Step Content -->
-	<div class="form-wrapper text-center">
+	<div class="form-wrapper">
 		<!-- Dynamic step content based on current step -->
+		<h2 class="mb-2 text-center text-xl font-semibold text-gray-700">
+			{$stepperStore.current.description}
+		</h2>
 		{#key $stepperStore.current.index}
-			<div transition:fade={{ duration: 300 }} class="form-card">
-				<h2 class="mb-6 text-base font-semibold text-gray-700">
-					{$stepperStore.current.description}
-				</h2>
+			<div transition:fade={{ duration: 500 }} class="form-card">
+				<FormTransitioner currentStep={$stepperStore.current.index} minHeight="400px">
+					<!-- Step 1: Visibility -->
+					{#if $stepperStore.current.index === 1}
+						<ImageOption
+							value={$form.visibility}
+							options={formOptions.visibility}
+							error={$errors.visibility}
+							onSelect={(value) => handleImageOptionSelect('visibility', value)}
+						/>
 
-				<!-- Step 1: Visibility -->
-				{#if $stepperStore.current.index === 1}
-					<ImageOption
-						value={$form.visibility}
-						options={formOptions.visibility}
-						error={$errors.visibility}
-						onSelect={(value) => handleImageOptionSelect('visibility', value)}
-					/>
-
-					<!-- Step 2: Website URL -->
-				{:else if $stepperStore.current.index === 2}
-					<div itemprop="step" itemscope itemtype="https://schema.org/HowToStep">
-						<meta itemprop="position" content="2" />
-						<meta itemprop="name" content="Website Analysis" />
-						<div itemprop="itemListElement" itemscope itemtype="https://schema.org/HowToDirection">
-							<WebsiteUrlForm {form} errors={$errors} onAnalysisComplete={handleAnalysisComplete} />
+						<!-- Step 2: Website URL -->
+					{:else if $stepperStore.current.index === 2}
+						<div itemprop="step" itemscope itemtype="https://schema.org/HowToStep">
+							<meta itemprop="position" content="2" />
+							<meta itemprop="name" content="Website Analysis" />
+							<div
+								itemprop="itemListElement"
+								itemscope
+								itemtype="https://schema.org/HowToDirection"
+							>
+								<WebsiteUrlForm
+									{form}
+									errors={$errors}
+									onAnalysisComplete={handleAnalysisComplete}
+									onclick={() => {
+										stepperStore.markStepValid($stepperStore.current.index);
+										stepperStore.nextStep();
+									}}
+								/>
+							</div>
 						</div>
-					</div>
 
-					<!-- Step 3: Advertising Frequency -->
-				{:else if $stepperStore.current.index === 3}
-					<ImageOption
-						value={$form.advertising_frequency}
-						options={formOptions.advertising_frequency}
-						error={$errors.advertising_frequency}
-						onSelect={(value) => handleImageOptionSelect('advertising_frequency', value)}
-					/>
+						<!-- Step 3: Advertising Frequency -->
+					{:else if $stepperStore.current.index === 3}
+						<ImageOption
+							value={$form.advertising_frequency}
+							options={formOptions.advertising_frequency}
+							error={$errors.advertising_frequency}
+							onSelect={(value) => handleImageOptionSelect('advertising_frequency', value)}
+						/>
 
-					<!-- Step 4: Goals -->
-				{:else if $stepperStore.current.index === 4}
-					<ImageOption
-						value={$form.goals}
-						options={formOptions.goals}
-						error={$errors.goals}
-						onSelect={(value) => handleImageOptionSelect('goals', value)}
-					/>
+						<!-- Step 4: Goals -->
+					{:else if $stepperStore.current.index === 4}
+						<ImageOption
+							value={$form.goals}
+							options={formOptions.goals}
+							error={$errors.goals}
+							onSelect={(value) => handleImageOptionSelect('goals', value)}
+						/>
 
-					<!-- Step 5: Campaign Management -->
-				{:else if $stepperStore.current.index === 5}
-					<ImageOption
-						value={$form.campaign_management}
-						options={formOptions.campaign_management}
-						error={$errors.campaign_management}
-						onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
-					/>
+						<!-- Step 5: Campaign Management -->
+					{:else if $stepperStore.current.index === 5}
+						<ImageOption
+							value={$form.campaign_management}
+							options={formOptions.campaign_management}
+							error={$errors.campaign_management}
+							onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
+						/>
 
-					<!-- Step 6: Online Reviews -->
-				{:else if $stepperStore.current.index === 6}
-					<ImageOption
-						value={$form.online_reviews}
-						options={formOptions.online_reviews}
-						error={$errors.online_reviews}
-						onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
-					/>
+						<!-- Step 6: Online Reviews -->
+					{:else if $stepperStore.current.index === 6}
+						<ImageOption
+							value={$form.online_reviews}
+							options={formOptions.online_reviews}
+							error={$errors.online_reviews}
+							onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
+						/>
 
-					<!-- Step 7: Previous Campaigns -->
-				{:else if $stepperStore.current.index === 7}
-					<ImageOption
-						value={$form.previous_campaigns}
-						options={formOptions.previous_campaigns}
-						error={$errors.previous_campaigns}
-						onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
-					/>
+						<!-- Step 7: Previous Campaigns -->
+					{:else if $stepperStore.current.index === 7}
+						<ImageOption
+							value={$form.previous_campaigns}
+							options={formOptions.previous_campaigns}
+							error={$errors.previous_campaigns}
+							onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
+						/>
 
-					<!-- Step 8: Business Phase -->
-				{:else if $stepperStore.current.index === 8}
-					<ImageOption
-						value={$form.business_phase}
-						options={formOptions.business_phase}
-						error={$errors.business_phase}
-						onSelect={(value) => handleImageOptionSelect('business_phase', value)}
-					/>
+						<!-- Step 8: Business Phase -->
+					{:else if $stepperStore.current.index === 8}
+						<ImageOption
+							value={$form.business_phase}
+							options={formOptions.business_phase}
+							error={$errors.business_phase}
+							onSelect={(value) => handleImageOptionSelect('business_phase', value)}
+						/>
 
-					<!-- Step 9: Implementation Time -->
-				{:else if $stepperStore.current.index === 9}
-					<ImageOption
-						value={$form.implementation_time}
-						options={formOptions.implementation_time}
-						error={$errors.implementation_time}
-						onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
-					/>
+						<!-- Step 9: Implementation Time -->
+					{:else if $stepperStore.current.index === 9}
+						<ImageOption
+							value={$form.implementation_time}
+							options={formOptions.implementation_time}
+							error={$errors.implementation_time}
+							onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
+						/>
 
-					<!-- Step 10: Company Form -->
-				{:else if $stepperStore.current.index === 10}
-					<CompanyForm form={$form} errors={$errors} />
+						<!-- Step 10: Company Form -->
+					{:else if $stepperStore.current.index === 10}
+						<ContactForm {form} errors={$errors} />
 
-					<div class="mt-8 flex justify-end">
-						<Button
-							label="Weiter"
-							type="button"
-							variant="primary"
-							on:click={() => {
+						<!-- Step 12: Results -->
+					{:else if $stepperStore.current.index === 11}
+						<WaitingScreen
+							onclick={() => {
 								stepperStore.markStepValid($stepperStore.current.index);
 								stepperStore.nextStep();
 							}}
 						/>
-					</div>
 
-					<!-- Step 11: Contact Form -->
-				{:else if $stepperStore.current.index === 11}
-					<ContactForm form={$form} errors={$errors} />
+						<!-- Fallback: Loading screen -->
+					{:else if $stepperStore.current.index === 12 && last_step}
+						<ResultsPage
+							score={$calculatedScore}
+							form={formData}
+							auditData={null}
+							nextStep={() => stepperStore.goToStep(1)}
+							{restartAssessment}
+						/>
+					{/if}
 
-					<div class="mt-8 flex justify-end">
-						<form method="POST" use:enhance>
+					<!-- Navigation Buttons (except for specific steps) -->
+					{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11].includes($stepperStore.current.index)}
+						<div class="mt-8 flex justify-between">
 							<Button
-								label="Auswertung starten"
-								type="submit"
-								variant="primary"
-								isLoading={$submitting}
+								label="Zurück"
+								type="button"
+								variant="secondary"
+								disabled={$stepperStore.current.index === 1}
+								on:click={() => stepperStore.prevStep()}
 							/>
-						</form>
-					</div>
 
-					<!-- Step 12: Results -->
-				{:else if $stepperStore.current.index === 12}
-					<ResultsPage
-						score={$calculatedScore}
-						formData={$formData}
-						auditData={null}
-						nextStep={() => stepperStore.goToStep(11)}
-						{restartAssessment}
-					/>
-
-					<!-- Fallback: Loading screen -->
-				{:else}
-					<WaitingScreen nextStep={() => stepperStore.nextStep()} />
-				{/if}
-
-				<!-- Navigation Buttons (except for specific steps) -->
-				{#if ![1, 3, 4, 5, 6, 7, 8, 9, 10, 12].includes($stepperStore.current.index)}
-					<div class="mt-8 flex justify-between">
-						<Button
-							label="Zurück"
-							type="button"
-							variant="secondary"
-							disabled={$stepperStore.current.index === 1}
-							on:click={() => stepperStore.prevStep()}
-						/>
-
-						<Button
-							label="Weiter"
-							type="button"
-							variant="primary"
-							on:click={() => stepperStore.nextStep()}
-						/>
-					</div>
-				{/if}
+							<Button
+								label="Weiter"
+								type="button"
+								variant="primary"
+								on:click={() => stepperStore.nextStep()}
+							/>
+						</div>
+					{/if}
+				</FormTransitioner>
 			</div>
 		{/key}
 	</div>

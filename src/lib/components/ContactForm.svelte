@@ -1,6 +1,6 @@
-<!-- src/lib/components/ContactForm.svelte -->
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { onMount } from 'svelte';
+	import { fade, slide } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
 
@@ -13,15 +13,19 @@
 
 	// Track field focus for enhanced validation UX
 	let touchedFields = $state(new Set<string>());
+	let formSubmissionAttempted = $state(false);
+	let showFormValidationOverview = $state(false);
+	let formErrors = $state<string[]>([]);
 
 	// Handle field blur
 	function handleBlur(fieldName: string) {
 		touchedFields.add(fieldName);
+		validateField(fieldName);
 	}
 
 	// Check if field should show error
 	function shouldShowError(fieldName: string): boolean {
-		return touchedFields.has(fieldName) && !!errors[fieldName];
+		return (touchedFields.has(fieldName) || formSubmissionAttempted) && !!errors[fieldName];
 	}
 
 	// Get ARIA attributes for field
@@ -32,9 +36,165 @@
 			'aria-label': label
 		};
 	}
+
+	// Validate a specific field
+	function validateField(fieldName: string) {
+		const requiredFields = ['salutation', 'first_name', 'last_name', 'email', 'privacy_agreement'];
+
+		// Skip validation for fields that aren't required
+		if (!requiredFields.includes(fieldName)) return;
+
+		// Clear existing error for this field
+		if (errors[fieldName]) {
+			delete errors[fieldName];
+		}
+
+		let hasError = false;
+
+		switch (fieldName) {
+			case 'salutation':
+				if (!$form.salutation) {
+					errors.salutation = 'Bitte wähle eine Anrede aus';
+					hasError = true;
+				}
+				break;
+
+			case 'first_name':
+				if (!$form.first_name) {
+					errors.first_name = 'Bitte gib Deinen Vornamen ein';
+					hasError = true;
+				} else if ($form.first_name.length < 2) {
+					errors.first_name = 'Vorname muss mindestens 2 Zeichen haben';
+					hasError = true;
+				}
+				break;
+
+			case 'last_name':
+				if (!$form.last_name) {
+					errors.last_name = 'Bitte gib Deinen Nachnamen ein';
+					hasError = true;
+				} else if ($form.last_name.length < 2) {
+					errors.last_name = 'Nachname muss mindestens 2 Zeichen haben';
+					hasError = true;
+				}
+				break;
+
+			case 'email':
+				if (!$form.email) {
+					errors.email = 'Bitte gib Deine E-Mail-Adresse ein';
+					hasError = true;
+				} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($form.email)) {
+					errors.email = 'Bitte gib eine gültige E-Mail-Adresse ein';
+					hasError = true;
+				}
+				break;
+
+			case 'phone':
+				if ($form.phone && !/^\+?[0-9\s\-()]{7,20}$/.test($form.phone)) {
+					errors.phone = 'Ungültiges Telefonformat';
+					hasError = true;
+				}
+				break;
+
+			case 'privacy_agreement':
+				if (!$form.privacy_agreement) {
+					errors.privacy_agreement = 'Bitte stimme der Datenschutzerklärung zu';
+					hasError = true;
+				}
+				break;
+		}
+
+		return !hasError;
+	}
+
+	// Validate all fields
+	function validateAllFields() {
+		formSubmissionAttempted = true;
+		const fieldNames = [
+			'salutation',
+			'first_name',
+			'last_name',
+			'email',
+			'phone',
+			'privacy_agreement'
+		];
+
+		const results = fieldNames.map((field) => ({
+			field,
+			valid: validateField(field)
+		}));
+
+		// Collect all error messages for the overview
+		formErrors = Object.entries(errors)
+			.filter(([_, message]) => message)
+			.map(([field, message]) => message);
+
+		showFormValidationOverview = formErrors.length > 0;
+
+		return results.every((r) => r.valid);
+	}
+
+	// Function to be called before form submission
+	function beforeSubmit() {
+		return validateAllFields();
+	}
+
+	// Auto-fill company name if available
+	onMount(() => {
+		if ($form.company_name) {
+			// Company name is already filled, check other required fields
+			const requiredFields = ['salutation', 'first_name', 'last_name', 'email'];
+			let allFilled = true;
+
+			// If all required fields are already filled, pre-validate them
+			for (const field of requiredFields) {
+				if (!$form[field]) {
+					allFilled = false;
+					break;
+				}
+			}
+
+			if (allFilled) {
+				validateAllFields();
+			}
+		}
+	});
 </script>
 
 <form method="POST" class="space-y-6" novalidate>
+	{#if showFormValidationOverview && formErrors.length > 0}
+		<div
+			class="mb-4 rounded-md bg-red-50 p-4"
+			transition:slide={{ duration: 300 }}
+			role="alert"
+			aria-labelledby="form-errors-heading"
+		>
+			<div class="flex">
+				<div class="flex-shrink-0">
+					<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+						<path
+							fill-rule="evenodd"
+							d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 id="form-errors-heading" class="text-sm font-medium text-red-800">
+						Bitte korrigiere die folgenden Fehler:
+					</h3>
+					<div class="mt-2 text-sm text-red-700">
+						<ul class="list-disc space-y-1 pl-5">
+							{#each formErrors as error}
+								<li>{error}</li>
+							{/each}
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<div class="form-group">
 		<label for="company_name" class="form-label"> Unternehmensname </label>
 		<input
@@ -45,7 +205,7 @@
 			onblur={() => handleBlur('company_name')}
 		/>
 		{#if shouldShowError('company_name')}
-			<p class="error-text" id="company_name-error" role="alert">
+			<p class="error-text" id="company_name-error" role="alert" transition:fade>
 				{errors.company_name}
 			</p>
 		{/if}
@@ -58,7 +218,7 @@
 			bind:value={$form.salutation}
 			class="input-field {shouldShowError('salutation') ? 'error' : ''}"
 			onblur={() => handleBlur('salutation')}
-			{...getAriaAttrs('salutation', 'Bitte wähle Ihre Anrede')}
+			{...getAriaAttrs('salutation', 'Bitte wähle Deine Anrede')}
 		>
 			<option value="">Bitte wählen</option>
 			<option value="Herr">Herr</option>
@@ -82,7 +242,7 @@
 				bind:value={$form.first_name}
 				class="input-field {shouldShowError('first_name') ? 'error' : ''}"
 				onblur={() => handleBlur('first_name')}
-				{...getAriaAttrs('first_name', 'Bitte gebe Deinen Vornamen ein')}
+				{...getAriaAttrs('first_name', 'Bitte gib Deinen Vornamen ein')}
 			/>
 			{#if shouldShowError('first_name')}
 				<p class="error-text" id="first_name-error" role="alert" transition:slide>
@@ -99,7 +259,7 @@
 				bind:value={$form.last_name}
 				class="input-field {shouldShowError('last_name') ? 'error' : ''}"
 				onblur={() => handleBlur('last_name')}
-				{...getAriaAttrs('last_name', 'Bitte geben Deinen Nachnamen ein')}
+				{...getAriaAttrs('last_name', 'Bitte gib Deinen Nachnamen ein')}
 			/>
 			{#if shouldShowError('last_name')}
 				<p class="error-text" id="last_name-error" role="alert" transition:slide>
@@ -118,7 +278,7 @@
 			bind:value={$form.email}
 			class="input-field {shouldShowError('email') ? 'error' : ''}"
 			onblur={() => handleBlur('email')}
-			{...getAriaAttrs('email', 'Bitte geben Deine E-Mail-Adresse ein')}
+			{...getAriaAttrs('email', 'Bitte gib Deine E-Mail-Adresse ein')}
 		/>
 		{#if shouldShowError('email')}
 			<p class="error-text" id="email-error" role="alert" transition:slide>

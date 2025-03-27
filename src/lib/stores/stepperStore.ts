@@ -1,4 +1,3 @@
-// src/lib/stores/stepperStore.ts
 import { writable, derived, get } from 'svelte/store';
 import { FORM_STEPS } from '$lib/schema';
 

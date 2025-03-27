@@ -9,7 +9,7 @@
     }
 
     .form-wrapper {
-        min-height: 330px;
+        min-height: auto;
         transform-origin: top center;
     }
 
@@ -31,6 +31,10 @@
 
     .form-container {
         @apply mx-auto my-8 max-w-4xl;
+    }
+
+    .form-wrapper {
+        @apply flex justify-between flex-col;
     }
 
     .step-button {

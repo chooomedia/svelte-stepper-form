@@ -24,7 +24,7 @@ export const baseFormSchema = z.object({
 		.string({ required_error: 'Bitte angeben wie durchschnittlich Deine Online-Bewertungen sind' })
 		.optional(),
 	previous_campaigns: z
-		.string({ required_error: 'Bitte geben an, ob bereits Onlinewerbung geschaltet haben' })
+		.string({ required_error: 'Bitte angeben, ob bereits Onlinewerbung geschaltet wurde' })
 		.optional(),
 	business_phase: z
 		.string({ required_error: 'Bitte wählen Deine Unternehmensphase aus' })
@@ -407,8 +407,7 @@ export const defaultValues: FormData = {
 	phone: '',
 	privacy_agreement: false,
 	marketing_consent: false,
-	visibility_score: 0,
-	show_indicator: false
+	visibility_score: 0
 };
 
 export const FORM_STEPS = [

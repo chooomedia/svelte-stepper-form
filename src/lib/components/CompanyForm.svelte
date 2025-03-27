@@ -58,7 +58,7 @@
 			type="url"
 			id="company_url"
 			bind:value={$form.company_url}
-			class="input-field {shouldShowError('company_url') ? 'error' : ''}"
+			class="input-field shadow-custom {shouldShowError('company_url') ? 'error' : ''}"
 			onblur={() => handleBlur('company_url')}
 			placeholder="https://www.example.com"
 		/>
