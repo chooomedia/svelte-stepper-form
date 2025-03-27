@@ -224,11 +224,7 @@
 				<!-- Modern score visualization -->
 				<div class="p-6">
 					<h3 class="mb-2 text-xl font-bold">Dein Performance Score</h3>
-					<VisibilityScore
-						score={processedScore}
-						autoAdvance={10}
-						animateOnResultLoad={pageLoaded}
-					/>
+					<VisibilityScore score={90} autoAdvance={300} {nextStep} />
 				</div>
 			</div>
 		</div>

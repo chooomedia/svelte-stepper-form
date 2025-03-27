@@ -176,7 +176,7 @@
 				<div class="flex items-center">
 					<a
 						on:click={navigateHome}
-						href="/"
+						href="?home"
 						class="flex items-center space-x-2"
 						aria-label="Digital Pusher - Zur Startseite"
 						itemprop="url"
