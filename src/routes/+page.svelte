@@ -8,18 +8,13 @@
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
-	import { scoreStore } from '$lib/utils/ScoreManager';
+	import { scoreStore } from '$lib/utils/scoring';
 	import WebsiteUrlForm from '$lib/components/WebsiteUrlForm.svelte';
 	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
 	import { last_step, TOTAL_STEPS } from '$lib/schema';
 
 	// Import stores
-	import {
-		currentStep,
-		stepperStore,
-		jumpToStep,
-		currentStepIndex
-	} from '$lib/stores/stepperStore';
+	import { stepperStore, jumpToStep } from '$lib/stores/stepperStore';
 	import { formData, calculatedScore, updateFormField } from '$lib/stores/formStore';
 	import { formSubmitting } from '$lib/stores/loadingStore';
 
@@ -147,6 +142,7 @@
 			<h1 class="mb-6 text-5xl font-bold text-gray-900" itemprop="name" id="assessment-title">
 				Marketing Check Quiz
 			</h1>
+
 			<p
 				class="mx-auto max-w-[33rem] text-base text-gray-600"
 				itemprop="description"
@@ -164,12 +160,12 @@
 	<!-- Step Content -->
 	<div class="form-wrapper">
 		<!-- Dynamic step content based on current step -->
-		<h2 class="mb-2 text-center text-xl font-semibold text-gray-700">
+		<h2 class="mb-6 text-center text-xl font-semibold text-gray-700">
 			{$stepperStore.current.description}
 		</h2>
 		{#key $stepperStore.current.index}
 			<div transition:fade={{ duration: 500 }} class="form-card">
-				<FormTransitioner currentStep={$stepperStore.current.index} minHeight="400px">
+				<FormTransitioner currentStep={$stepperStore.current.index} minHeight="500px">
 					<!-- Step 1: Visibility -->
 					{#if $stepperStore.current.index === 1}
 						<ImageOption

@@ -58,7 +58,7 @@
 </script>
 
 <div
-	class="form-container relative overflow-hidden"
+	class="form-container relative"
 	style="min-height: {minHeight}; height: {contentHeight}px; transition: height 0.3s ease-in-out;"
 	bind:this={containerElement}
 >

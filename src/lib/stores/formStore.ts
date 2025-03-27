@@ -6,7 +6,7 @@ import {
 	calculateFinalScore,
 	extractScoreFromResponse
 } from '$lib/utils/scoring';
-import { scoreStore } from '$lib/utils/ScoreManager';
+import { scoreStore } from '$lib/utils/scoring';
 
 // Core form data
 export const formData = writable<Partial<FormData>>({});

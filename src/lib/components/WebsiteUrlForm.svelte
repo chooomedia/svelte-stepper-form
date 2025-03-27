@@ -1,4 +1,3 @@
-<!-- src/lib/components/WebsiteUrlForm.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
@@ -12,6 +11,7 @@
 		calculateVisibilityScore
 	} from '$lib/utils/scoring';
 	import { stepperStore } from '$lib/stores/stepperStore';
+	import { scoreStore } from '$lib/utils/scoring';
 
 	interface Props {
 		form: SuperValidated<FormData>;
@@ -57,39 +57,6 @@
 			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
 			'aria-label': label
 		};
-	}
-
-	// Prepare URL for display in UI (human readable)
-	function formatDisplayUrl(url: string): string {
-		// Ensure URL has protocol
-		if (!url.startsWith('http://') && !url.startsWith('https://')) {
-			url = 'https://' + url;
-		}
-
-		try {
-			const urlObj = new URL(url);
-			return urlObj.protocol + '//' + urlObj.host + '/';
-		} catch (e) {
-			return url;
-		}
-	}
-
-	// Prepare URL for the webhook (ensuring it's properly formatted for API)
-	function prepareUrlForWebhook(url: string): string {
-		// Remove leading/trailing whitespace
-		url = url.trim();
-
-		// Ensure URL has protocol
-		if (!url.startsWith('http://') && !url.startsWith('https://')) {
-			url = 'https://' + url;
-		}
-
-		// Ensure trailing slash for API compatibility
-		if (!url.endsWith('/')) {
-			url = url + '/';
-		}
-
-		return url;
 	}
 
 	// Start progress animation for auto-advance
@@ -223,7 +190,8 @@
 			bestPractices: 0,
 			securityGrade: 'C',
 			technologies: [],
-			suggestions: []
+			suggestions: [],
+			lighthouse_report: null
 		};
 
 		try {
@@ -231,6 +199,11 @@
 			const dataObj = Array.isArray(data)
 				? data.find((item) => item.lighthouse_report) || data[0]
 				: data;
+
+			// Store the entire lighthouse report
+			if (dataObj.lighthouse_report) {
+				processed.lighthouse_report = dataObj.lighthouse_report;
+			}
 
 			// Extract Lighthouse scores if available
 			if (dataObj.lighthouse_report && dataObj.lighthouse_report.categories) {
@@ -290,14 +263,19 @@
 	async function analyzeWebsite() {
 		if (!$form.company_url) return;
 
-		// Prepare the URL for webhook
-		const webhookUrl = prepareUrlForWebhook($form.company_url);
+		// Prepare URL for webhook - just basic formatting
+		let webhookUrl = $form.company_url.trim();
+		// Ensure URL has protocol
+		if (!webhookUrl.startsWith('http://') && !webhookUrl.startsWith('https://')) {
+			webhookUrl = 'https://' + webhookUrl;
+		}
+		// Ensure trailing slash for API compatibility
+		if (!webhookUrl.endsWith('/')) {
+			webhookUrl = webhookUrl + '/';
+		}
 
 		// Format URL for display
-		formattedUrl = formatDisplayUrl(webhookUrl);
-
-		// Update form with formatted URL
-		$form.company_url = formattedUrl;
+		formattedUrl = webhookUrl;
 
 		isLoading = true;
 		showSeoTips = true;
@@ -311,24 +289,22 @@
 			autoAdvanceTimeout = null;
 		}
 
-		// Stoppe bestehenden Interval, falls vorhanden
+		// Stop existing interval if present
 		if (tipInterval) {
 			clearInterval(tipInterval);
 			tipInterval = null;
 		}
 
 		try {
-			// Create URL for API call
-			const encodedUrl = encodeURIComponent(webhookUrl);
-			const apiUrl = `https://n8n.chooomedia.com/webhook/websitehealth?url=${encodedUrl}`;
+			// Use the URL directly in the API call
+			const apiUrl = `https://n8n.chooomedia.com/webhook/websitehealth?url=${webhookUrl}`;
 
 			// Log for debugging
-			console.log('Original URL:', webhookUrl);
 			console.log('API URL:', apiUrl);
 
-			// Make API request with short timeout to prevent long waits
+			// Make API request with longer timeout to ensure we get a response
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
 			const response = await fetch(apiUrl, {
 				method: 'GET',
@@ -345,7 +321,7 @@
 				throw new Error(`API error: ${response.status}`);
 			}
 
-			// Parse response data
+			// Parse response data - explicitly wait for this
 			const data = await response.json();
 			console.log('Webhook response data:', data);
 
@@ -357,34 +333,53 @@
 			// Process data
 			analysisData = processAnalysisData(data);
 			usingMockData = false;
+
+			// Update the score store with the new data
+			scoreStore.setWebsiteAnalysis(analysisData, $form);
 		} catch (error) {
 			console.warn('Error fetching from webhook, using mock data:', error);
+			analysisError = `Fehler bei der API-Anfrage: ${error.message}. Fallback-Daten werden verwendet.`;
 
 			// Generate mock data for fallback
 			analysisData = generateMockData(formattedUrl);
 			usingMockData = true;
+
+			// Update the score store with fallback data
+			scoreStore.setWebsiteAnalysis(analysisData, $form);
+		} finally {
+			// This always runs regardless of success or failure
+			isLoading = false;
 		}
 
 		// Generate custom SEO tips based on analysis data
 		customTips = generateCustomSeoTips(analysisData);
-
-		// Start cycling through tips
-		startSeoTipsCycle();
 
 		// Calculate final score
 		const formScore = calculateVisibilityScore($form);
 		const websiteScore = analysisData.score || formScore;
 		const finalScore = calculateFinalScore(websiteScore, $form);
 
-		// Update form with calculated score
-		$form.visibility_score = finalScore;
+		// Update form with calculated score - this is crucial
+		if ($form) {
+			try {
+				// Different types of form objects may have different structures
+				if (typeof $form.visibility_score !== 'undefined') {
+					$form.visibility_score = finalScore;
+				} else if ($form.data && typeof $form.data.visibility_score !== 'undefined') {
+					$form.data.visibility_score = finalScore;
+				} else {
+					// Add it if it doesn't exist
+					$form.visibility_score = finalScore;
+				}
+			} catch (e) {
+				console.error('Failed to update form.visibility_score:', e);
+			}
+		}
 
 		// Call the callback with the data and score
 		onAnalysisComplete(analysisData, finalScore);
 
-		// Show results but keep SEO tips visible
-		isLoading = false;
-		showSeoTips = true; // Keep this visible
+		// Show results
 		showResults = true;
 
 		// Start animation for auto-advance progress (7 seconds)
@@ -393,17 +388,19 @@
 
 		// Auto advance after 7 seconds
 		autoAdvanceTimeout = setTimeout(() => {
-			// Stoppe den Interval bevor wir weitergehen
+			// Stop the interval before advancing
 			if (tipInterval) {
 				clearInterval(tipInterval);
 				tipInterval = null;
 			}
 
+			// Mark current step as valid in the stepper store
 			stepperStore.markStepValid(stepperStore.current.index);
+
+			// Navigate to the next step
 			stepperStore.nextStep();
 		}, autoAdvanceDelay);
 	}
-
 	// Format score for display
 	function formatScore(score: number): string {
 		return Math.round(score).toString();
@@ -446,7 +443,6 @@
 </script>
 
 <div class="website-url-form space-y-6">
-	<h2 class="text-2xl font-bold text-gray-900">Onlinereichweite Analyse</h2>
 	<p class="text-gray-600">
 		Gib Deine Website-URL ein, um eine umfangreiche SEO-Analyse sofort zu erhalten
 	</p>
@@ -496,50 +492,7 @@
 	</div>
 
 	{#if showSeoTips}
-		<!-- Zeige entweder Standard-SEO-Tips oder unsere eigenen an, je nach Analysestatus -->
-		{#if !showResults}
-			<div transition:fade={{ duration: 300 }}>
-				<SeoTips />
-			</div>
-		{:else if customTips.length > 0}
-			<!-- Zeige unsere eigenen SEO-Tips im selben Stil wie SeoTips -->
-			<div
-				class="seo-tip-card rounded-lg border border-blue-100 bg-blue-50 p-5 shadow-sm"
-				transition:fade={{ duration: 300 }}
-			>
-				<div class="flex items-start space-x-4">
-					<div class="flex-shrink-0">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-6 w-6 text-blue-500"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
-					</div>
-					<div>
-						<h3 class="font-semibold text-blue-800">SEO-Tipp basierend auf Deiner Analyse:</h3>
-						<p class="mt-1 text-blue-700">{customTips[currentSeoTipIndex]}</p>
-					</div>
-				</div>
-				<div class="mt-4">
-					<div class="h-1 w-full overflow-hidden rounded-full bg-blue-200">
-						<!-- Animate the progress indicator -->
-						<div
-							class="h-full animate-pulse rounded-full bg-blue-500"
-							style="width: {((currentSeoTipIndex + 1) / customTips.length) * 100}%"
-						></div>
-					</div>
-				</div>
-			</div>
-		{/if}
+		<SeoTips {customTips} minDisplayTime={5} isResponseReceived={showResults} />
 	{/if}
 
 	<!-- Results Card - Vereinfacht und im Stil der SEO-Tips -->

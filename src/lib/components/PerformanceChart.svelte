@@ -3,6 +3,7 @@
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import Chart, { type ChartConfiguration } from 'chart.js/auto';
+	import { scoreStore } from '$lib/utils/scoring';
 
 	type Metric = {
 		label: string;
@@ -27,6 +28,29 @@
 		chartHeight = '400px'
 	} = $props<Props>();
 
+	// Subscribe to the score store for consistent data
+	let storeData = $state(null);
+	let storeScore = $state(0);
+
+	onMount(() => {
+		const unsubscribe = scoreStore.subscribe((state) => {
+			storeData = state.auditData;
+			storeScore = state.finalScore;
+
+			// Use store data if available and no auditData provided via props
+			if (storeData && (!auditData || Object.keys(auditData).length === 0)) {
+				auditData = storeData;
+			}
+
+			// Use store score if available and no score provided via props
+			if (storeScore > 0 && (!score || score === DEFAULT_SCORE)) {
+				score = storeScore;
+			}
+		});
+
+		return () => unsubscribe();
+	});
+
 	let chartContainer: HTMLElement;
 	let chartCanvas: HTMLCanvasElement;
 	let chart: Chart;
@@ -34,7 +58,7 @@
 	let chartLoaded = $state(false);
 	let noDataAvailable = $state(false);
 
-	// Data handling
+	// Data handling with reactive updates
 	const metrics = $derived(getMetricsData());
 	const averageValue = $derived(metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length || 0);
 
@@ -53,9 +77,11 @@
 			createMetric('Sicherheit', 0.95, '#00BCD4', 'security')
 		];
 
-		// Apply real data if available
-		if (auditData?.lighthouse_report) {
-			applyLighthouseData(baseMetrics);
+		// Apply real data if available from props or store
+		const dataToUse = auditData || storeData;
+
+		if (dataToUse?.lighthouse_report) {
+			applyLighthouseData(baseMetrics, dataToUse);
 		}
 
 		return baseMetrics.map(normalizeMetric);
@@ -77,12 +103,12 @@
 		};
 	}
 
-	function applyLighthouseData(metrics: Metric[]) {
+	function applyLighthouseData(metrics: Metric[], data: any) {
 		try {
 			metrics.forEach((metric) => {
 				if (metric.category === 'lighthouse') {
 					const categoryName = metric.label.toLowerCase();
-					const score = auditData.lighthouse_report?.categories?.[categoryName]?.score;
+					const score = data.lighthouse_report?.categories?.[categoryName]?.score;
 					if (typeof score === 'number') {
 						metric.value = Math.round(score * 100);
 					}
@@ -217,7 +243,8 @@
 			// Update chart data
 			chart.data.datasets[0].data = updatedMetrics.map((m) => m.value * $animationTween);
 			chart.data.datasets[1].data = updatedMetrics.map(() => updatedAverage);
-			chart.data.datasets[0].backgroundColor = updatedMetrics.map((m) => m.color);
+			chart.data.labels = updatedMetrics.map((m) => m.label);
+			chart.data.datasets[0].pointBackgroundColor = updatedMetrics.map((m) => m.color);
 
 			chart.update('none');
 
@@ -256,7 +283,7 @@
 	}
 </script>
 
-<div class="performance-chart relative rounded-xl bg-white p-6 shadow-lg">
+<div class="performance-chart relative p-6">
 	<!-- Custom legend above the chart -->
 	<div class="mb-4 flex flex-wrap items-center justify-center gap-6">
 		{#each ['Aktueller Wert', 'Durchschnitt', 'Optimalwert'] as legendItem, i}
@@ -291,7 +318,7 @@
 	<div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 		{#each metrics as metric, i}
 			<div
-				class="group relative cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-all"
+				class="group relative cursor-pointer rounded-lg border border-gray-200 bg-white p-2 transition-all"
 				style="border-top: 3px solid {metric.color};"
 				on:mouseenter={() => highlightPoint(i)}
 				on:mouseleave={() => highlightPoint(-1)}
@@ -315,7 +342,9 @@
 	<!-- Loading overlay -->
 	{#if !chartLoaded}
 		<div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90">
-			<div class="spinner animate-spin"></div>
+			<div
+				class="spinner h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
+			></div>
 			<p class="mt-4 text-lg text-gray-600">Lade Diagramm...</p>
 		</div>
 	{/if}
@@ -330,5 +359,16 @@
 
 	:global(.chartjs-tooltip-body) {
 		padding: 4px 8px;
+	}
+
+	/* Fix for spinner animation */
+	.spinner {
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
 	}
 </style>

@@ -1,8 +1,18 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
-	const seoTips = [
+	// Props for the component
+	interface Props {
+		customTips?: string[]; // Optional custom tips from parent component
+		minDisplayTime?: number; // Minimum display time in seconds after webhook response
+		isResponseReceived?: boolean; // Flag to indicate if response was received
+	}
+
+	const { customTips = [], minDisplayTime = 3, isResponseReceived = false } = $props<Props>();
+
+	// Default SEO tips
+	const defaultSeoTips = [
 		'Verwende präzise Seitentitel (Title-Tags) für bessere Klickraten in Suchergebnissen.',
 		'Erstelle einzigartige Meta-Beschreibungen für jede Seite (150-160 Zeichen).',
 		'Verwende eine H1-Überschrift pro Seite, die das Hauptthema klar kommuniziert.',
@@ -19,18 +29,68 @@
 		'Optimiere Open Graph Tags für bessere Darstellung in sozialen Medien.'
 	];
 
+	// State variables
 	let currentTipIndex = $state(0);
-	let intervalId: number;
+	let intervalId: number | undefined;
+	let timeoutId: number | undefined;
+	let showCustomTips = $state(false);
+	let activeTips = $state(defaultSeoTips);
+	let inTransition = $state(false);
+	let tipTitle = $state('SEO-Tipp während der Analyse:');
 
-	onMount(() => {
-		// Change tip every 5 seconds
+	// Handle tip rotation
+	function startTipRotation(tips: string[], interval: number = 5000) {
+		// Clear any existing interval
+		if (intervalId) clearInterval(intervalId);
+
+		// Reset index
+		currentTipIndex = 0;
+
+		// Start new interval for tips rotation
 		intervalId = setInterval(() => {
-			currentTipIndex = (currentTipIndex + 1) % seoTips.length;
-		}, 5000);
+			inTransition = true;
+			setTimeout(() => {
+				currentTipIndex = (currentTipIndex + 1) % tips.length;
+				inTransition = false;
+			}, 300); // Match this with transition duration
+		}, interval);
+
+		return intervalId;
+	}
+
+	// Lifecycle management
+	onMount(() => {
+		// Start with default tips
+		startTipRotation(defaultSeoTips);
+	});
+
+	// Effect to handle custom tips when response is received
+	$effect(() => {
+		// If we have custom tips and response is received
+		if (customTips && customTips.length > 0 && isResponseReceived) {
+			// Clear existing timers
+			if (intervalId) clearInterval(intervalId);
+			if (timeoutId) clearTimeout(timeoutId);
+
+			// Switch to custom tips with smooth transition
+			inTransition = true;
+			setTimeout(() => {
+				showCustomTips = true;
+				activeTips = customTips;
+				tipTitle = 'SEO-Tipp basierend auf Deiner Analyse:';
+				currentTipIndex = 0;
+				inTransition = false;
+
+				// Start rotation with custom tips
+				startTipRotation(customTips, 3000); // Show custom tips faster
+			}, 300);
+		}
 	});
 
 	onDestroy(() => {
+		// Clean up timers
 		if (intervalId) clearInterval(intervalId);
+		if (timeoutId) clearTimeout(timeoutId);
 	});
 </script>
 
@@ -56,16 +116,25 @@
 				/>
 			</svg>
 		</div>
-		<div>
-			<h3 class="font-semibold text-blue-800">SEO-Tipp während der Analyse:</h3>
-			<p class="mt-1 text-blue-700">{seoTips[currentTipIndex]}</p>
+		<div class="relative min-h-[4rem] w-full overflow-hidden">
+			<h3 class="font-semibold text-blue-800">{tipTitle}</h3>
+
+			{#if !inTransition}
+				<p
+					class="mt-1 text-blue-700"
+					in:fly={{ y: -20, duration: 300 }}
+					out:fly={{ y: 20, duration: 300 }}
+				>
+					{activeTips[currentTipIndex]}
+				</p>
+			{/if}
 		</div>
 	</div>
 	<div class="mt-4">
 		<div class="h-1 w-full overflow-hidden rounded-full bg-blue-200">
 			<div
-				class="h-full animate-pulse rounded-full bg-blue-500"
-				style="width: {((currentTipIndex + 1) / seoTips.length) * 100}%"
+				class="h-full animate-pulse rounded-full bg-blue-500 transition-all duration-300"
+				style="width: {((currentTipIndex + 1) / activeTips.length) * 100}%"
 			></div>
 		</div>
 	</div>

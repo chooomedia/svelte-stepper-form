@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { formData, calculatedScore } from '$lib/stores/formStore';
-	import { scoreStore } from '$lib/utils/ScoreManager';
+	import { scoreStore } from '$lib/utils/scoring';
 	import { fade } from 'svelte/transition';
 
 	// Props

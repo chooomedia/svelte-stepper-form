@@ -1,7 +1,6 @@
-<!-- src/lib/components/PricingOptions.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import type { FormData } from '$lib/schema';
 	import { browser } from '$app/environment';
 	import type { SuperValidated } from 'sveltekit-superforms';
@@ -365,7 +364,7 @@
 					<span>Longtime (-20%)</span>
 					{#if paymentType !== 'longtime'}
 						<span
-							class="absolute -right-1 -top-1 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
+							class="absolute -right-1 -top-1 flex h-5 w-5 rotate-[12deg] animate-pulse items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
 						>
 							HOT
 						</span>
@@ -693,7 +692,7 @@
 						und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.
 					</p>
 				</div>
-				<div class="flex justify-center p-2 md:w-1/4">
+				<div class="mr-10 flex justify-center p-2 md:w-1/4">
 					<button
 						onclick={() => handlePaymentTypeChange('longtime')}
 						class="btn btn-warning transform animate-pulse shadow-lg transition-transform duration-300 hover:scale-105"
