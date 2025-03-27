@@ -79,14 +79,15 @@ const createScoreStore = () => {
 				const finalScore =
 					state.websiteScore > 0 ? calculateFinalScore(state.websiteScore, formData) : formScore;
 
-				// Update audit data if needed
+				// Generate audit data if needed
 				const auditData = state.auditData || getFallbackAuditData(finalScore);
 
 				return {
 					...state,
 					formScore,
 					finalScore,
-					auditData
+					auditData,
+					isComplete: true
 				};
 			});
 		},

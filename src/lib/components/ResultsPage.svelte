@@ -478,7 +478,7 @@
 		<div class="mt-6">
 			<button
 				class="rounded-lg bg-white px-8 py-3 font-semibold text-blue-600 shadow-lg transition hover:bg-blue-50"
-				on:click={() =>
+				onclick={() =>
 					window.scrollTo({
 						top: document.querySelector('.mt-8')?.offsetTop || 0,
 						behavior: 'smooth'
@@ -495,14 +495,14 @@
 	>
 		<button
 			class="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto"
-			on:click={restartAssessment}
+			onclick={restartAssessment}
 		>
 			Neues Assessment starten
 		</button>
 
 		<button
 			class="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 sm:w-auto"
-			on:click={nextStep}
+			onclick={nextStep}
 		>
 			Analysebericht per E-Mail erhalten
 		</button>

@@ -8,13 +8,18 @@
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
-	import CompanyForm from '$lib/components/CompanyForm.svelte';
+	import { scoreStore } from '$lib/utils/ScoreManager';
 	import WebsiteUrlForm from '$lib/components/WebsiteUrlForm.svelte';
 	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
 	import { last_step, TOTAL_STEPS } from '$lib/schema';
 
 	// Import stores
-	import { currentStep, stepperStore } from '$lib/stores/stepperStore';
+	import {
+		currentStep,
+		stepperStore,
+		jumpToStep,
+		currentStepIndex
+	} from '$lib/stores/stepperStore';
 	import { formData, calculatedScore, updateFormField } from '$lib/stores/formStore';
 	import { formSubmitting } from '$lib/stores/loadingStore';
 
@@ -40,8 +45,17 @@
 	});
 
 	// Store subscription to update our form data store when form changes
+	let scoreStoreData = $state(null);
+	let contactFormValid = $state(false);
+
 	$effect(() => {
 		$formData = { ...$form };
+
+		const unsubscribe = scoreStore.subscribe((data) => {
+			scoreStoreData = data;
+		});
+
+		return unsubscribe;
 	});
 
 	// Website analysis function
@@ -85,6 +99,30 @@
 			stepperStore.markStepValid($stepperStore.current.index);
 		}
 	});
+
+	let debugStepNumber = $stepperStore.current.index;
+
+	function handleStepChange(event) {
+		const newStep = parseInt(event.target.value, 10);
+		if (newStep >= 1 && newStep <= TOTAL_STEPS) {
+			debugStepNumber = newStep;
+			jumpToStep(newStep);
+		}
+	}
+
+	function prevStep() {
+		if (debugStepNumber > 1) {
+			debugStepNumber--;
+			jumpToStep(debugStepNumber);
+		}
+	}
+
+	function nextStep() {
+		if (debugStepNumber < TOTAL_STEPS) {
+			debugStepNumber++;
+			jumpToStep(debugStepNumber);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -228,25 +266,32 @@
 
 						<!-- Step 10: Company Form -->
 					{:else if $stepperStore.current.index === 10}
-						<ContactForm {form} errors={$errors} />
-
-						<!-- Step 12: Results -->
-					{:else if $stepperStore.current.index === 11}
-						<WaitingScreen
-							onclick={() => {
-								stepperStore.markStepValid($stepperStore.current.index);
-								stepperStore.nextStep();
+						<ContactForm
+							{form}
+							errors={$errors}
+							onValidation={(isValid) => {
+								contactFormValid = isValid;
 							}}
 						/>
 
-						<!-- Fallback: Loading screen -->
+						<!-- Step 12: Results -->
 					{:else if $stepperStore.current.index === 12 && last_step}
 						<ResultsPage
 							score={$calculatedScore}
-							form={formData}
-							auditData={null}
+							formData={$formData}
+							auditData={$scoreStore?.auditData || null}
 							nextStep={() => stepperStore.goToStep(1)}
 							{restartAssessment}
+						/>
+						<!-- Fallback: Loading screen -->
+					{:else if $stepperStore.current.index === 11}
+						<WaitingScreen
+							autoAdvance={7}
+							nextStep={() => {
+								console.log('Moving to step 12');
+								stepperStore.markStepValid($stepperStore.current.index);
+								stepperStore.nextStep();
+							}}
 						/>
 					{/if}
 
@@ -265,7 +310,11 @@
 								label="Weiter"
 								type="button"
 								variant="primary"
-								on:click={() => stepperStore.nextStep()}
+								disabled={$stepperStore.current.index === 10 && !contactFormValid}
+								on:click={() => {
+									stepperStore.markStepValid($stepperStore.current.index);
+									stepperStore.nextStep();
+								}}
 							/>
 						</div>
 					{/if}
@@ -275,24 +324,41 @@
 	</div>
 </div>
 
+<!-- In your template -->
 {#if isDev}
 	<div class="mt-8 rounded border bg-gray-100 p-4">
 		<h3 class="font-semibold">🔧 Debugging-Steuerung</h3>
 		<label for="jumpStep" class="mt-2 block text-sm text-gray-700">Springe zu Schritt:</label>
-		<input
-			id="jumpStep"
-			type="number"
-			min="1"
-			max={TOTAL_STEPS}
-			value={currentStep}
-			class="w-16 rounded border p-2 text-center"
-		/>
-		<button
-			on:click={() => jumpToStep(currentStep)}
-			class="ml-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-		>
-			Springen
-		</button>
+
+		<div class="flex items-center">
+			<input
+				id="jumpStep"
+				type="number"
+				min="1"
+				max={TOTAL_STEPS}
+				value={debugStepNumber}
+				on:input={handleStepChange}
+				class="w-16 rounded border p-2 text-center"
+			/>
+
+			<div class="ml-4 flex space-x-2">
+				<button
+					on:click={prevStep}
+					class="rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600"
+					aria-label="Vorheriger Schritt"
+				>
+					◀
+				</button>
+
+				<button
+					on:click={nextStep}
+					class="rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600"
+					aria-label="Nächster Schritt"
+				>
+					▶
+				</button>
+			</div>
+		</div>
 	</div>
 	<SuperDebug data={form} />
 {/if}

@@ -9,11 +9,12 @@
 	let remainingTime = $state(autoAdvance);
 	let intervalId: number | undefined;
 	let timeoutId: number | undefined;
-	let stepTriggered = false; // Verhindert mehrfaches Aufrufen von nextStep
+	let stepTriggered = $state(false); // Changed to reactive state
 
 	function safeNextStep() {
 		if (!stepTriggered) {
 			stepTriggered = true;
+			console.log('WaitingScreen: Advancing to next step');
 			if (typeof nextStep === 'function') {
 				nextStep();
 			}
@@ -21,6 +22,7 @@
 	}
 
 	onMount(() => {
+		// Count down for display
 		intervalId = setInterval(() => {
 			if (remainingTime > 0) {
 				remainingTime--;
@@ -30,12 +32,15 @@
 			}
 		}, 1000);
 
-		timeoutId = setTimeout(safeNextStep, autoAdvance * 1000);
+		// Set a separate timeout for navigation to ensure it happens
+		timeoutId = setTimeout(() => {
+			safeNextStep();
+		}, autoAdvance * 1000);
 	});
 
 	onDestroy(() => {
-		clearInterval(intervalId);
-		clearTimeout(timeoutId);
+		if (intervalId) clearInterval(intervalId);
+		if (timeoutId) clearTimeout(timeoutId);
 	});
 </script>
 

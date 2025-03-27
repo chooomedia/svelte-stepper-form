@@ -1,5 +1,5 @@
-import { writable, derived, get } from 'svelte/store';
-import { FORM_STEPS } from '$lib/schema';
+import { writable, derived } from 'svelte/store';
+import { FORM_STEPS, TOTAL_STEPS, last_step } from '$lib/schema';
 
 // Core stepper state
 export const currentStepIndex = writable(1);
@@ -12,17 +12,33 @@ export const stepValidity = writable<
 
 // Derived store for current step data
 export const currentStep = derived(currentStepIndex, ($currentStepIndex) => {
-	// Ensure $currentStepIndex is always valid
+	// Special case for step 12
+	if ($currentStepIndex > FORM_STEPS.length) {
+		return {
+			title: 'final',
+			description: 'Ergebnisse',
+			schema: last_step
+		};
+	}
+
+	// Normal case for steps 1-11
 	const index = Math.max(1, Math.min($currentStepIndex, FORM_STEPS.length));
-	return FORM_STEPS[index - 1]; // Get the corresponding step data object
+	return FORM_STEPS[index - 1];
 });
 
+// Fix for the jumpToStep function
 export function jumpToStep(step: number) {
-	if (step >= 1 && step <= FORM_STEPS.length) {
-		currentStep.set(step);
-		console.log(`Jumping to step:  ${step}`);
+	// Allow jumping to TOTAL_STEPS (12) even though FORM_STEPS.length is 11
+	if (step >= 1 && step <= TOTAL_STEPS) {
+		// Set currentStepIndex (writable) instead of trying to set currentStep (derived)
+		currentStepIndex.set(step);
+
+		// Update maxReachedStep to ensure the step is accessible
+		maxReachedStep.update((value) => Math.max(value, step));
+
+		console.log(`Jumping to step: ${step}`);
 	} else {
-		console.warn('Invalid step number');
+		console.warn(`Invalid step number: ${step}. Valid range is 1-${TOTAL_STEPS}`);
 	}
 }
 
@@ -51,7 +67,8 @@ export function goToStep(step: number) {
 export function nextStep() {
 	currentStepIndex.update((step) => {
 		const next = step + 1;
-		if (next <= FORM_STEPS.length) {
+		// Allow advancing to TOTAL_STEPS (12) even though FORM_STEPS.length is 11
+		if (next <= TOTAL_STEPS) {
 			maxReachedStep.update((value) => Math.max(value, next));
 			return next;
 		}

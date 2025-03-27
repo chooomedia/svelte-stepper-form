@@ -106,7 +106,7 @@
 			const remaining = Math.max(0, endTime - now);
 
 			// Calculate percentage (0% → 100%)
-			currentProgress = (elapsed / durationMs) * 100;
+			currentProgress = (elapsed / durationMs) * 10000;
 
 			if (remaining > 0) {
 				requestAnimationFrame(animateProgress);

@@ -462,8 +462,12 @@ export const FORM_STEPS = [
 		schema: step_10
 	},
 	{
+		title: 'waitingscreen',
+		description: 'Deine Anfrage wird bearbeitet'
+	},
+	{
 		title: 'result',
-		description: 'Deine persönlichen Informationen',
+		description: 'Zeit zu handeln: die Ergebnisse',
 		schema: last_step
 	}
 ] as const;
