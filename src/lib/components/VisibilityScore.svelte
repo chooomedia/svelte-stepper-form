@@ -248,7 +248,7 @@
 
 	<!-- Score message and solution - using final values -->
 	<div class="mx-auto max-w-2xl space-y-3 text-center" in:fade={{ delay: 300, duration: 500 }}>
-		<h3 class="text-lg font-semibold text-gray-900">
+		<h3 class="text-xl font-semibold text-gray-900">
 			{finalMessage}
 		</h3>
 		<p class="text-gray-600">

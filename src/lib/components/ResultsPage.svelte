@@ -572,7 +572,7 @@
 					<h4 class="text-xl font-bold text-blue-600">
 						{processedScore < 50
 							? 'Von 0 auf 100: Mindestens 3 Abschlüsse täglich durch maximierte Online-Präsenz'
-							: 'Durchbruch: mehr als 43% mehr Anfragen durch durchdachte Marketing-Strategie'}
+							: 'Durchbruch: mehr als 43% mehr Anfragen dank durchdachter Marketing-Strategie'}
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
