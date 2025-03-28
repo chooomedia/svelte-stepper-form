@@ -18,20 +18,23 @@
 		onAnalysisComplete: (healthData: any, score: number) => void;
 	}
 
-	let { form, errors, onAnalysisComplete } = $props<Props>();
+	let { form, errors = {}, onAnalysisComplete } = $props<Props>();
 
 	// State variables
 	let isLoading = $state(false);
 	let showSeoTips = $state(true); // Always show SEO tips
 	let analysisError = $state('');
-	let autoAdvanceTimeout: number | null = $state(null);
+	let autoAdvanceTimeout: number | undefined;
 	let currentProgress = $state(0);
 	let analysisData = $state<any>(null);
 	let formattedUrl = $state('');
 	let remainingSeconds = $state(45); // Start with 45 seconds
+	let localErrors = $state<Record<string, string>>({});
+	let touchedFields = $state(new Set<string>());
+	let isUrlValid = $state(true);
 
 	// Für erweiterte SEO-Tips
-	let tipInterval: number | null = $state(null);
+	let tipInterval: number | undefined;
 	let customTips = $state<string[]>([
 		// Default SEO tips that show immediately
 		'Verwende präzise Seitentitel (Title-Tags) für bessere Klickraten in Suchergebnissen.',
@@ -41,23 +44,65 @@
 		'Erstelle eine klare Website-Struktur mit logischen URLs.'
 	]);
 
-	// Track field focus for enhanced validation UX
-	let touchedFields = $state(new Set<string>());
+	// URL validation function
+	function validateUrl(url: string): { isValid: boolean; error: string } {
+		if (!url || url.trim() === '') {
+			return { isValid: false, error: 'Bitte eine URL eingeben' };
+		}
+
+		// Check if URL has a valid format
+		try {
+			// Ensure URL has a protocol for validation
+			const urlToCheck =
+				url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
+
+			const parsed = new URL(urlToCheck);
+
+			// Check if domain has a dot (as per schema)
+			if (!parsed.hostname.includes('.')) {
+				return { isValid: false, error: 'Ungültige Domain' };
+			}
+
+			return { isValid: true, error: '' };
+		} catch (error) {
+			return { isValid: false, error: 'Ungültiges URL-Format' };
+		}
+	}
 
 	// Handle field blur
 	function handleBlur(fieldName: string) {
 		touchedFields.add(fieldName);
+
+		if (fieldName === 'company_url' && $form?.company_url !== undefined) {
+			const validation = validateUrl($form.company_url);
+			if (!validation.isValid) {
+				localErrors.company_url = validation.error;
+				isUrlValid = false;
+			} else {
+				delete localErrors.company_url;
+				isUrlValid = true;
+			}
+		}
 	}
 
 	// Check if field should show error
 	function shouldShowError(fieldName: string): boolean {
-		return touchedFields.has(fieldName) && !!errors[fieldName];
+		// Safely check if form is defined and has the company_url property
+		if (touchedFields.has(fieldName)) {
+			return !!errors[fieldName] || !!localErrors[fieldName];
+		}
+		return false;
 	}
 
-	// Get ARIA attributes for field
+	// Get error message
+	function getErrorMessage(fieldName: string): string {
+		return localErrors[fieldName] || errors[fieldName] || '';
+	}
+
+	// Get ARIA attributes for field - fixed to return proper types
 	function getAriaAttrs(fieldName: string, label: string) {
 		return {
-			'aria-invalid': (shouldShowError(fieldName) ? 'true' : 'false') as Booleanish,
+			'aria-invalid': shouldShowError(fieldName) ? 'true' : 'false',
 			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
 			'aria-label': label
 		};
@@ -280,7 +325,20 @@
 
 	// Main analyze function
 	async function analyzeWebsite() {
-		if (!$form.company_url) return;
+		// Check if form and company_url are defined
+		if (!$form || !$form.company_url) {
+			localErrors.company_url = 'Bitte eine URL eingeben';
+			touchedFields.add('company_url');
+			return;
+		}
+
+		// Validate URL
+		const validation = validateUrl($form.company_url);
+		if (!validation.isValid) {
+			localErrors.company_url = validation.error;
+			touchedFields.add('company_url');
+			return;
+		}
 
 		// Prepare URL for webhook - just basic formatting
 		let webhookUrl = $form.company_url.trim();
@@ -302,13 +360,13 @@
 		// Clear any existing timeout
 		if (autoAdvanceTimeout) {
 			clearTimeout(autoAdvanceTimeout);
-			autoAdvanceTimeout = null;
+			autoAdvanceTimeout = undefined;
 		}
 
 		// Stop existing interval if present
 		if (tipInterval) {
 			clearInterval(tipInterval);
-			tipInterval = null;
+			tipInterval = undefined;
 		}
 
 		// Start countdown
@@ -386,11 +444,7 @@
 
 		// Update form with calculated score - this is crucial
 		if ($form && typeof $form === 'object') {
-			if (typeof $form.visibility_score === 'undefined') {
-				$form.visibility_score = finalScore;
-			} else {
-				$form.visibility_score = finalScore;
-			}
+			$form.visibility_score = finalScore;
 		}
 
 		// Call the callback with the data and score
@@ -405,7 +459,7 @@
 			// Stop the interval before advancing
 			if (tipInterval) {
 				clearInterval(tipInterval);
-				tipInterval = null;
+				tipInterval = undefined;
 			}
 
 			// Clear countdown interval
@@ -419,12 +473,33 @@
 		}, autoAdvanceDelay);
 	}
 
+	// URL validation effect when value changes
+	$effect(() => {
+		if ($form?.company_url !== undefined && touchedFields.has('company_url')) {
+			const validation = validateUrl($form.company_url);
+			if (!validation.isValid) {
+				localErrors.company_url = validation.error;
+				isUrlValid = false;
+			} else {
+				delete localErrors.company_url;
+				isUrlValid = true;
+			}
+		}
+	});
+
 	// Auto-analyze when component mounts if URL is already set
 	onMount(() => {
-		if ($form.company_url && !$form.visibility_score) {
-			setTimeout(() => {
-				analyzeWebsite();
-			}, 500);
+		if ($form?.company_url && !$form.visibility_score) {
+			// Validate URL first
+			const validation = validateUrl($form.company_url);
+			if (validation.isValid) {
+				setTimeout(() => {
+					analyzeWebsite();
+				}, 500);
+			} else {
+				localErrors.company_url = validation.error;
+				touchedFields.add('company_url');
+			}
 		}
 
 		// Clean up on component unmount
@@ -474,9 +549,7 @@
 	<!-- Analysis Loading Box (stays visible during load and after) -->
 	{#if isLoading || (analysisData && !analysisError)}
 		<div class="analysis-in-progress mb-6" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
-			<div
-				class="mx-auto max-w-lg rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-lg"
-			>
+			<div class="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-lg">
 				<div class="flex flex-col items-center">
 					<!-- Animated Progress Indicator -->
 					<div class="relative mb-4 h-24 w-24">
@@ -544,8 +617,6 @@
 							<SeoTips {customTips} minDisplayTime={5} isResponseReceived={true} />
 						</div>
 					{/if}
-
-					<!-- Loading Message -->
 				</div>
 			</div>
 		</div>
@@ -560,16 +631,18 @@
 				id="company_url"
 				bind:value={$form.company_url}
 				class="input-field flex-grow shadow-custom {shouldShowError('company_url') ? 'error' : ''}"
-				onblur={() => handleBlur('company_url')}
+				on:blur={() => handleBlur('company_url')}
 				placeholder="https://www.example.com"
 				disabled={isLoading}
-				{...getAriaAttrs('company_url', 'Bitte gib Deine Website-URL ein')}
+				aria-invalid={shouldShowError('company_url') ? 'true' : 'false'}
+				aria-describedby={shouldShowError('company_url') ? 'company_url-error' : undefined}
+				aria-label="Bitte gib Deine Website-URL ein"
 			/>
 			<button
 				type="button"
 				class="btn btn-primary ml-2"
-				disabled={isLoading || !$form.company_url}
-				onclick={analyzeWebsite}
+				disabled={isLoading || !$form?.company_url || !isUrlValid}
+				on:click={analyzeWebsite}
 			>
 				{#if isLoading}
 					<span class="loading loading-spinner loading-sm"></span>
@@ -581,7 +654,7 @@
 		</div>
 		{#if shouldShowError('company_url')}
 			<p class="error-text" id="company_url-error" role="alert" transition:fade>
-				{errors.company_url}
+				{getErrorMessage('company_url')}
 			</p>
 		{/if}
 		{#if analysisError}
@@ -589,7 +662,7 @@
 				{analysisError}
 			</p>
 		{/if}
-		{#if !shouldShowError('company_url') && $form.company_url && !isLoading && !analysisError}
+		{#if !shouldShowError('company_url') && $form?.company_url && !isLoading && !analysisError}
 			<p class="mt-1 text-sm text-gray-500" id="company_url-description">
 				Klicke auf "Analysieren", um Deine Website zu überprüfen
 			</p>

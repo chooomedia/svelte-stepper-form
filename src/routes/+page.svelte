@@ -164,8 +164,9 @@
 			{#if $stepperStore.current.index === 12}
 				{$stepperStore.current.description}
 				{#if $formData?.company_url}
+					von
 					<span class="text-blue-600">
-						{$formData.company_url}
+						{$formData.company_url.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
 					</span>
 				{/if}
 			{:else}
@@ -196,7 +197,7 @@
 							>
 								<WebsiteUrlForm
 									{form}
-									errors={$errors}
+									error={$errors}
 									onAnalysisComplete={handleAnalysisComplete}
 									onclick={() => {
 										stepperStore.markStepValid($stepperStore.current.index);
@@ -273,7 +274,7 @@
 					{:else if $stepperStore.current.index === 10}
 						<ContactForm
 							{form}
-							errors={$errors}
+							error={$errors}
 							onValidation={(isValid) => {
 								contactFormValid = isValid;
 							}}
@@ -308,7 +309,7 @@
 								type="button"
 								variant="secondary"
 								disabled={$stepperStore.current.index === 1}
-								onclick={() => stepperStore.prevStep()}
+								on:click={() => stepperStore.prevStep()}
 							/>
 
 							<Button
@@ -316,7 +317,7 @@
 								type="button"
 								variant="primary"
 								disabled={$stepperStore.current.index === 10 && !contactFormValid}
-								onclick={() => {
+								on:click={() => {
 									stepperStore.markStepValid($stepperStore.current.index);
 									stepperStore.nextStep();
 								}}

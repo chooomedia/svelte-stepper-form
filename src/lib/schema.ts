@@ -37,21 +37,7 @@ export const baseFormSchema = z.object({
 	company_name: z
 		.string({ required_error: 'Unternehmensname wird benötigt' })
 		.min(2, 'Name muss mindestens 2 Zeichen lang sein'),
-	company_url: z
-		.string()
-		.url('Bitte eine gültige URL eingeben')
-		.refine((url) => {
-			try {
-				new URL(url);
-				return true;
-			} catch {
-				return false;
-			}
-		}, 'Ungültiges URL-Format')
-		.refine((url) => {
-			const parsed = new URL(url);
-			return parsed.hostname.includes('.');
-		}, 'Ungültige Domain'),
+	company_url: z.string().url('Bitte gültige URL angeben'),
 	salutation: z.enum(['Herr', 'Frau', 'Divers']).optional(),
 	first_name: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein').optional(),
 	last_name: z.string().min(2, 'Nachname muss mindestens 2 Zeichen lang sein'),
@@ -481,7 +467,7 @@ export const FORM_STEPS = [
 	},
 	{
 		title: 'result',
-		description: 'Handlungsbedarf: Deine Website-Analyse von',
+		description: 'Handlungsbedarf: Deine Website-Analyse',
 		schema: last_step
 	}
 ] as const;

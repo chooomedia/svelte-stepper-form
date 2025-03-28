@@ -30,7 +30,7 @@
     }
 
     .form-container {
-        @apply mx-auto mb-8 max-w-5xl;
+        @apply mx-auto mb-8;
     }
 
     .form-wrapper {
