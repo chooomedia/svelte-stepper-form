@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import type { FormData } from '$lib/schema';
 	import VisibilityScore from './VisibilityScore.svelte';
@@ -224,7 +224,7 @@
 				<!-- Modern score visualization -->
 				<div class="p-6">
 					<h3 class="mb-2 text-xl font-bold">Dein Performance Score</h3>
-					<VisibilityScore score={90} autoAdvance={300} {nextStep} />
+					<VisibilityScore score={processedScore} autoAdvance={36} {nextStep} />
 				</div>
 			</div>
 		</div>

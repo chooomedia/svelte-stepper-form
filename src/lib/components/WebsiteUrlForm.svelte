@@ -360,19 +360,11 @@
 		const finalScore = calculateFinalScore(websiteScore, $form);
 
 		// Update form with calculated score - this is crucial
-		if ($form) {
-			try {
-				// Different types of form objects may have different structures
-				if (typeof $form.visibility_score !== 'undefined') {
-					$form.visibility_score = finalScore;
-				} else if ($form.data && typeof $form.data.visibility_score !== 'undefined') {
-					$form.data.visibility_score = finalScore;
-				} else {
-					// Add it if it doesn't exist
-					$form.visibility_score = finalScore;
-				}
-			} catch (e) {
-				console.error('Failed to update form.visibility_score:', e);
+		if ($form && typeof $form === 'object') {
+			if (typeof $form.visibility_score === 'undefined') {
+				$form.visibility_score = finalScore;
+			} else {
+				$form.visibility_score = finalScore;
 			}
 		}
 
