@@ -141,7 +141,7 @@
 	export const pricePlans = [
 		{
 			name: '1-MONATS-PLAN',
-			price: 3.98,
+			price: 1.98,
 			originalPrice: 7.99,
 			perDay: 'pro Tag',
 			popular: false,
@@ -154,7 +154,7 @@
 		},
 		{
 			name: '3-MONATS-PLAN',
-			price: 5.98,
+			price: 3.98,
 			originalPrice: 10.99,
 			perDay: 'pro Tag',
 			popular: true,
@@ -168,7 +168,7 @@
 		},
 		{
 			name: '6-MONATS-PLAN',
-			price: 9.98,
+			price: 6.98,
 			originalPrice: 19.99,
 			perDay: 'pro Tag',
 			popular: false,
@@ -188,15 +188,13 @@
 		'Methode zur Schaffung eines echten, langfristigen Online-Geschäfts',
 		'Exklusive Konzepte für die Erstellung viraler Inhalte',
 		'Bewährte Experten-Frameworks um schnell und effizient zu skalieren',
-		'TOP 10 erfolgreiche Verkaufsseiten & Funnels für Produktverkäufe',
 		'Faktenbasierte Strategien anhand der Bedürfnisse Deiner Zielgruppe'
 	];
 
 	const excludedFeatures = [
-		'Schnell-reich-werden-Schemata',
+		'Schnell-reich-werden-Schemata: über Nacht reich werden',
 		'Keine langfristigen Verpflichtungen oder Verträge',
 		'Eine investitionsfreie Möglichkeit, die nie hält, was sie verspricht',
-		'Unerprobte Strategien für den Erfolg über Nacht',
 		'MLM, Dropshipping oder Wiederverkauf von Pyramidensystemen'
 	];
 
@@ -266,7 +264,7 @@
 				{/if}
 				<!-- Modern score visualization -->
 				<div class="p-6">
-					<h3 class="mb-2 text-xl font-bold">Dein Performance Score</h3>
+					<h3 class="mb-2 text-center text-xl font-bold">Dein Marketing Score</h3>
 					<VisibilityScore score={processedScore} autoAdvance={360} {nextStep} />
 				</div>
 			</div>
@@ -276,11 +274,7 @@
 		<div
 			class="rounded-lg bg-white shadow-lg transition-all duration-300 hover:shadow-xl md:col-span-2"
 		>
-			<PerformanceChart
-				score={processedScore}
-				auditData={processedAuditData}
-				animateOnResultLoad={pageLoaded}
-			/>
+			<PerformanceChart {score} auditData={getFallbackAuditData} animateOnResultLoad={pageLoaded} />
 		</div>
 	</div>
 
@@ -474,7 +468,7 @@
 				<span class="text-blue-600">Inklusive</span> in all unseren Paketen
 			</h2>
 
-			<div class="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+			<div class="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
 				{#each includedFeatures as feature, i}
 					<div class="flex items-start" in:fly={{ y: 20, delay: 1300 + i * 100, duration: 400 }}>
 						<div class="flex-shrink-0">
@@ -503,7 +497,7 @@
 					Wir arbeiten <span class="text-red-500">nicht</span> mit
 				</h2>
 
-				<div class="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+				<div class="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
 					{#each excludedFeatures as feature, i}
 						<div class="flex items-start" in:fly={{ y: 20, delay: 1800 + i * 100, duration: 400 }}>
 							<div class="flex-shrink-0">
@@ -534,7 +528,7 @@
 						class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-5 py-3 text-base font-medium text-white hover:bg-blue-700"
 						onclick={() =>
 							window.scrollTo({
-								top: document.querySelector('.pricing-options')?.offsetTop || 0,
+								top: document.querySelector('.pricing-cards')?.offsetTop || 0,
 								behavior: 'smooth'
 							})}
 					>
@@ -578,7 +572,7 @@
 					<h4 class="text-xl font-bold text-blue-600">
 						{processedScore < 50
 							? 'Von 0 auf 100: Mindestens 3 Abschlüsse täglich durch maximierte Online-Präsenz'
-							: 'Durchbruch: Über €10.000 monatlich durch durchdachte Marketing-Strategie'}
+							: 'Durchbruch: mehr als 43% mehr Anfragen durch durchdachte Marketing-Strategie'}
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
@@ -609,14 +603,14 @@
 						/>
 					</div>
 					<h4 class="text-xl font-bold text-blue-600">
-						Rekordverdächtige Umsetzung: Landingpage, SEO und full Channel Ads Kampange
+						Effiziente Umsetzung: Landingpage, SEO und full Channel Ads Kampagne
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
 							<span class="text-2xl text-blue-300">"</span>
-							Durch einen Ausfall für eine groß angelegte Kampagne suchten wir nach einen fähigen Dienstleister.
-							Die Landingpage wurde auf unser E-Commerce Netzwerk basierend auf Shopware schnell umgesetzt
-							und die Kampagne war ein voller Erfolg.
+							Die Landingpage und SEO wurde auf Grundlage der analysierten Daten für unser E-Commerce
+							Netzwerk basierend auf Shopware schnell umgesetzt und die Kampagne war dank gezielter Zielgruppenauswahl
+							und Conversion Tracking ein voller Erfolg. Auf jeden Fall empfehlenswert.
 							<span class="text-2xl text-blue-300">"</span>
 						</blockquote>
 						<p class="mt-2 text-right text-sm font-medium text-gray-500">
@@ -644,7 +638,7 @@
 				class="rounded-lg bg-white px-8 py-3 font-semibold text-blue-600 shadow-lg transition hover:bg-blue-50"
 				onclick={() =>
 					window.scrollTo({
-						top: document.querySelector('.mt-8')?.offsetTop || 0,
+						top: document.querySelector('.pricing-cards')?.offsetTop || 0,
 						behavior: 'smooth'
 					})}
 			>

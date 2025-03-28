@@ -3,8 +3,6 @@
 	// Import necessary Svelte functionality
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, scale } from 'svelte/transition';
-	import { cubicInOut } from 'svelte/easing';
-	import { scoreStore } from '$lib/utils/scoring';
 
 	// Component props with defaults
 	const {
@@ -250,7 +248,7 @@
 
 	<!-- Score message and solution - using final values -->
 	<div class="mx-auto max-w-2xl space-y-3 text-center" in:fade={{ delay: 300, duration: 500 }}>
-		<h3 class="text-2xl font-semibold text-gray-900">
+		<h3 class="text-lg font-semibold text-gray-900">
 			{finalMessage}
 		</h3>
 		<p class="text-gray-600">

@@ -161,7 +161,16 @@
 	<div class="form-wrapper">
 		<!-- Dynamic step content based on current step -->
 		<h2 class="mb-6 text-center text-xl font-semibold text-gray-700">
-			{$stepperStore.current.description}
+			{#if $stepperStore.current.index === 12}
+				{$stepperStore.current.description}
+				{#if $formData?.company_url}
+					<span class="text-blue-600">
+						{$formData.company_url}
+					</span>
+				{/if}
+			{:else}
+				{$stepperStore.current.description}
+			{/if}
 		</h2>
 		{#key $stepperStore.current.index}
 			<div transition:fade={{ duration: 500 }} class="form-card">
@@ -299,7 +308,7 @@
 								type="button"
 								variant="secondary"
 								disabled={$stepperStore.current.index === 1}
-								on:click={() => stepperStore.prevStep()}
+								onclick={() => stepperStore.prevStep()}
 							/>
 
 							<Button
@@ -307,7 +316,7 @@
 								type="button"
 								variant="primary"
 								disabled={$stepperStore.current.index === 10 && !contactFormValid}
-								on:click={() => {
+								onclick={() => {
 									stepperStore.markStepValid($stepperStore.current.index);
 									stepperStore.nextStep();
 								}}
@@ -333,13 +342,13 @@
 				min="1"
 				max={TOTAL_STEPS}
 				value={debugStepNumber}
-				on:input={handleStepChange}
+				oninput={handleStepChange}
 				class="w-16 rounded border p-2 text-center"
 			/>
 
 			<div class="ml-4 flex space-x-2">
 				<button
-					on:click={prevStep}
+					onclick={prevStep}
 					class="rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600"
 					aria-label="Vorheriger Schritt"
 				>
@@ -347,7 +356,7 @@
 				</button>
 
 				<button
-					on:click={nextStep}
+					onclick={nextStep}
 					class="rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600"
 					aria-label="Nächster Schritt"
 				>

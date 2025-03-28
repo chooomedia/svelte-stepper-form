@@ -2,7 +2,7 @@
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import Chart, { type ChartConfiguration } from 'chart.js/auto';
+	import Chart from 'chart.js/auto';
 	import { scoreStore } from '$lib/utils/scoring';
 
 	type Metric = {
@@ -12,6 +12,7 @@
 		category: string;
 	};
 
+	// Define props using $props
 	interface Props {
 		score?: number;
 		auditData?: any;
@@ -19,215 +20,260 @@
 		chartHeight?: string;
 	}
 
-	const DEFAULT_SCORE = 50;
-
 	let {
-		score = DEFAULT_SCORE,
+		score = 50,
 		auditData = null,
 		animateOnResultLoad = false,
 		chartHeight = '400px'
 	} = $props<Props>();
 
-	// Subscribe to the score store for consistent data
+	// DOM references
+	let chartContainer: HTMLElement;
+	let chartCanvas: HTMLCanvasElement;
+	let chart: Chart;
+
+	// State variables
+	let isAnimating = $state(true);
+	let chartLoaded = $state(false);
 	let storeData = $state(null);
 	let storeScore = $state(0);
+	let effectiveScore = $state(score);
+	let metrics = $state<Metric[]>([]);
+	let averageValue = $state(0);
+	let needsRecalculation = $state(false); // Flag to control recalculations
 
+	// Animation control
+	const animationTween = tweened(1, { duration: 1500, easing: cubicOut });
+
+	// Subscribe to the score store for consistent data
 	onMount(() => {
+		console.log('PerformanceChart mounted with props:', { score, auditData });
+
 		const unsubscribe = scoreStore.subscribe((state) => {
-			storeData = state.auditData;
-			storeScore = state.finalScore;
+			console.log('ScoreStore updated:', state);
 
-			// Use store data if available and no auditData provided via props
-			if (storeData && (!auditData || Object.keys(auditData).length === 0)) {
-				auditData = storeData;
-			}
+			// Use local variables to avoid reactivity issues
+			const newStoreData = state.auditData;
+			const newStoreScore = state.finalScore;
 
-			// Use store score if available and no score provided via props
-			if (storeScore > 0 && (!score || score === DEFAULT_SCORE)) {
-				score = storeScore;
+			// Check if data actually changed to avoid unnecessary updates
+			if (
+				JSON.stringify(newStoreData) !== JSON.stringify(storeData) ||
+				newStoreScore !== storeScore
+			) {
+				storeData = newStoreData;
+				storeScore = newStoreScore;
+
+				// Use store data if available and no explicit props provided
+				if (storeData && (!auditData || Object.keys(auditData).length === 0)) {
+					console.log('Using store auditData:', storeData);
+					needsRecalculation = true;
+				}
+
+				// Use store score if available and no explicit score provided
+				if (storeScore > 0 && (!score || score === 50)) {
+					console.log('Using store score:', storeScore);
+					effectiveScore = storeScore;
+					needsRecalculation = true;
+				}
 			}
 		});
+
+		// Initial calculation
+		calculateMetrics();
 
 		return () => unsubscribe();
 	});
 
-	let chartContainer: HTMLElement;
-	let chartCanvas: HTMLCanvasElement;
-	let chart: Chart;
-	let isAnimating = $state(true);
-	let chartLoaded = $state(false);
-	let noDataAvailable = $state(false);
+	// Calculate metrics from available data
+	function calculateMetrics() {
+		console.log('Calculating metrics with:', {
+			effectiveScore,
+			auditData: auditData ? 'Present' : 'Missing',
+			storeData: storeData ? 'Present' : 'Missing'
+		});
 
-	// Data handling with reactive updates
-	const metrics = $derived(getMetricsData());
-	const averageValue = $derived(metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length || 0);
-
-	// Create a clean metrics calculation function
-	function getMetricsData(): Metric[] {
 		// Ensure score is within bounds
-		const clampedScore = Math.min(Math.max(score || DEFAULT_SCORE, 0), 100);
+		const clampedScore = Math.min(Math.max(effectiveScore || 50, 0), 100);
 
-		// Create base metrics with default values
+		// Create base metrics with dynamic values based on score
 		const baseMetrics: Metric[] = [
-			createMetric('SEO', 0.9, '#4CAF50', 'lighthouse'),
-			createMetric('Performance', 0.8, '#2196F3', 'lighthouse'),
-			createMetric('Zugänglichkeit', 0.7, '#FF9800', 'lighthouse'),
-			createMetric('Best Practices', 0.85, '#F44336', 'lighthouse'),
-			createMetric('Content', 0.75, '#9C27B0', 'content'),
-			createMetric('Sicherheit', 0.95, '#00BCD4', 'security')
+			{
+				label: 'SEO',
+				value: Math.round(clampedScore * 0.9),
+				color: '#4CAF50',
+				category: 'lighthouse'
+			},
+			{
+				label: 'Performance',
+				value: Math.round(clampedScore * 0.8),
+				color: '#2196F3',
+				category: 'lighthouse'
+			},
+			{
+				label: 'Zugänglichkeit',
+				value: Math.round(clampedScore * 0.7),
+				color: '#FF9800',
+				category: 'lighthouse'
+			},
+			{
+				label: 'Best Practices',
+				value: Math.round(clampedScore * 0.85),
+				color: '#F44336',
+				category: 'lighthouse'
+			},
+			{
+				label: 'Content',
+				value: Math.round(clampedScore * 0.75),
+				color: '#9C27B0',
+				category: 'content'
+			},
+			{
+				label: 'Sicherheit',
+				value: Math.round(clampedScore * 0.95),
+				color: '#00BCD4',
+				category: 'security'
+			}
 		];
 
-		// Apply real data if available from props or store
+		// Try to apply real data if available
 		const dataToUse = auditData || storeData;
 
 		try {
 			if (dataToUse) {
-				// Versuche zunächst, aus den metrics zu lesen
+				console.log('Processing audit data:', dataToUse);
+
+				// Try to use metrics data first
 				if (dataToUse.metrics && typeof dataToUse.metrics === 'object') {
-					console.log('Using metrics data:', dataToUse.metrics);
+					console.log('Using metrics from audit data:', dataToUse.metrics);
 
-					// Sichereres Aktualisieren mit Nullchecks und Standardwerten
-					const metricsMap = {
-						SEO: dataToUse.metrics.seo || baseMetrics.find((m) => m.label === 'SEO')?.value || 0,
-						Performance:
-							dataToUse.metrics.performance ||
-							baseMetrics.find((m) => m.label === 'Performance')?.value ||
-							0,
-						Zugänglichkeit:
-							dataToUse.metrics.accessibility ||
-							baseMetrics.find((m) => m.label === 'Zugänglichkeit')?.value ||
-							0,
-						'Best Practices':
-							dataToUse.metrics.bestPractices ||
-							baseMetrics.find((m) => m.label === 'Best Practices')?.value ||
-							0,
-						Content:
-							dataToUse.metrics.content ||
-							baseMetrics.find((m) => m.label === 'Content')?.value ||
-							0,
-						Sicherheit:
-							dataToUse.metrics.security ||
-							baseMetrics.find((m) => m.label === 'Sicherheit')?.value ||
-							0
-					};
-
-					// Aktualisiere alle Metriken
+					// Map metrics back to our baseMetrics array
 					baseMetrics.forEach((metric) => {
-						if (metricsMap[metric.label] !== undefined) {
-							metric.value = metricsMap[metric.label];
+						switch (metric.label) {
+							case 'SEO':
+								if (dataToUse.metrics.seo !== undefined) {
+									metric.value = dataToUse.metrics.seo;
+								}
+								break;
+							case 'Performance':
+								if (dataToUse.metrics.performance !== undefined) {
+									metric.value = dataToUse.metrics.performance;
+								}
+								break;
+							case 'Zugänglichkeit':
+								if (dataToUse.metrics.accessibility !== undefined) {
+									metric.value = dataToUse.metrics.accessibility;
+								}
+								break;
+							case 'Best Practices':
+								if (dataToUse.metrics.bestPractices !== undefined) {
+									metric.value = dataToUse.metrics.bestPractices;
+								}
+								break;
+							case 'Content':
+								if (dataToUse.metrics.content !== undefined) {
+									metric.value = dataToUse.metrics.content;
+								}
+								break;
+							case 'Sicherheit':
+								if (dataToUse.metrics.security !== undefined) {
+									metric.value = dataToUse.metrics.security;
+								}
+								break;
 						}
 					});
 				}
-				// Fallback: Versuche aus Lighthouse-Daten zu lesen
-				else if (dataToUse.lighthouse_report) {
-					console.log('Using lighthouse data');
-					applyLighthouseData(baseMetrics, dataToUse);
-				}
-				// Fallback für detaillierte Scores
-				else if (dataToUse.detailed_scores) {
-					console.log('Using detailed scores');
-					baseMetrics.find((m) => m.label === 'SEO')!.value = dataToUse.detailed_scores.title || 50;
-					baseMetrics.find((m) => m.label === 'Content')!.value =
-						dataToUse.detailed_scores.meta_description || 50;
-					baseMetrics.find((m) => m.label === 'Zugänglichkeit')!.value =
-						dataToUse.detailed_scores.alt_attributes || 50;
-				}
-				// Letztendlicher Fallback: Generiere Werte basierend auf dem Gesamtscore
-				else {
-					console.log('Using fallback with overall score:', clampedScore);
+				// Otherwise try to use lighthouse data
+				else if (dataToUse.lighthouse_report && dataToUse.lighthouse_report.categories) {
+					console.log('Using lighthouse data:', dataToUse.lighthouse_report.categories);
+
+					const categories = dataToUse.lighthouse_report.categories;
+
+					// Update metrics from lighthouse data
 					baseMetrics.forEach((metric) => {
-						const randomVariation = Math.random() * 0.3 - 0.15; // -15% bis +15% Variation
-						const multiplier = 0.7 + randomVariation;
-						metric.value = Math.round(clampedScore * multiplier);
+						if (metric.category === 'lighthouse') {
+							const categoryKey = metric.label.toLowerCase().replace(/ä/g, 'a').replace(/ü/g, 'u');
+							const score = categories[categoryKey]?.score;
+
+							if (typeof score === 'number') {
+								metric.value = Math.round(score * 100);
+								console.log(`Updated ${metric.label} to ${metric.value} from lighthouse data`);
+							}
+						}
 					});
 				}
+
+				// Detailed scores can provide additional metrics
+				if (dataToUse.detailed_scores) {
+					console.log('Using detailed scores:', dataToUse.detailed_scores);
+
+					// Map relevant detailed scores to our metrics
+					if (dataToUse.detailed_scores.title) {
+						const seoMetric = baseMetrics.find((m) => m.label === 'SEO');
+						if (seoMetric) {
+							seoMetric.value = dataToUse.detailed_scores.title;
+						}
+					}
+
+					if (dataToUse.detailed_scores.meta_description) {
+						const contentMetric = baseMetrics.find((m) => m.label === 'Content');
+						if (contentMetric) {
+							contentMetric.value = dataToUse.detailed_scores.meta_description;
+						}
+					}
+
+					if (dataToUse.detailed_scores.alt_attributes) {
+						const accessibilityMetric = baseMetrics.find((m) => m.label === 'Zugänglichkeit');
+						if (accessibilityMetric) {
+							accessibilityMetric.value = dataToUse.detailed_scores.alt_attributes;
+						}
+					}
+				}
 			} else {
-				console.log('No data available, using default score multipliers with:', clampedScore);
+				console.log('No audit data available, using score-based metrics');
 			}
 		} catch (error) {
 			console.error('Error processing metric data:', error);
-			// Bei Fehlern trotzdem sinnvolle Werte zurückgeben
-			baseMetrics.forEach((metric) => {
-				const randomVariation = Math.random() * 0.2 - 0.1; // -10% bis +10% Variation
-				const multiplier = 0.8 + randomVariation;
-				metric.value = Math.round(clampedScore * multiplier);
-			});
 		}
 
-		return baseMetrics.map(normalizeMetric);
-	}
-
-	// Helper functions for metrics
-	function createMetric(
-		label: string,
-		multiplier: number,
-		color: string,
-		category: string
-	): Metric {
-		const clampedScore = Math.min(Math.max(score || DEFAULT_SCORE, 0), 100);
-		return {
-			label,
-			value: Math.min(Math.round(clampedScore * multiplier), 100),
-			color,
-			category
-		};
-	}
-
-	function applyLighthouseData(metrics: Metric[], data: any) {
-		try {
-			metrics.forEach((metric) => {
-				if (metric.category === 'lighthouse') {
-					const categoryName = metric.label.toLowerCase();
-					const score = data.lighthouse_report?.categories?.[categoryName]?.score;
-					if (typeof score === 'number') {
-						metric.value = Math.round(score * 100);
-					}
-				}
-			});
-		} catch (error) {
-			console.error('Error processing lighthouse data:', error);
-		}
-	}
-
-	function normalizeMetric(metric: Metric): Metric {
-		return {
+		// Normalize all metric values to ensure they're in the valid range 0-100
+		metrics = baseMetrics.map((metric) => ({
 			...metric,
 			value: Math.min(Math.max(metric.value, 0), 100)
-		};
+		}));
+
+		// Calculate average
+		averageValue = metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length || 0;
+
+		console.log('Final metrics:', metrics);
+		console.log('Average value:', averageValue);
+
+		// Update the chart if it exists
+		updateChartData();
 	}
 
-	// Chart initialization and animation
-	const animationTween = tweened(0, { duration: 1500, easing: cubicOut });
-
+	// Initialize Chart.js instance
 	async function initializeChart() {
-		if (!chartCanvas) return;
+		if (!chartCanvas) {
+			console.warn('Chart canvas not available');
+			return;
+		}
 
 		const ctx = chartCanvas.getContext('2d');
-		if (!ctx) return;
+		if (!ctx) {
+			console.warn('Canvas context not available');
+			return;
+		}
 
-		// Destroy existing chart instance
+		// Destroy existing chart instance if it exists
 		if (chart) {
 			chart.destroy();
 		}
 
-		// Create chart with appropriate configuration
-		chart = new Chart(ctx, getChartConfig());
-		chartLoaded = true;
+		console.log('Initializing chart with metrics:', metrics);
 
-		await startAnimation();
-	}
-
-	function getChartConfig(): ChartConfiguration {
-		const benchmarks = {
-			SEO: 75,
-			Performance: 82,
-			Zugänglichkeit: 70,
-			'Best Practices': 85,
-			Content: 78,
-			Sicherheit: 90
-		};
-
-		return {
+		// Create chart configuration with correct data
+		const chartConfig = {
 			type: 'line',
 			data: {
 				labels: metrics.map((m) => m.label),
@@ -287,11 +333,11 @@
 						borderColor: '#4B5563',
 						callbacks: {
 							label: (ctx) => {
-								// Erweiterte Label mit Benchmark-Vergleich
 								const value = ctx.parsed.y;
-								const benchmark = benchmarks[ctx.label as keyof typeof benchmarks] || 75;
+								const label = ctx.dataset.label || '';
+								const benchmark = getBenchmarkValue(ctx.label);
 								const comparison = value > benchmark ? 'über' : value < benchmark ? 'unter' : 'im';
-								return `${ctx.dataset.label}: ${value}/100 (${comparison} Durchschnitt)`;
+								return `${label}: ${value}/100 (${comparison} Durchschnitt)`;
 							}
 						}
 					}
@@ -299,67 +345,113 @@
 				animation: { duration: 1200, easing: 'easeOutQuart' }
 			}
 		};
+
+		// Create the chart
+		chart = new Chart(ctx, chartConfig);
+		chartLoaded = true;
+
+		// Start animation
+		await startAnimation();
 	}
 
-	function getMetricDescription(label: string): string {
-		const descriptions = {
-			SEO: 'Wie gut Ihre Website für Suchmaschinen optimiert ist',
-			Performance: 'Wie schnell Ihre Website lädt und reagiert',
-			Zugänglichkeit: 'Wie gut Ihre Website für alle Nutzer zugänglich ist',
-			'Best Practices': 'Wie gut Ihre Website modernen Web-Standards entspricht',
-			Content: 'Qualität und Struktur Ihrer Inhalte',
-			Sicherheit: 'Wie sicher Ihre Website gegen Bedrohungen ist'
+	// Get benchmark value for a metric
+	function getBenchmarkValue(label: string): number {
+		const benchmarks = {
+			SEO: 75,
+			Performance: 82,
+			Zugänglichkeit: 70,
+			'Best Practices': 85,
+			Content: 78,
+			Sicherheit: 90
 		};
 
-		return descriptions[label as keyof typeof descriptions] || '';
+		return benchmarks[label as keyof typeof benchmarks] || 75;
 	}
 
+	// Update chart data with current metrics
+	function updateChartData() {
+		if (!chart) return;
+
+		console.log('Updating chart data with metrics:', metrics);
+
+		chart.data.labels = metrics.map((m) => m.label);
+		chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
+		chart.data.datasets[0].pointBackgroundColor = metrics.map((m) => m.color);
+		chart.data.datasets[1].data = metrics.map(() => averageValue);
+
+		chart.update('none');
+	}
+
+	// Animation sequence
 	async function startAnimation() {
 		isAnimating = true;
+		console.log('Starting animation sequence');
+
+		// Reset animation
 		await animationTween.set(0);
+
+		// Animate to full value
 		await animationTween.set(1);
+
 		isAnimating = false;
 	}
 
-	// Update chart data when animationTween changes
+	// Update chart when animation values change
 	$effect(() => {
-		if (chart) {
+		if (chart && metrics.length) {
 			chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
-			chart.data.datasets[1].data = metrics.map(() => averageValue);
 			chart.update('none');
 		}
 	});
 
-	// Update chart when score or auditData changes
 	$effect(() => {
-		if (chart && chartLoaded) {
-			// Recalculate metrics with new data
-			const updatedMetrics = getMetricsData();
-			const updatedAverage =
-				updatedMetrics.reduce((acc, m) => acc + m.value, 0) / updatedMetrics.length || 0;
-
-			// Update chart data
-			chart.data.datasets[0].data = updatedMetrics.map((m) => m.value * $animationTween);
-			chart.data.datasets[1].data = updatedMetrics.map(() => updatedAverage);
-			chart.data.labels = updatedMetrics.map((m) => m.label);
-			chart.data.datasets[0].pointBackgroundColor = updatedMetrics.map((m) => m.color);
-
-			chart.update('none');
-
-			// Restart animation
-			startAnimation();
+		if (needsRecalculation) {
+			console.log('Running deferred metric calculation');
+			calculateMetrics();
+			needsRecalculation = false;
 		}
 	});
 
-	// Initialize chart on mount
-	onMount(async () => {
-		await tick();
-		await initializeChart();
+	// Update everything when score or auditData changes
+	$effect(() => {
+		// Create a local copy to avoid reactivity issues
+		const currentScore = score;
+		const currentAuditData = auditData;
+
+		console.log('Score or auditData changed, recalculating', { currentScore, currentAuditData });
+
+		// Only update if we have meaningful changes
+		if (
+			effectiveScore !== currentScore ||
+			JSON.stringify(currentAuditData) !== JSON.stringify(storeData)
+		) {
+			effectiveScore = currentScore;
+			// Don't call calculateMetrics() here as it may trigger another effect
+			// Just set a flag and handle the calculation in a separate effect
+			needsRecalculation = true;
+		}
 	});
 
-	// Clean up on destroy
+	// Initialize the chart once DOM is ready and metrics are calculated
+	$effect(() => {
+		const currentMetricsLength = metrics.length;
+		const hasCanvas = !!chartCanvas;
+		const hasExistingChart = !!chart;
+
+		if (currentMetricsLength > 0 && hasCanvas && !hasExistingChart) {
+			console.log('Metrics ready and canvas available, initializing chart');
+			// Use setTimeout to break potential update cycles
+			setTimeout(() => {
+				initializeChart();
+			}, 0);
+		}
+	});
+
+	// Clean up on component destroy
 	onDestroy(() => {
-		chart?.destroy();
+		if (chart) {
+			chart.destroy();
+		}
 	});
 
 	// Function to highlight specific data point
@@ -367,12 +459,7 @@
 		if (!chart) return;
 
 		if (index >= 0 && index < metrics.length) {
-			chart.setActiveElements([
-				{
-					datasetIndex: 0,
-					index
-				}
-			]);
+			chart.setActiveElements([{ datasetIndex: 0, index }]);
 		} else {
 			chart.setActiveElements([]);
 		}
@@ -457,16 +544,5 @@
 
 	:global(.chartjs-tooltip-body) {
 		padding: 4px 8px;
-	}
-
-	/* Fix for spinner animation */
-	.spinner {
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 </style>

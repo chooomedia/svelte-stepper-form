@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fade, fly, scale } from 'svelte/transition';
-	import { quintOut } from 'svelte/easing';
+	import { fade } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
 	import SeoTips from './SeoTips.svelte';
@@ -23,19 +22,24 @@
 
 	// State variables
 	let isLoading = $state(false);
-	let showSeoTips = $state(false);
+	let showSeoTips = $state(true); // Always show SEO tips
 	let analysisError = $state('');
-	let showResults = $state(false);
-	let analysisData = $state<any>(null);
-	let formattedUrl = $state('');
 	let autoAdvanceTimeout: number | null = $state(null);
 	let currentProgress = $state(0);
-	let usingMockData = $state(false);
+	let analysisData = $state<any>(null);
+	let formattedUrl = $state('');
+	let remainingSeconds = $state(45); // Start with 45 seconds
 
 	// Für erweiterte SEO-Tips
-	let currentSeoTipIndex = $state(0);
 	let tipInterval: number | null = $state(null);
-	let customTips = $state<string[]>([]);
+	let customTips = $state<string[]>([
+		// Default SEO tips that show immediately
+		'Verwende präzise Seitentitel (Title-Tags) für bessere Klickraten in Suchergebnissen.',
+		'Erstelle einzigartige Meta-Beschreibungen für jede Seite (150-160 Zeichen).',
+		'Verwende eine H1-Überschrift pro Seite, die das Hauptthema klar kommuniziert.',
+		'Optimiere Bilder mit Alt-Texten und komprimiere sie für schnellere Ladezeiten.',
+		'Erstelle eine klare Website-Struktur mit logischen URLs.'
+	]);
 
 	// Track field focus for enhanced validation UX
 	let touchedFields = $state(new Set<string>());
@@ -73,7 +77,7 @@
 			const remaining = Math.max(0, endTime - now);
 
 			// Calculate percentage (0% → 100%)
-			currentProgress = (elapsed / durationMs) * 10000;
+			currentProgress = (elapsed / durationMs) * 100;
 
 			if (remaining > 0) {
 				requestAnimationFrame(animateProgress);
@@ -83,6 +87,21 @@
 		};
 
 		requestAnimationFrame(animateProgress);
+	}
+
+	// Start countdown timer
+	function startCountdown(fromSeconds: number = 45) {
+		remainingSeconds = fromSeconds;
+
+		const countdownInterval = setInterval(() => {
+			if (remainingSeconds > 0) {
+				remainingSeconds--;
+			} else {
+				clearInterval(countdownInterval);
+			}
+		}, 1000);
+
+		return countdownInterval;
 	}
 
 	// Generate additional SEO tips based on analysis data
@@ -99,28 +118,28 @@
 		const customTips = [];
 
 		// Performance tips
-		if (analysisData.performance < 70) {
+		if (analysisData?.performance < 70) {
 			customTips.push(
 				'Die Ladegeschwindigkeit Deiner Website könnte verbessert werden. Optimiere Bilder und reduziere unnötige Skripte.'
 			);
 		}
 
 		// SEO tips
-		if (analysisData.seo < 70) {
+		if (analysisData?.seo < 70) {
 			customTips.push(
 				'Deine SEO-Bewertung zeigt Verbesserungspotential. Überprüfe Title-Tags, Meta-Beschreibungen und interne Verlinkungen.'
 			);
 		}
 
 		// Accessibility tips
-		if (analysisData.accessibility < 70) {
+		if (analysisData?.accessibility < 70) {
 			customTips.push(
 				'Verbessere die Zugänglichkeit Deiner Website durch bessere Farbkontraste und korrekte Verwendung von HTML-Elementen.'
 			);
 		}
 
 		// Security tip
-		if (analysisData.securityGrade !== 'A') {
+		if (analysisData?.securityGrade !== 'A') {
 			customTips.push(
 				'Verbessere die Sicherheit Deiner Website durch Implementierung von HTTPS und modernen Sicherheitsheadern.'
 			);
@@ -259,21 +278,6 @@
 		}
 	}
 
-	// Cycle through SEO tips
-	function startSeoTipsCycle() {
-		// Stoppe bestehenden Interval
-		if (tipInterval) {
-			clearInterval(tipInterval);
-		}
-
-		currentSeoTipIndex = 0;
-
-		// Starte neuen Interval für Tips (alle 2 Sekunden)
-		tipInterval = setInterval(() => {
-			currentSeoTipIndex = (currentSeoTipIndex + 1) % customTips.length;
-		}, 2000);
-	}
-
 	// Main analyze function
 	async function analyzeWebsite() {
 		if (!$form.company_url) return;
@@ -293,10 +297,7 @@
 		formattedUrl = webhookUrl;
 
 		isLoading = true;
-		showSeoTips = true;
 		analysisError = '';
-		showResults = false;
-		usingMockData = false;
 
 		// Clear any existing timeout
 		if (autoAdvanceTimeout) {
@@ -309,6 +310,9 @@
 			clearInterval(tipInterval);
 			tipInterval = null;
 		}
+
+		// Start countdown
+		let countdownInterval = startCountdown(45);
 
 		try {
 			// Use the URL directly in the API call
@@ -347,34 +351,37 @@
 
 			// Process data
 			analysisData = processAnalysisData(data);
-			usingMockData = false;
 
 			// Update the score store with the new data
-
 			if (data?.lighthouseResult) {
 				console.log('Lighthouse metrics available:', data.lighthouseResult.categories);
 			}
+
+			// Update the score store with the new data
+			scoreStore.setWebsiteAnalysis(analysisData, $form);
 		} catch (error) {
 			console.warn('Error fetching from webhook, using mock data:', error);
 			analysisError = `Fehler bei der API-Anfrage: ${error.message}. Fallback-Daten werden verwendet.`;
 
 			// Generate mock data for fallback
 			analysisData = generateMockData(formattedUrl);
-			usingMockData = true;
 
 			// Update the score store with fallback data
 			scoreStore.setWebsiteAnalysis(analysisData, $form);
 		} finally {
-			// This always runs regardless of success or failure
-			isLoading = false;
-		}
+			// Generate custom SEO tips based on analysis data
+			const generatedTips = generateCustomSeoTips(analysisData);
+			if (generatedTips.length > 0) {
+				customTips = generatedTips;
+			}
 
-		// Generate custom SEO tips based on analysis data
-		customTips = generateCustomSeoTips(analysisData);
+			// Set remaining time to shorter value if analysis is complete
+			remainingSeconds = Math.min(remainingSeconds, 7);
+		}
 
 		// Calculate final score
 		const formScore = calculateVisibilityScore($form);
-		const websiteScore = analysisData.score || formScore;
+		const websiteScore = analysisData?.score || formScore;
 		const finalScore = calculateFinalScore(websiteScore, $form);
 
 		// Update form with calculated score - this is crucial
@@ -389,9 +396,6 @@
 		// Call the callback with the data and score
 		onAnalysisComplete(analysisData, finalScore);
 
-		// Show results
-		showResults = true;
-
 		// Start animation for auto-advance progress (7 seconds)
 		const autoAdvanceDelay = 7000;
 		startProgressAnimation(autoAdvanceDelay);
@@ -404,32 +408,15 @@
 				tipInterval = null;
 			}
 
+			// Clear countdown interval
+			clearInterval(countdownInterval);
+
 			// Mark current step as valid in the stepper store
 			stepperStore.markStepValid(stepperStore.current.index);
 
 			// Navigate to the next step
 			stepperStore.nextStep();
 		}, autoAdvanceDelay);
-	}
-	// Format score for display
-	function formatScore(score: number): string {
-		return Math.round(score).toString();
-	}
-
-	// Get color class based on score value
-	function getScoreColorClass(score: number): string {
-		if (score >= 90) return 'text-green-500';
-		if (score >= 70) return 'text-blue-500';
-		if (score >= 50) return 'text-yellow-500';
-		return 'text-red-500';
-	}
-
-	// Get background color based on score
-	function getScoreBackgroundColor(score: number): string {
-		if (score >= 90) return '#10B981'; // green
-		if (score >= 70) return '#3B82F6'; // blue
-		if (score >= 50) return '#F59E0B'; // yellow
-		return '#EF4444'; // red
 	}
 
 	// Auto-analyze when component mounts if URL is already set
@@ -453,10 +440,118 @@
 </script>
 
 <div class="website-url-form space-y-6">
-	<p class="text-gray-600">
-		Gib Deine Website-URL ein, um eine umfangreiche SEO-Analyse sofort zu erhalten
-	</p>
+	<!-- Ansprechende Illustration im Stil des Beispiels -->
+	{#if !isLoading}
+		<div class="analysis-placeholder mb-6 shadow-custom" transition:fade={{ duration: 300 }}>
+			<div class="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm">
+				<div class="flex flex-col items-center">
+					<img src="/ui-mockup.svg" alt="Website Analysis Illustration" class="mb-4 h-32 w-auto" />
+					<p class="text-center text-gray-600">
+						Gib die URL Deiner Website ein und klicke auf "Analysieren", um einen umfassenden
+						Bericht zu erhalten.
+					</p>
 
+					<!-- Feature List -->
+					<div class="mt-6 grid grid-cols-2 gap-4">
+						{#each ['Performance-Check', 'SEO-Analyse', 'Zugänglichkeitstest', 'Sicherheitsprüfung'] as feature, i}
+							<div class="flex items-start">
+								<svg class="mr-2 h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+									<path
+										fill-rule="evenodd"
+										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+										clip-rule="evenodd"
+									/>
+								</svg>
+								<span class="text-sm text-gray-700">{feature}</span>
+							</div>
+						{/each}
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Analysis Loading Box (stays visible during load and after) -->
+	{#if isLoading || (analysisData && !analysisError)}
+		<div class="analysis-in-progress mb-6" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
+			<div
+				class="mx-auto max-w-lg rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-lg"
+			>
+				<div class="flex flex-col items-center">
+					<!-- Animated Progress Indicator -->
+					<div class="relative mb-4 h-24 w-24">
+						<!-- Outer Circle -->
+						<svg class="absolute inset-0" viewBox="0 0 100 100">
+							<circle
+								class="text-blue-100"
+								stroke-width="8"
+								stroke="currentColor"
+								fill="transparent"
+								r="42"
+								cx="50"
+								cy="50"
+							/>
+							<circle
+								class="text-blue-500 transition-all duration-300 ease-in-out"
+								stroke-width="8"
+								stroke-dasharray="264"
+								stroke-dashoffset={264 - (currentProgress * 264) / 100}
+								stroke-linecap="round"
+								stroke="currentColor"
+								fill="transparent"
+								r="42"
+								cx="50"
+								cy="50"
+							/>
+						</svg>
+
+						<!-- Pulse effect in center -->
+						<div class="absolute inset-0 flex items-center justify-center">
+							<div class="h-16 w-16 animate-ping rounded-full bg-blue-400 opacity-30"></div>
+						</div>
+
+						<!-- Icon in center -->
+						<div class="absolute inset-0 flex items-center justify-center">
+							<svg class="h-12 w-12 text-blue-600" viewBox="0 0 24 24" fill="none">
+								<path
+									d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+									stroke="currentColor"
+									stroke-width="1.5"
+								/>
+								<path
+									d="M12 8v4l3 3"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+								/>
+							</svg>
+						</div>
+					</div>
+
+					<h3 class="mb-2 text-xl font-bold text-gray-800">
+						Analyse Deiner Website <span class="text-blue-600"
+							>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
+						>
+					</h3>
+
+					<p class="mb-4 text-center text-gray-600">
+						Wir analysieren Deine Website und erstellen einen umfassenden Performance-Bericht.
+					</p>
+
+					<!-- SEO Tips integrated within the loading box (always visible) -->
+					{#if showSeoTips && customTips.length > 0}
+						<div class="w-full">
+							<SeoTips {customTips} minDisplayTime={5} isResponseReceived={true} />
+						</div>
+					{/if}
+
+					<!-- Loading Message -->
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Input Form (always visible) -->
 	<div class="form-group">
 		<label for="company_url" class="form-label">Website URL</label>
 		<div class="flex">
@@ -494,135 +589,19 @@
 				{analysisError}
 			</p>
 		{/if}
-		{#if !shouldShowError('company_url') && $form.company_url && !isLoading && !analysisError && !showResults}
+		{#if !shouldShowError('company_url') && $form.company_url && !isLoading && !analysisError}
 			<p class="mt-1 text-sm text-gray-500" id="company_url-description">
 				Klicke auf "Analysieren", um Deine Website zu überprüfen
 			</p>
 		{/if}
 	</div>
-
-	{#if showSeoTips}
-		<SeoTips {customTips} minDisplayTime={5} isResponseReceived={showResults} />
-	{/if}
-
-	<!-- Results Card - Vereinfacht und im Stil der SEO-Tips -->
-	{#if showResults && analysisData}
-		<div
-			class="results-card my-4 overflow-hidden rounded-lg border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm"
-			transition:scale={{ duration: 400, easing: quintOut, start: 0.95 }}
-		>
-			<!-- Header mit Website-Info -->
-			<div class="border-b border-blue-100 bg-white p-4">
-				<div class="flex items-center">
-					<!-- Domain-Initial als Avatar -->
-					<div
-						class="mr-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-xl font-bold text-blue-700"
-					>
-						{formattedUrl
-							.replace(/https?:\/\/(www\.)?/, '')
-							.charAt(0)
-							.toUpperCase()}
-					</div>
-					<div class="flex-1">
-						<h3 class="text-lg font-bold text-gray-900">{formattedUrl}</h3>
-						<div class="text-sm text-gray-500">
-							Analyse vom {new Date().toLocaleDateString('de-DE')}
-						</div>
-					</div>
-					<div
-						class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-3xl font-bold text-white shadow-md"
-						in:scale={{ duration: 600, delay: 300 }}
-					>
-						{formatScore($form.visibility_score)}
-					</div>
-				</div>
-			</div>
-
-			<div class="p-5">
-				<!-- Statistik-Übersicht im SEO-Tips Stil -->
-				<div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-					{#each [{ label: 'Performance', value: analysisData.performance }, { label: 'SEO', value: analysisData.seo }, { label: 'Zugänglichkeit', value: analysisData.accessibility }, { label: 'Best Practices', value: analysisData.bestPractices }] as metric, i}
-						<div
-							class="flex flex-col rounded-lg border border-blue-100 bg-white p-3 shadow-sm"
-							in:fly={{ y: 20, delay: 200 + i * 100, duration: 400 }}
-						>
-							<div class="mb-1 flex items-center justify-between">
-								<span class="text-xs font-medium text-gray-500">{metric.label}</span>
-								<span class={`text-lg font-bold ${getScoreColorClass(metric.value)}`}>
-									{formatScore(metric.value)}
-								</span>
-							</div>
-							<div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-								<div
-									class="h-full rounded-full transition-all duration-1000"
-									style="width: {metric.value}%; background-color: {getScoreBackgroundColor(
-										metric.value
-									)};"
-								></div>
-							</div>
-						</div>
-					{/each}
-				</div>
-
-				<!-- Auto-advance progress bar -->
-				<div class="mt-4">
-					<div
-						class="flex items-center justify-center space-x-2 rounded-md bg-white p-2 text-center text-sm text-gray-500"
-						in:fade={{ delay: 500, duration: 300 }}
-					>
-						<svg class="h-4 w-4 animate-spin text-blue-500" viewBox="0 0 24 24">
-							<circle
-								class="opacity-25"
-								cx="12"
-								cy="12"
-								r="10"
-								stroke="currentColor"
-								stroke-width="4"
-								fill="none"
-							></circle>
-							<path
-								class="opacity-75"
-								fill="currentColor"
-								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-							></path>
-						</svg>
-						<span
-							>Weiterleitung in {7 - Math.min(7, Math.floor(currentProgress / 15))} Sekunden...</span
-						>
-					</div>
-
-					<!-- Progress bar for auto-advance -->
-					<div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-200">
-						<div
-							class="h-full rounded-full bg-blue-500 transition-all duration-300"
-							style="width: {currentProgress}%"
-						></div>
-					</div>
-				</div>
-			</div>
-		</div>
-	{/if}
 </div>
 
 <style>
-	.results-card {
-		max-width: 100%;
-		opacity: 0;
-		animation: fadeIn 0.5s forwards;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
 	/* Ensure progress animations are smooth */
-	.rounded-full {
-		will-change: width;
+	.rounded-full,
+	[stroke-dashoffset] {
+		will-change: width, stroke-dashoffset;
 	}
 
 	/* Improve focus styles for better accessibility */
@@ -632,12 +611,23 @@
 		outline-offset: 1px;
 	}
 
-	/* Eigene SEO-Tips im Stil der SeoTips-Komponente */
-	.seo-tip-card {
-		animation: fadeCard 0.5s ease-in-out;
+	/* Animation for the progress */
+	@keyframes progress {
+		0% {
+			stroke-dashoffset: 264;
+		}
+		100% {
+			stroke-dashoffset: 0;
+		}
 	}
 
-	@keyframes fadeCard {
+	/* Animation for the analysis elements */
+	.analysis-in-progress,
+	.analysis-placeholder {
+		animation: fadeIn 0.5s ease-in-out;
+	}
+
+	@keyframes fadeIn {
 		from {
 			opacity: 0;
 			transform: translateY(10px);
