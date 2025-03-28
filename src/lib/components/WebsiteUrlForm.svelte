@@ -381,7 +381,7 @@
 
 			// Make API request with longer timeout to ensure we get a response
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+			const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
 
 			const response = await fetch(apiUrl, {
 				method: 'GET',
@@ -518,10 +518,10 @@
 	<!-- Ansprechende Illustration im Stil des Beispiels -->
 	{#if !isLoading}
 		<div class="analysis-placeholder mb-6 shadow-custom" transition:fade={{ duration: 300 }}>
-			<div class="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm">
+			<div class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-sm">
 				<div class="flex flex-col items-center">
 					<img src="/ui-mockup.svg" alt="Website Analysis Illustration" class="mb-4 h-32 w-auto" />
-					<p class="text-center text-gray-600">
+					<p class="hyphens-auto break-words text-center text-sm text-gray-600">
 						Gib die URL Deiner Website ein und klicke auf "Analysieren", um einen umfassenden
 						Bericht zu erhalten.
 					</p>
@@ -549,7 +549,7 @@
 	<!-- Analysis Loading Box (stays visible during load and after) -->
 	{#if isLoading || (analysisData && !analysisError)}
 		<div class="analysis-in-progress mb-6" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
-			<div class="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-lg">
+			<div class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-lg">
 				<div class="flex flex-col items-center">
 					<!-- Animated Progress Indicator -->
 					<div class="relative mb-4 h-24 w-24">

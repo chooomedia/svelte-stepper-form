@@ -609,7 +609,7 @@
 				{#if paymentType === 'longtime'}
 					<!-- "Best Value" badge for longtime plans -->
 					<div
-						class="absolute -right-8 top-8 rotate-45 bg-red-600 px-10 py-1 text-center text-xs font-bold uppercase text-white shadow-md"
+						class="absolute -right-10 top-5 rotate-45 bg-red-600 px-10 py-1 text-center text-xs font-bold uppercase text-white shadow-md"
 					>
 						🔥 Hot Deal
 					</div>

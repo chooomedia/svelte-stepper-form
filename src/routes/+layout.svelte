@@ -219,7 +219,7 @@
 	</header>
 
 	<section class="flex flex-1 flex-col py-5" itemscope itemtype="https://schema.org/WebPageElement">
-		<div class="mx-auto w-full flex-1 px-4 sm:px-6 lg:max-w-5xl lg:px-8">
+		<div class="mx-auto w-full flex-1 px-4 sm:px-6 lg:max-w-6xl lg:px-8">
 			<slot />
 		</div>
 	</section>

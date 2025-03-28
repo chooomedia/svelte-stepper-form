@@ -318,7 +318,6 @@
 								variant="primary"
 								disabled={$stepperStore.current.index === 10 && !contactFormValid}
 								on:click={() => {
-									stepperStore.markStepValid($stepperStore.current.index);
 									stepperStore.nextStep();
 								}}
 							/>

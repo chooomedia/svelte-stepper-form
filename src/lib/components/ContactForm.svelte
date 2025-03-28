@@ -7,128 +7,144 @@
 	interface Props {
 		form: SuperValidated<FormData>;
 		errors: Record<string, string>;
-		onValidation?: (isValid: boolean) => void; // Add callback for validation
+		onValidation?: (isValid: boolean) => void; // Nur noch als Callback für den Stepper
 	}
 
-	let { form, errors, onValidation } = $props<Props>();
+	let { form, errors = {}, onValidation } = $props<Props>();
 
-	// Track field focus for enhanced validation UX
+	// Statusvariablen für das Formular
 	let touchedFields = $state(new Set<string>());
 	let formSubmissionAttempted = $state(false);
 	let showFormValidationOverview = $state(false);
 	let formErrors = $state<string[]>([]);
-	let isFormValid = $state(false); // Form validation state
+	let isFormValid = $state(false);
+	let preventReactivity = $state(true);
 
-	// Handle field blur
-	function handleBlur(fieldName: string) {
-		touchedFields.add(fieldName);
-		validateField(fieldName);
-		updateFormValidity(); // Check overall validity
-	}
-
-	// Check if field should show error
-	function shouldShowError(fieldName: string): boolean {
-		return (touchedFields.has(fieldName) || formSubmissionAttempted) && !!errors[fieldName];
-	}
-
-	// Get ARIA attributes for field
-	function getAriaAttrs(fieldName: string, label: string) {
-		return {
-			'aria-invalid': (shouldShowError(fieldName) ? 'true' : 'false') as Booleanish,
-			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
-			'aria-label': label
-		};
-	}
-
-	// Validate a specific field
-	function validateField(fieldName: string) {
-		const requiredFields = ['salutation', 'first_name', 'last_name', 'email', 'privacy_agreement'];
-
-		// Skip validation for fields that aren't required
-		if (!requiredFields.includes(fieldName)) return true;
-
-		// Clear existing error for this field
-		if (errors[fieldName]) {
-			delete errors[fieldName];
+	// Prüft ein bestimmtes Feld
+	function validateField(fieldName: string): boolean {
+		// Sicherstellen, dass $form definiert ist
+		if (!$form) {
+			return false;
 		}
 
-		let hasError = false;
+		const requiredFields = ['salutation', 'first_name', 'last_name', 'email', 'privacy_agreement'];
+
+		// Für optionale Felder immer true zurückgeben
+		if (!requiredFields.includes(fieldName)) return true;
+
+		let currentFieldValid = true;
 
 		switch (fieldName) {
 			case 'salutation':
 				if (!$form.salutation) {
-					errors.salutation = 'Bitte wähle eine Anrede aus';
-					hasError = true;
+					errors[fieldName] = 'Bitte wähle eine Anrede aus';
+					currentFieldValid = false;
+				} else {
+					delete errors[fieldName];
 				}
 				break;
 
 			case 'first_name':
 				if (!$form.first_name) {
-					errors.first_name = 'Bitte gib Deinen Vornamen ein';
-					hasError = true;
+					errors[fieldName] = 'Bitte gib Deinen Vornamen ein';
+					currentFieldValid = false;
 				} else if ($form.first_name.length < 2) {
-					errors.first_name = 'Vorname muss mindestens 2 Zeichen haben';
-					hasError = true;
+					errors[fieldName] = 'Vorname muss mindestens 2 Zeichen haben';
+					currentFieldValid = false;
+				} else {
+					delete errors[fieldName];
 				}
 				break;
 
 			case 'last_name':
 				if (!$form.last_name) {
-					errors.last_name = 'Bitte gib Deinen Nachnamen ein';
-					hasError = true;
+					errors[fieldName] = 'Bitte gib Deinen Nachnamen ein';
+					currentFieldValid = false;
 				} else if ($form.last_name.length < 2) {
-					errors.last_name = 'Nachname muss mindestens 2 Zeichen haben';
-					hasError = true;
+					errors[fieldName] = 'Nachname muss mindestens 2 Zeichen haben';
+					currentFieldValid = false;
+				} else {
+					delete errors[fieldName];
 				}
 				break;
 
 			case 'email':
 				if (!$form.email) {
-					errors.email = 'Bitte gib Deine E-Mail-Adresse ein';
-					hasError = true;
+					errors[fieldName] = 'Bitte gib Deine E-Mail-Adresse ein';
+					currentFieldValid = false;
 				} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($form.email)) {
-					errors.email = 'Bitte gib eine gültige E-Mail-Adresse ein';
-					hasError = true;
+					errors[fieldName] = 'Bitte gib eine gültige E-Mail-Adresse ein';
+					currentFieldValid = false;
+				} else {
+					delete errors[fieldName];
 				}
 				break;
 
 			case 'privacy_agreement':
 				if (!$form.privacy_agreement) {
-					errors.privacy_agreement = 'Bitte stimme der Datenschutzerklärung zu';
-					hasError = true;
+					errors[fieldName] = 'Bitte stimme der Datenschutzerklärung zu';
+					currentFieldValid = false;
+				} else {
+					delete errors[fieldName];
 				}
 				break;
 		}
 
-		return !hasError;
+		return currentFieldValid;
 	}
 
-	// Update form validity and notify parent
-	function updateFormValidity() {
-		const requiredFields = ['salutation', 'first_name', 'last_name', 'email', 'privacy_agreement'];
+	// Handler für Feld-Blur-Events
+	function handleBlur(fieldName: string) {
+		touchedFields.add(fieldName);
+		validateField(fieldName);
+		updateFormState();
+	}
 
-		// Check all required fields
-		const validFields = requiredFields.map((field) => validateField(field));
-		isFormValid = validFields.every((valid) => valid);
-
-		// Update error messages
-		formErrors = Object.entries(errors)
-			.filter(([_, message]) => message)
-			.map(([field, message]) => message);
-
+	// Aktualisiert den Formularstatus ohne Endlosschleifen auszulösen
+	function updateFormState() {
+		// Fehlerliste aktualisieren
+		formErrors = Object.values(errors).filter(Boolean);
 		showFormValidationOverview = formErrors.length > 0;
 
-		// Notify parent of validation status
-		if (onValidation) {
-			onValidation(isFormValid);
-		}
+		// Formularvalidität prüfen
+		if ($form) {
+			const requiredFields = [
+				'salutation',
+				'first_name',
+				'last_name',
+				'email',
+				'privacy_agreement'
+			];
+			isFormValid = requiredFields.every((field) => validateField(field));
 
-		return isFormValid;
+			// Wichtig: Den Stepper über die Validität informieren
+			if (onValidation) {
+				onValidation(isFormValid);
+			}
+		} else {
+			isFormValid = false;
+			if (onValidation) onValidation(false);
+		}
 	}
 
-	// Validate all fields when "submit" is attempted
+	// Prüft, ob ein Fehler für ein bestimmtes Feld angezeigt werden soll
+	function shouldShowError(fieldName: string): boolean {
+		return (touchedFields.has(fieldName) || formSubmissionAttempted) && !!errors[fieldName];
+	}
+
+	// ARIA-Attribute für Felder
+	function getAriaAttrs(fieldName: string, label: string) {
+		return {
+			'aria-invalid': shouldShowError(fieldName) ? 'true' : 'false',
+			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
+			'aria-label': label
+		};
+	}
+
+	// Validiert alle Felder
 	function validateAllFields() {
 		formSubmissionAttempted = true;
+
 		const fieldNames = [
 			'salutation',
 			'first_name',
@@ -138,35 +154,29 @@
 			'privacy_agreement'
 		];
 
-		// Validate all fields
+		// Alle Felder als berührt markieren
 		fieldNames.forEach((field) => {
 			touchedFields.add(field);
-			validateField(field);
 		});
 
-		return updateFormValidity();
+		// Zustand aktualisieren
+		updateFormState();
+
+		return isFormValid;
 	}
 
-	// Check validity whenever form fields change
-	$effect(() => {
-		// Watch form fields
-		const company = $form.company_name;
-		const salutation = $form.salutation;
-		const firstName = $form.first_name;
-		const lastName = $form.last_name;
-		const email = $form.email;
-		const privacy = $form.privacy_agreement;
+	// Bewusst keine automatische Validierung über Effekte
+	// um Endlosschleifen zu vermeiden
 
-		// Only validate if user has interacted with the form
-		if (touchedFields.size > 0 || formSubmissionAttempted) {
-			updateFormValidity();
-		}
-	});
-
-	// Auto-fill company name if available
+	// Initialisierung
 	onMount(() => {
-		if ($form.company_name) {
-			// If company name exists, check other required fields
+		// Verzögerte Aktivierung von Reaktivität
+		setTimeout(() => {
+			preventReactivity = false;
+		}, 200);
+
+		if ($form?.company_name) {
+			// Wenn der Firmenname existiert, andere erforderliche Felder prüfen
 			const requiredFields = [
 				'salutation',
 				'first_name',
@@ -174,17 +184,12 @@
 				'email',
 				'privacy_agreement'
 			];
-			let allFilled = true;
 
-			// Check if all fields are pre-filled
-			for (const field of requiredFields) {
-				if (!$form[field]) {
-					allFilled = false;
-					break;
-				}
-			}
+			// Prüfen, ob alle Felder vorausgefüllt sind
+			const allFilled = requiredFields.every((field) => !!$form?.[field]);
 
 			if (allFilled) {
+				// Erste manuelle Validierung
 				validateAllFields();
 			}
 		}
@@ -240,6 +245,7 @@
 			</p>
 		{/if}
 	</div>
+
 	<!-- Salutation -->
 	<div class="form-group">
 		<label for="salutation" class="form-label"> Anrede * </label>
