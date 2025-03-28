@@ -82,6 +82,32 @@
 			'Content-Strategie zur Steigerung der Sichtbarkeit'
 		];
 
+		const metricRecommendations = [];
+
+		if (metrics) {
+			if (metrics.performance < 70) {
+				metricRecommendations.push(
+					'Verbesserung der Website-Ladegeschwindigkeit durch Optimierung von Bildern und Skripten'
+				);
+			}
+
+			if (metrics.seo < 70) {
+				metricRecommendations.push(
+					'SEO-Optimierung durch verbesserte Meta-Tags und strukturierte Daten'
+				);
+			}
+
+			if (metrics.accessibility < 70) {
+				metricRecommendations.push('Barrierefreiheit verbessern für mehr Zugänglichkeit');
+			}
+
+			if (metrics.content < 70) {
+				metricRecommendations.push(
+					'Content-Qualität durch bessere Strukturierung und Keywords optimieren'
+				);
+			}
+		}
+
 		const additionalRecommendations = [];
 
 		// Add specific recommendations based on score
@@ -101,7 +127,9 @@
 			additionalRecommendations.push('Wettbewerbsanalyse zur Identifizierung von Wachstumschancen');
 		}
 
-		return [...new Set([...baseRecommendations, ...additionalRecommendations])].slice(0, 5);
+		return [
+			...new Set([...baseRecommendations, ...additionalRecommendations, ...metricRecommendations])
+		].slice(0, 5);
 	}
 
 	function handlePlanSelection(plan: string, price: number) {
@@ -174,9 +202,24 @@
 
 	// Add a reactive subscription to the score store
 	let scorestoreData = $state(null);
-
-	// Extract the screenshot directly from the store
+	let metrics = $state(null);
 	let screenshot = $derived($websiteScreenshot);
+
+	$effect(() => {
+		// Subscribe to the score store
+		const unsubscribe = scoreStore.subscribe((data) => {
+			scorestoreData = data;
+
+			// Direkter Zugriff auf die detaillierten Metriken
+			if (data?.metrics) {
+				metrics = data.metrics;
+			}
+		});
+
+		return () => {
+			unsubscribe();
+		};
+	});
 
 	// Initialize chart and data on mount
 	onMount(() => {

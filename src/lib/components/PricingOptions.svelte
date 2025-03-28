@@ -158,37 +158,62 @@
 	}
 
 	// Intersection Observer for animations
+	// Modernere Implementierung der Intersection Observer-Funktionalität
 	function setupIntersectionObserver() {
 		if (!browser) return;
 
 		const observerOptions = { threshold: 0.2 };
 
-		const createObserver = (sectionName: keyof typeof sectionsInView) => {
-			return new IntersectionObserver((entries) => {
+		// Erstelle einen Observer für jede Sektion
+		const observers = {
+			bonusBox: new IntersectionObserver((entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
-						sectionsInView[sectionName] = true;
-						// Once the section is in view, stop observing it
-						observer.unobserve(entry.target);
+						sectionsInView.bonusBox = true;
+						observers.bonusBox.unobserve(entry.target);
 					}
 				});
-			}, observerOptions);
+			}, observerOptions),
+
+			pricing: new IntersectionObserver((entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						sectionsInView.pricing = true;
+						observers.pricing.unobserve(entry.target);
+					}
+				});
+			}, observerOptions),
+
+			discountBanner: new IntersectionObserver((entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						sectionsInView.discountBanner = true;
+						observers.discountBanner.unobserve(entry.target);
+					}
+				});
+			}, observerOptions)
 		};
 
-		const bonusBoxObserver = createObserver('bonusBox');
-		const pricingObserver = createObserver('pricing');
-		const discountBannerObserver = createObserver('discountBanner');
-
-		// Observe DOM elements once they're available
+		// Observer-Setup leicht verzögern, um sicherzustellen, dass die DOM-Elemente existieren
 		setTimeout(() => {
-			const bonusBoxElement = document.querySelector('.bonus-box');
-			const pricingElement = document.querySelector('.pricing-cards');
-			const discountBannerElement = document.querySelector('.discount-banner');
+			const elements = {
+				bonusBox: document.querySelector('.bonus-box'),
+				pricing: document.querySelector('.pricing-cards'),
+				discountBanner: document.querySelector('.discount-banner')
+			};
 
-			if (bonusBoxElement) bonusBoxObserver.observe(bonusBoxElement);
-			if (pricingElement) pricingObserver.observe(pricingElement);
-			if (discountBannerElement) discountBannerObserver.observe(discountBannerElement);
+			// Beobachte jedes Element, wenn es existiert
+			Object.entries(elements).forEach(([key, element]) => {
+				if (element && key in observers) {
+					observers[key as keyof typeof observers].observe(element);
+				}
+			});
 		}, 500);
+
+		// Observer-Cleanup-Funktion zurückgeben
+		return () => {
+			Object.values(observers).forEach((observer) => observer.disconnect());
+		};
 	}
 
 	// Start countdown on mount and setup observers

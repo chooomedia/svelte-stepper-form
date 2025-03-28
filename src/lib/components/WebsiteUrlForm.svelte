@@ -188,10 +188,12 @@
 			seo: 0,
 			accessibility: 0,
 			bestPractices: 0,
-			securityGrade: 'C',
+			content: 0,
+			security: 0,
 			technologies: [],
 			suggestions: [],
-			lighthouse_report: null
+			lighthouse_report: null,
+			detailed_scores: {}
 		};
 
 		try {
@@ -216,7 +218,7 @@
 
 			// Extract security grade
 			if (dataObj.security_headers && dataObj.security_headers.grade) {
-				processed.securityGrade = dataObj.security_headers.grade;
+				processed.security = dataObj.security_headers.grade;
 			}
 
 			// Extract technologies
@@ -234,6 +236,19 @@
 					'Seitengeschwindigkeit verbessern',
 					'Mobilfreundlichkeit sicherstellen'
 				];
+			}
+
+			if (data.detailed_scores) {
+				processed.detailed_scores = data.detailed_scores;
+				// Berechnung des Content-Scores
+				const contentFactors = [
+					data.detailed_scores.meta_description || 0,
+					data.detailed_scores.h1 || 0,
+					data.detailed_scores.alt_attributes || 0
+				];
+				processed.content = Math.round(
+					contentFactors.reduce((sum, score) => sum + score, 0) / contentFactors.length
+				);
 			}
 
 			return processed;
@@ -304,7 +319,7 @@
 
 			// Make API request with longer timeout to ensure we get a response
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+			const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
 
 			const response = await fetch(apiUrl, {
 				method: 'GET',
@@ -335,7 +350,10 @@
 			usingMockData = false;
 
 			// Update the score store with the new data
-			scoreStore.setWebsiteAnalysis(analysisData, $form);
+
+			if (data?.lighthouseResult) {
+				console.log('Lighthouse metrics available:', data.lighthouseResult.categories);
+			}
 		} catch (error) {
 			console.warn('Error fetching from webhook, using mock data:', error);
 			analysisError = `Fehler bei der API-Anfrage: ${error.message}. Fallback-Daten werden verwendet.`;
