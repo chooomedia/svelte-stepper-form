@@ -100,6 +100,13 @@
 		updateFormState();
 	}
 
+	$effect(() => {
+		// Update form state whenever a field is touched or validation is attempted
+		if (touchedFields.size > 0 || formSubmissionAttempted) {
+			updateFormState();
+		}
+	});
+
 	// Aktualisiert den Formularstatus ohne Endlosschleifen auszulösen
 	function updateFormState() {
 		// Fehlerliste aktualisieren

@@ -82,7 +82,7 @@
 				inTransition = false;
 
 				// Start rotation with custom tips
-				startTipRotation(customTips, 3000); // Show custom tips faster
+				startTipRotation(customTips, 5000); // Show custom tips faster
 			}, 300);
 		}
 	});
@@ -96,8 +96,8 @@
 
 <div
 	class="seo-tip-card rounded-lg border border-blue-100 bg-blue-50 p-5 shadow-sm"
-	in:fade={{ duration: 300 }}
-	out:fade={{ duration: 300 }}
+	in:fade={{ duration: 500 }}
+	out:fade={{ duration: 500 }}
 >
 	<div class="flex items-start space-x-4">
 		<div class="flex-shrink-0">

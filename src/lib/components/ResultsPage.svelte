@@ -25,25 +25,6 @@
 	// Process the score value to ensure it's valid
 	let processedScore = $derived(isNaN(score) || score < 0 || score > 100 ? 50 : score);
 
-	// Ensure auditData has default values if not provided
-	let processedAuditData = $derived(() => {
-		// If auditData is empty or invalid, use the fallback data
-		if (!auditData || typeof auditData !== 'object' || Object.keys(auditData).length === 0) {
-			return getFallbackAuditData(processedScore);
-		}
-
-		// If auditData exists but is missing some required properties, merge with fallback
-		const fallbackData = getFallbackAuditData(processedScore);
-		return {
-			...fallbackData,
-			...auditData,
-			// Ensure lighthouse report exists
-			lighthouse_report: auditData.lighthouse_report || fallbackData.lighthouse_report,
-			// Ensure score is set
-			score: auditData.score || processedScore
-		};
-	});
-
 	// Generate benefits based on form data and score
 	function generateBenefits() {
 		const baseBenefits = [

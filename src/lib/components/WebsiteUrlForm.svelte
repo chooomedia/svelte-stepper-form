@@ -381,7 +381,7 @@
 
 			// Make API request with longer timeout to ensure we get a response
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
+			const timeoutId = setTimeout(() => controller.abort(), 180000); // 180 second timeout
 
 			const response = await fetch(apiUrl, {
 				method: 'GET',

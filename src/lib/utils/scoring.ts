@@ -2,6 +2,7 @@
 import { writable, derived } from 'svelte/store';
 import type { FormData } from '$lib/schema';
 import { formOptions } from '$lib/schema';
+import { set } from 'zod';
 
 // Define the type for analysis data
 interface AnalysisData {
@@ -89,8 +90,8 @@ export function calculateFinalScore(websiteScore: number, formData: Partial<Form
 		websiteWeight = 0.2;
 		formWeight = 0.8;
 	} else if (hasGoodWebsiteData && !hasGoodFormData) {
-		websiteWeight = 0.9;
-		formWeight = 0.1;
+		websiteWeight = 0.8;
+		formWeight = 0.2;
 	}
 
 	return Math.round(websiteScore * websiteWeight + formScore * formWeight);
@@ -167,14 +168,14 @@ export function extractScreenshot(data: any): string | null {
 	if (!data) return null;
 
 	try {
+		// Try alternate format
+		if (data.lighthouseResult?.audits?.['final-screenshot']?.details?.data) {
+			return data.lighthouseResult.audits['final-screenshot'].details.data;
+		}
+
 		// Try first format
 		if (data?.lighthouse_report?.audits?.['final-screenshot']?.details?.data) {
 			return data.lighthouse_report.audits['final-screenshot'].details.data;
-		}
-
-		// Try alternate format
-		if (data?.lighthouseResult?.audits?.['final-screenshot']?.details?.data) {
-			return data.lighthouseResult.audits['final-screenshot'].details.data;
 		}
 	} catch (e) {
 		console.warn('Could not extract screenshot from data:', e);
