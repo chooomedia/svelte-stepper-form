@@ -518,13 +518,64 @@
 	<!-- Ansprechende Illustration im Stil des Beispiels -->
 	{#if !isLoading}
 		<div class="analysis-placeholder mb-6 shadow-custom" transition:fade={{ duration: 300 }}>
-			<div class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-sm">
+			<div class="mx-auto rounded-lg bg-white p-6 shadow-sm">
 				<div class="flex flex-col items-center">
 					<img src="/ui-mockup.svg" alt="Website Analysis Illustration" class="mb-4 h-32 w-auto" />
-					<p class="hyphens-auto break-words text-center text-sm text-gray-600">
-						Gib die URL Deiner Website ein und klicke auf "Analysieren", um einen umfassenden
-						Bericht zu erhalten.
-					</p>
+					<!-- Input Form (always visible) -->
+					<div class="form-group">
+						<label for="company_url" class="form-label">Website URL</label>
+
+						<p class="mb-5 hyphens-auto break-words text-center text-sm text-gray-600">
+							Gib die URL Deiner Website ein und klicke auf "Analysieren", um einen umfassenden
+							Bericht zu erhalten.
+						</p>
+
+						<div class="flex">
+							<input
+								type="url"
+								id="company_url"
+								bind:value={$form.company_url}
+								class="input-field flex-grow shadow-custom {shouldShowError('company_url')
+									? 'error'
+									: ''}"
+								on:blur={() => handleBlur('company_url')}
+								placeholder="https://www.example.com"
+								disabled={isLoading}
+								aria-invalid={shouldShowError('company_url') ? 'true' : 'false'}
+								aria-describedby={shouldShowError('company_url') ? 'company_url-error' : undefined}
+								aria-label="Bitte gib Deine Website-URL ein"
+							/>
+							<button
+								type="button"
+								class="btn btn-primary ml-2"
+								disabled={isLoading || !$form?.company_url || !isUrlValid}
+								on:click={analyzeWebsite}
+							>
+								{#if isLoading}
+									<span class="loading loading-spinner loading-sm"></span>
+									Analysiere...
+								{:else}
+									Analysieren
+								{/if}
+							</button>
+						</div>
+
+						{#if shouldShowError('company_url')}
+							<p class="error-text" id="company_url-error" role="alert" transition:fade>
+								{getErrorMessage('company_url')}
+							</p>
+						{/if}
+						{#if analysisError}
+							<p class="mt-2 text-sm text-red-600" role="alert" transition:fade>
+								{analysisError}
+							</p>
+						{/if}
+						{#if !shouldShowError('company_url') && $form?.company_url && !isLoading && !analysisError}
+							<p class="mt-1 text-sm text-gray-500" id="company_url-description">
+								Klicke auf "Analysieren", um Deine Website zu überprüfen
+							</p>
+						{/if}
+					</div>
 
 					<!-- Feature List -->
 					<div class="mt-6 grid grid-cols-2 gap-4">
@@ -621,62 +672,9 @@
 			</div>
 		</div>
 	{/if}
-
-	<!-- Input Form (always visible) -->
-	<div class="form-group">
-		<label for="company_url" class="form-label">Website URL</label>
-		<div class="flex">
-			<input
-				type="url"
-				id="company_url"
-				bind:value={$form.company_url}
-				class="input-field flex-grow shadow-custom {shouldShowError('company_url') ? 'error' : ''}"
-				on:blur={() => handleBlur('company_url')}
-				placeholder="https://www.example.com"
-				disabled={isLoading}
-				aria-invalid={shouldShowError('company_url') ? 'true' : 'false'}
-				aria-describedby={shouldShowError('company_url') ? 'company_url-error' : undefined}
-				aria-label="Bitte gib Deine Website-URL ein"
-			/>
-			<button
-				type="button"
-				class="btn btn-primary ml-2"
-				disabled={isLoading || !$form?.company_url || !isUrlValid}
-				on:click={analyzeWebsite}
-			>
-				{#if isLoading}
-					<span class="loading loading-spinner loading-sm"></span>
-					Analysiere...
-				{:else}
-					Analysieren
-				{/if}
-			</button>
-		</div>
-		{#if shouldShowError('company_url')}
-			<p class="error-text" id="company_url-error" role="alert" transition:fade>
-				{getErrorMessage('company_url')}
-			</p>
-		{/if}
-		{#if analysisError}
-			<p class="mt-2 text-sm text-red-600" role="alert" transition:fade>
-				{analysisError}
-			</p>
-		{/if}
-		{#if !shouldShowError('company_url') && $form?.company_url && !isLoading && !analysisError}
-			<p class="mt-1 text-sm text-gray-500" id="company_url-description">
-				Klicke auf "Analysieren", um Deine Website zu überprüfen
-			</p>
-		{/if}
-	</div>
 </div>
 
 <style>
-	/* Ensure progress animations are smooth */
-	.rounded-full,
-	[stroke-dashoffset] {
-		will-change: width, stroke-dashoffset;
-	}
-
 	/* Improve focus styles for better accessibility */
 	input:focus,
 	button:focus {

@@ -6,8 +6,10 @@
 	};
 </script>
 
-<div class="mb-6 mt-4 flex flex-row items-center justify-center gap-4 text-center shadow-custom">
-	<div class="flex items-center space-x-1 rounded-[4px] bg-white p-2 text-xs font-bold">
+<div class="mb-6 mt-4 flex flex-row items-center justify-center gap-4 text-center">
+	<div
+		class="flex items-center space-x-1 rounded-[4px] bg-white p-2 text-xs font-bold shadow-custom"
+	>
 		<svg width="17" height="16" fill="none" viewBox="0 0 17 16">
 			<path fill="#00B67A" d="M16.5 0H.5v16h16z"></path>
 			<path
@@ -21,7 +23,7 @@
 		<p class="font-bold">129</p>
 		<span class="font-normal">Nutzer</span>
 	</div>
-	<p class="rounded-[4px] bg-white p-2 text-xs font-bold">
+	<p class="rounded-[4px] bg-white p-2 text-xs font-bold shadow-custom">
 		{calculateTime(totalSteps)}-MINUTEN QUIZ
 	</p>
 </div>

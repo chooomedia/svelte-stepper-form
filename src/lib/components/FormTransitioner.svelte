@@ -5,10 +5,10 @@
 	// Props for the component
 	interface Props {
 		currentStep: number;
-		minHeight?: string;
+		height?: string;
 	}
 
-	let { currentStep, minHeight = '420px' } = $props<Props>();
+	let { currentStep, height = '420px' } = $props<Props>();
 
 	// State management
 	let containerElement: HTMLDivElement;
@@ -58,8 +58,7 @@
 </script>
 
 <div
-	class="form-container relative"
-	style="min-height: {minHeight}; height: {contentHeight}px; transition: height 0.3s ease-in-out;"
+	class="form-container relative w-full h-[{contentHeight}px] min-h-[{height}]"
 	bind:this={containerElement}
 >
 	{#key currentStep}
@@ -72,14 +71,3 @@
 		</div>
 	{/key}
 </div>
-
-<style>
-	.form-container {
-		position: relative;
-		width: 100%;
-	}
-
-	.form-content {
-		width: 100%;
-	}
-</style>

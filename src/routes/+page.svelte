@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
 	import SuperDebug from 'sveltekit-superforms';
 	import PageMeta from '$lib/components/PageMeta.svelte';
@@ -42,6 +42,7 @@
 	// Store subscription to update our form data store when form changes
 	let scoreStoreData = $state(null);
 	let contactFormValid = $state(false);
+	let showDebugSidebar = $state(false);
 
 	$effect(() => {
 		$formData = { ...$form };
@@ -133,7 +134,11 @@
 	<link rel="canonical" href="https://digitalpusher.de/assessment/" />
 </svelte:head>
 
-<div class="form-container" itemscope itemtype="https://schema.org/WebApplication">
+<div
+	class="form-container absolute mx-auto w-full"
+	itemscope
+	itemtype="https://schema.org/WebApplication"
+>
 	<header>
 		<div
 			class={$stepperStore.current.index > 1 ? 'sr-only' : 'text-center'}
@@ -175,7 +180,7 @@
 		</h2>
 		{#key $stepperStore.current.index}
 			<div transition:fade={{ duration: 500 }} class="form-card">
-				<FormTransitioner currentStep={$stepperStore.current.index} minHeight="500px">
+				<FormTransitioner currentStep={$stepperStore.current.index} height="40vh">
 					<!-- Step 1: Visibility -->
 					{#if $stepperStore.current.index === 1}
 						<ImageOption
@@ -329,41 +334,120 @@
 	</div>
 </div>
 
-<!-- In your template -->
+<!-- +page.svelte Debug-Sidebar -->
 {#if isDev}
-	<div class="mt-8 rounded border bg-gray-100 p-4">
-		<h3 class="font-semibold">🔧 Debugging-Steuerung</h3>
-		<label for="jumpStep" class="mt-2 block text-sm text-gray-700">Springe zu Schritt:</label>
+	<!-- Debug-Toggle Button -->
+	<button
+		class="fixed left-4 top-4 z-50 rounded-full bg-gray-800 p-2 text-white shadow-lg hover:bg-gray-700"
+		onclick={() => (showDebugSidebar = !showDebugSidebar)}
+		aria-label="Debug-Panel anzeigen/verbergen"
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			class="h-6 w-6"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+			></path>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+			></path>
+		</svg>
+	</button>
 
-		<div class="flex items-center">
-			<input
-				id="jumpStep"
-				type="number"
-				min="1"
-				max={TOTAL_STEPS}
-				value={debugStepNumber}
-				oninput={handleStepChange}
-				class="w-16 rounded border p-2 text-center"
-			/>
-
-			<div class="ml-4 flex space-x-2">
+	<!-- Debug Sidebar -->
+	{#if showDebugSidebar}
+		<div
+			class="fixed left-0 top-0 h-full w-80 overflow-y-auto bg-gray-100 p-4 shadow-xl transition-transform duration-300"
+			style="transform: translateX({showDebugSidebar ? '0' : '100%'});"
+			transition:slide={{ duration: 300, axis: 'x' }}
+		>
+			<div class="flex items-center justify-between border-b border-gray-300 pb-3">
+				<h3 class="text-lg font-semibold text-gray-800">🔧 Debug-Panel</h3>
 				<button
-					onclick={prevStep}
-					class="rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600"
-					aria-label="Vorheriger Schritt"
+					class="rounded-full p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+					onclick={() => (showDebugSidebar = false)}
 				>
-					◀
-				</button>
-
-				<button
-					onclick={nextStep}
-					class="rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600"
-					aria-label="Nächster Schritt"
-				>
-					▶
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-6 w-6"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/>
+					</svg>
 				</button>
 			</div>
+
+			<div class="mt-4">
+				<label for="jumpStep" class="block text-sm font-medium text-gray-700"
+					>Springe zu Schritt:</label
+				>
+				<div class="mt-2 flex items-center">
+					<input
+						id="jumpStep"
+						type="number"
+						min="1"
+						max={TOTAL_STEPS}
+						value={$stepperStore.current.index}
+						oninput={handleStepChange}
+						class="w-16 rounded border border-gray-300 p-2 text-center shadow-sm"
+					/>
+
+					<div class="ml-2 flex space-x-2">
+						<button
+							onclick={prevStep}
+							class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+							aria-label="Vorheriger Schritt"
+							disabled={debugStepNumber <= 1}
+						>
+							◀
+						</button>
+
+						<button
+							onclick={nextStep}
+							class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
+							aria-label="Nächster Schritt"
+							disabled={debugStepNumber >= TOTAL_STEPS}
+						>
+							▶
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="mt-6">
+				<h4 class="mb-2 font-medium text-gray-700">
+					Aktueller Schritt: {$stepperStore.current.index}
+				</h4>
+				<div class="rounded bg-gray-200 p-2">
+					<p class="text-sm">{$stepperStore.current.description || 'Keine Beschreibung'}</p>
+				</div>
+			</div>
+
+			<div class="mt-6">
+				<h4 class="mb-2 font-medium text-gray-700">Formular-Status</h4>
+				<div class="rounded border border-gray-300 bg-white p-3">
+					<div class="text-xs">
+						<SuperDebug data={form} />
+					</div>
+				</div>
+			</div>
 		</div>
-	</div>
-	<SuperDebug data={form} />
+	{/if}
 {/if}

@@ -2,6 +2,10 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+body {
+    @apply bg-gray-100;
+}
+
 /* Custom Styles */
 @layer components {
     main.container {
@@ -27,10 +31,6 @@
 
     .form-skeleton-button {
         @apply h-10 w-32 rounded bg-gray-200;
-    }
-
-    .form-container {
-        @apply mx-auto mb-8;
     }
 
     .form-wrapper {
