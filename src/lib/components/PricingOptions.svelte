@@ -591,7 +591,7 @@
 									? fullPrice * 0.2
 									: 0}
 						<div class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-2">
-							<p class="flex items-center text-sm font-semibold text-yellow-700">
+							<p class="flex items-center text-xs font-semibold text-yellow-700">
 								<svg class="mr-1 h-4 w-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
 									<path
 										fill-rule="evenodd"

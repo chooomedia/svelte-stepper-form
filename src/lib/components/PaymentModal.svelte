@@ -51,16 +51,8 @@
 	}
 
 	// 3% Spendenberechnung
-	const animatedDonation = tweened(0, {
-		easing: cubicInOut,
-		interpolate: (current) => parseFloat(current.toFixed(2))
-	});
 
-	$effect(() => {
-		loadPaymentScripts();
-		animatedDonation.set(includeDonation ? totalPrice * 0.03 : 0);
-		if (showModal) resetForm();
-	});
+	const animatedDonation = tweened(0, { duration: 1500, easing: cubicInOut });
 
 	// Reset form
 	function resetForm() {
@@ -148,53 +140,171 @@
 	}
 
 	function loadPaymentScripts() {
+		const container = document.getElementById('paypal-button-container');
+		if (container) {
+			container.innerHTML = '';
+		}
+
 		if (!document.getElementById('paypal-script')) {
 			const paypalScript = document.createElement('script');
 			paypalScript.id = 'paypal-script';
 			paypalScript.src = `https://www.paypal.com/sdk/js?client-id=${import.meta.env.VITE_PAYPAL_CLIENT_ID || 'sb'}&currency=EUR`;
 			paypalScript.async = true;
 			paypalScript.onload = () => {
-				if (document.getElementById('paypal-button-container')) {
+				if (container) {
 					renderPayPalButton();
 				}
 			};
 			document.head.appendChild(paypalScript);
+		} else if (container) {
+			renderPayPalButton();
 		}
 	}
 
+	$effect(() => {
+		animatedDonation.set(includeDonation ? totalPrice * 0.03 : 0);
+	});
+
+	$effect(() => {
+		if (showModal) {
+			resetForm();
+			loadPaymentScripts();
+		}
+	});
+
 	function renderPayPalButton() {
 		try {
-			window.paypal
-				?.Buttons({
-					createOrder: (data, actions) =>
-						actions.order.create({
-							purchase_units: [
-								{
-									description: getPlanDisplayName(selectedPlan, paymentType),
-									amount: {
-										value: totalPrice.toFixed(2),
-										currency_code: 'EUR'
-									}
-								}
-							]
-						}),
-					onApprove: async (data, actions) => {
-						try {
-							isProcessing = true;
-							await actions.order.capture();
-							paymentSuccess = true;
-							setTimeout(() => {
-								onSubmit();
-								onClose();
-							}, 2000);
-						} catch (err) {
-							paymentError = 'PayPal-Zahlung fehlgeschlagen';
-						} finally {
-							isProcessing = false;
-						}
+			// Definiere die Basis-Konfiguration
+			const baseConfig = {
+				style: {
+					layout: 'vertical',
+					color: 'gold',
+					shape: 'rect',
+					label: 'pay'
+				},
+				onApprove: async (data, actions) => {
+					try {
+						isProcessing = true;
+						await actions.order.capture();
+						paymentSuccess = true;
+						setTimeout(() => {
+							onSubmit();
+							onClose();
+						}, 10000);
+					} catch (err) {
+						console.error('PayPal capture error:', err);
+						paymentError = 'PayPal-Zahlung fehlgeschlagen';
+					} finally {
+						isProcessing = false;
 					}
-				})
-				.render('#paypal-button-container');
+				},
+				onError: (err) => {
+					console.error('PayPal error:', err);
+					paymentError = 'Ein Fehler ist bei der PayPal-Verarbeitung aufgetreten';
+				}
+			};
+
+			// Für einmalige Zahlungen (einmalig oder longtime)
+			if (paymentType === 'einmalig' || paymentType === 'longtime') {
+				window.paypal
+					?.Buttons({
+						...baseConfig,
+						createOrder: (data, actions) => {
+							// Erweiterte Kaufinformationen
+							return actions.order.create({
+								intent: 'CAPTURE',
+								purchase_units: [
+									{
+										description: getPlanDisplayName(selectedPlan, paymentType),
+										amount: {
+											value: totalPrice.toFixed(2),
+											currency_code: 'EUR',
+											breakdown: {
+												item_total: {
+													value: totalPrice.toFixed(2),
+													currency_code: 'EUR'
+												}
+											}
+										},
+										items: [
+											{
+												name: getPlanDisplayName(selectedPlan, paymentType),
+												unit_amount: {
+													value: totalPrice.toFixed(2),
+													currency_code: 'EUR'
+												},
+												quantity: '1',
+												description:
+													paymentType === 'longtime'
+														? 'Zugang für 5 Jahre mit 20% Rabatt'
+														: 'Einmalzahlung mit 8% Rabatt'
+											}
+										]
+									}
+								],
+								application_context: {
+									shipping_preference: 'NO_SHIPPING',
+									brand_name: 'Digital Pusher',
+									user_action: 'PAY_NOW'
+								}
+							});
+						}
+					})
+					.render('#paypal-button-container');
+			}
+			// Für monatliche Zahlungen
+			else if (paymentType === 'monatlich') {
+				// Extrahiere die Anzahl der Monate aus dem Plannamen
+				const monthsMatch = selectedPlan.match(/(\d+)-MONATS-PLAN/);
+				const months = monthsMatch ? parseInt(monthsMatch[1]) : 1;
+
+				// Bestimme den Abonnementtyp basierend auf der Monatszahl
+				const planType = months === 1 ? 'BASIS' : months === 3 ? 'PREMIUM' : 'BUSINESS';
+
+				window.paypal
+					?.Buttons({
+						...baseConfig,
+						createOrder: (data, actions) => {
+							// Bei einem Abo ist die einmalige Order-Erstellung ähnlich
+							return actions.order.create({
+								intent: 'CAPTURE',
+								purchase_units: [
+									{
+										description: `${planType} Monatsabo (${months} ${months === 1 ? 'Monat' : 'Monate'})`,
+										amount: {
+											value: totalPrice.toFixed(2),
+											currency_code: 'EUR',
+											breakdown: {
+												item_total: {
+													value: totalPrice.toFixed(2),
+													currency_code: 'EUR'
+												}
+											}
+										},
+										items: [
+											{
+												name: `${planType} Plan`,
+												unit_amount: {
+													value: totalPrice.toFixed(2),
+													currency_code: 'EUR'
+												},
+												quantity: '1',
+												description: `Monatliches Abonnement (${months} ${months === 1 ? 'Monat' : 'Monate'} Mindestlaufzeit)`
+											}
+										]
+									}
+								],
+								application_context: {
+									shipping_preference: 'NO_SHIPPING',
+									brand_name: 'Digital Pusher',
+									user_action: 'PAY_NOW',
+									note_to_payer: `Hinweis: Mit dieser Zahlung startest du ein Abonnement mit ${months} ${months === 1 ? 'Monat' : 'Monaten'} Mindestlaufzeit.`
+								}
+							});
+						}
+					})
+					.render('#paypal-button-container');
+			}
 		} catch (error) {
 			console.error('PayPal button rendering error:', error);
 			paymentError = 'Fehler beim Laden der PayPal-Zahlungsoption';
