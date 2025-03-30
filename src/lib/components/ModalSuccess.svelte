@@ -1,4 +1,3 @@
-<!-- src/lib/components/ModalSuccess.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
@@ -21,29 +20,29 @@
 	}
 
 	interface Props {
-		showModal: boolean;
 		onClose: () => void;
-		data?: {
-			details?: PayPalOrderDetails;
-			selectedPlan?: string;
-			paymentType?: 'monatlich' | 'einmalig' | 'longtime';
-			includeDonation?: boolean;
-			donationAmount?: number;
-			customerName?: string;
-			redirectUrl?: string;
-		};
+		data?: any;
 	}
 
-	const { showModal = false, onClose, data = {} } = $props<Props>();
+	const { onClose, data = {} } = $props<Props>();
 
-	// Daten aus dem data-Objekt extrahieren
-	const selectedPlan = $derived(data?.selectedPlan || '');
-	const paymentType = $derived(data?.paymentType || 'einmalig');
-	const paymentDetails = $derived(data?.details || null);
-	const includeDonation = $derived(data?.includeDonation || false);
-	const donationAmount = $derived(data?.donationAmount || 0);
-	const customerName = $derived(data?.customerName || '');
-	const redirectUrl = $derived(data?.redirectUrl || '');
+	// Daten aus dem Store extrahieren
+	const storeData = $derived($modalStore.type === 'success' ? $modalStore.data || {} : {});
+
+	// Kombiniere Daten aus Props und Store mit Vorrang für Store-Daten
+	const paymentData = $derived({
+		...data,
+		...storeData
+	});
+
+	// Daten extrahieren
+	const selectedPlan = $derived(paymentData?.selectedPlan || '');
+	const paymentType = $derived(paymentData?.paymentType || 'einmalig');
+	const paymentDetails = $derived(paymentData?.details || null);
+	const includeDonation = $derived(paymentData?.includeDonation || false);
+	const donationAmount = $derived(paymentData?.donationAmount || 0);
+	const customerName = $derived(paymentData?.customerName || '');
+	const redirectUrl = $derived(paymentData?.redirectUrl || '');
 
 	// Animation States
 	let showCheckmark = $state(false);
@@ -122,9 +121,10 @@
 	function triggerConfetti() {
 		if (typeof window !== 'undefined' && confetti) {
 			confetti({
-				particleCount: 100,
-				spread: 70,
-				origin: { y: 0.6 }
+				particleCount: 300, // Erhöht für besseren visuellen Effekt
+				spread: 100, // Breitere Verteilung
+				origin: { y: 0.5 }, // Mitte des Bildschirms
+				colors: ['#FF5252', '#FFD740', '#2196F3', '#4CAF50', '#9C27B0'] // Bunte Farben
 			});
 		}
 	}
@@ -147,9 +147,13 @@
 		}
 	}
 
-	// Effekt wenn Modal geöffnet wird
+	// Effekt wenn Modal geöffnet wird via Store
 	$effect(() => {
-		if (showModal) {
+		const isSuccessModalOpen = $modalStore.isOpen && $modalStore.type === 'success';
+
+		if (isSuccessModalOpen) {
+			console.log('Success modal opened with data:', $modalStore.data);
+
 			// States zurücksetzen
 			progress = 0;
 			showCheckmark = false;
@@ -171,7 +175,7 @@
 </script>
 
 <Modal
-	isOpen={showModal}
+	isOpen={$modalStore.isOpen && $modalStore.type === 'success'}
 	{onClose}
 	type="success"
 	title="Zahlung erfolgreich!"

@@ -226,7 +226,7 @@
 		script.onerror = (err) => {
 			console.error('Error loading PayPal SDK:', err);
 			paymentError = 'Fehler beim Laden des PayPal SDKs. Bitte versuche es später erneut.';
-			currentModal = ModalState.Error;
+			modalStore.open('error', { error: paymentError });
 		};
 		document.head.appendChild(script);
 	}
@@ -307,7 +307,8 @@
 						if (!amount || amount <= 0) {
 							isProcessing = false;
 							paymentError = 'Ungültiger Zahlungsbetrag. Bitte versuche es erneut.';
-							currentModal = ModalState.Error;
+							modalStore.open('error', { error: paymentError });
+
 							return null; // Prevent order creation
 						}
 
@@ -354,7 +355,7 @@
 						console.log('Payment cancelled:', data);
 						isProcessing = false;
 						paymentError = 'Die Zahlung wurde abgebrochen.';
-						currentModal = ModalState.Error;
+						modalStore.open('error', { error: paymentError });
 					},
 					onError: (err) => {
 						console.error('PayPal error:', err);
@@ -392,7 +393,8 @@
 			console.error('Error rendering PayPal buttons:', error);
 			paymentError =
 				'Fehler beim Rendern der PayPal-Schaltflächen. Bitte versuche es später erneut.';
-			currentModal = ModalState.Error;
+			currentModalType = 'error';
+			modalStore.open('error', { errorMessage: paymentError, errorDetails });
 		}
 	}
 
@@ -426,7 +428,7 @@
 
 		paymentError = errorMessage;
 		errorDetails = errorDetail;
-		currentModal = ModalState.Error;
+		modalStore.open('error', { error: paymentError });
 	}
 
 	// Analytics tracking
@@ -660,12 +662,13 @@
 <ModalSuccess
 	showModal={$modalStore.isOpen && $modalStore.type === 'success'}
 	onClose={handleFinalClose}
+	type="success"
 	data={$modalStore.data}
 />
 
 <!-- Error Modal -->
 <Modal
-	isOpen={currentModal === ModalState.Error}
+	isOpen={$modalStore.isOpen && $modalStore.type === 'error'}
 	onClose={handleFinalClose}
 	type="error"
 	title="Zahlungsfehler"
@@ -679,7 +682,7 @@
 	secondaryAction={{
 		label: 'Erneut versuchen',
 		onClick: () => {
-			currentModal = ModalState.Payment;
+			currentModalType = ModalState.Payment;
 			setTimeout(() => {
 				renderPayPalButtons();
 			}, 500);
@@ -712,7 +715,7 @@
 
 <!-- Action Modal (Confirmation when closing) -->
 <Modal
-	isOpen={currentModal === ModalState.Action}
+	isOpen={$modalStore.isOpen && $modalStore.type === 'action'}
 	onClose={handleFinalClose}
 	type="warning"
 	title="Kaufprozess verlassen?"
