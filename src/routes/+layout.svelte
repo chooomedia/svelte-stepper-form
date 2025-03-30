@@ -231,14 +231,13 @@
 
 	{#if !isIframe}
 		<footer
-			class="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white"
+			class="fixed bottom-0 left-0 right-0 inline-block border-t border-gray-200 bg-white px-4 py-4 sm:px-6 lg:px-8"
 			itemscope
 			itemtype="https://schema.org/WPFooter"
 		>
-			<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-				<div class="text-center text-sm text-gray-500">
-					© {new Date().getFullYear()} Digital Pusher. Alle Rechte vorbehalten.
-				</div>
+			<div class="text-center text-[10px] text-gray-500 lg:text-sm">
+				© <span itemprop="copyrightYear">{new Date().getFullYear()}</span> Digital Pusher. Alle Rechte
+				vorbehalten.
 			</div>
 		</footer>
 	{/if}

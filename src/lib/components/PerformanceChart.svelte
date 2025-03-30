@@ -24,7 +24,7 @@
 		score = 50,
 		auditData = null,
 		animateOnResultLoad = false,
-		chartHeight = '456px'
+		chartHeight = '436px'
 	} = $props<Props>();
 
 	// DOM references

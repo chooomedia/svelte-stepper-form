@@ -279,12 +279,17 @@
 					{:else if $stepperStore.current.index === 10}
 						<ContactForm
 							{form}
-							error={$errors}
-							onsubmit={() => {
-								stepperStore.markStepValid($stepperStore.current.index);
-							}}
+							errors={$errors}
 							onValidation={(isValid) => {
 								contactFormValid = isValid;
+
+								// Wenn das Formular gültig ist, markiere diesen Schritt als abgeschlossen
+								if (isValid) {
+									stepperStore.markStepValid($stepperStore.current.index);
+								} else {
+									// Wenn nicht gültig, markiere als unvollständig
+									stepperStore.markStepIncomplete($stepperStore.current.index);
+								}
 							}}
 						/>
 
@@ -310,7 +315,7 @@
 					{/if}
 
 					<!-- Navigation Buttons (except for specific steps) -->
-					{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11].includes($stepperStore.current.index)}
+					{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11, 12].includes($stepperStore.current.index)}
 						<div class="mt-8 flex justify-between">
 							<Button
 								label="Zurück"
@@ -326,7 +331,12 @@
 								variant="primary"
 								disabled={$stepperStore.current.index === 10 && !contactFormValid}
 								on:click={() => {
-									stepperStore.nextStep();
+									if (contactFormValid) {
+										stepperStore.nextStep();
+										stepperStore.markStepValid($stepperStore.current.index);
+									} else {
+										stepperStore.markStepIncomplete($stepperStore.current.index);
+									}
 								}}
 							/>
 						</div>

@@ -214,7 +214,7 @@
 		onclick={(e) => e.stopPropagation()}
 	>
 		<div class="mb-6 flex items-center justify-between">
-			<h3 class="text-2xl font-bold">Bezahlung abschließen</h3>
+			<h3 class="text-xl font-bold lg:text-2xl">Bezahlung abschließen</h3>
 			<div class="btn btn-circle btn-sm" onclick={handleClose} aria-label="Schließen">✕</div>
 		</div>
 		{#if paymentSuccess}
@@ -360,12 +360,11 @@
 							</div>
 							<span class="ml-3 text-sm font-medium">PayPal</span>
 						</div>
-						<div class="ml-auto flex items-center gap-2 pl-4">
-							<img src="/paypal.svg" alt="PayPal" class="h-6" />
-							<img src="/visa.svg" alt="Visa" class="h-6" />
-							<img src="/mastercard.svg" alt="Mastercard" class="h-6" />
-							<img src="/maestro.svg" alt="Maestro" class="h-6" />
-							<img src="/amex.svg" alt="American Express" class="h-6" />
+						<div class="ml-auto flex items-center gap-1 lg:gap-2 lg:pl-4">
+							<img src="/visa.svg" alt="Visa" class="h-5 lg:h-6" />
+							<img src="/mastercard.svg" alt="Mastercard" class="h-5 lg:h-6" />
+							<img src="/maestro.svg" alt="Maestro" class="h-5 lg:h-6" />
+							<img src="/amex.svg" alt="American Express" class="h-5 lg:h-6" />
 						</div>
 					</label>
 
@@ -408,8 +407,8 @@
 							</div>
 							<span class="ml-3 text-sm font-medium">3% Spende</span>
 						</div>
-						<div class="ml-auto pl-4">
-							<img src="/betterplace.svg" alt="Betterplace" class="h-6" />
+						<div class="ml-auto lg:pl-4">
+							<img src="/betterplace.svg" alt="Betterplace" class="h-4 lg:h-6" />
 						</div>
 					</label>
 					<!-- Payment Method Content -->
@@ -432,7 +431,7 @@
 				</div>
 
 				<!-- Security Indicators -->
-				<div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+				<div class="mb-4 flex flex-wrap justify-center gap-4">
 					<div class="flex items-center justify-center gap-1 text-xs text-gray-600">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -447,7 +446,7 @@
 								d="M7 10.0288C7.47142 10 8.05259 10 8.8 10H15.2C15.9474 10 16.5286 10 17 10.0288M7 10.0288C6.41168 10.0647 5.99429 10.1455 5.63803 10.327C5.07354 10.6146 4.6146 11.0735 4.32698 11.638C4 12.2798 4 13.1198 4 14.8V16.2C4 17.8802 4 18.7202 4.32698 19.362C4.6146 19.9265 5.07354 20.3854 5.63803 20.673C6.27976 21 7.11984 21 8.8 21H15.2C16.8802 21 17.7202 21 18.362 20.673C18.9265 20.3854 19.3854 19.9265 19.673 19.362C20 18.7202 20 17.8802 20 16.2V14.8C20 13.1198 20 12.2798 19.673 11.638C19.3854 11.0735 18.9265 10.6146 18.362 10.327C18.0057 10.1455 17.5883 10.0647 17 10.0288M7 10.0288V8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8V10.0288"
 							/>
 						</svg>
-						<span>Sichere Bezahlung</span>
+						<span>Sicher Zahlen</span>
 					</div>
 					<div class="flex items-center justify-center gap-1 text-xs text-gray-600">
 						<svg
@@ -479,7 +478,7 @@
 								d="M16 7L12.5 11M8 12L13.25 17L22 7M2 12L7.25 17C7.25 17 8.66939 15.3778 9.875 14"
 							/>
 						</svg>
-						<span>Jederzeit kündbar</span>
+						<span>Flexibel kündbar</span>
 					</div>
 				</div>
 			</form>

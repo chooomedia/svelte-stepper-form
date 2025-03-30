@@ -75,4 +75,8 @@ body {
     .form-input {
         @apply relative flex cursor-pointer items-center rounded-lg border p-4 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50;
     }
+
+    .modal-box {
+        @apply p-[1.3rem] lg:p-6;
+    }
 }

@@ -382,7 +382,7 @@
 					Einmalig (-8%)
 				</button>
 				<button
-					class={`btn join-item ${paymentType === 'longtime' ? 'btn-primary' : 'btn-ghost'} relative`}
+					class={`btn join-item hidden md:block lg:block ${paymentType === 'longtime' ? 'btn-primary' : 'btn-ghost'} relative`}
 					onclick={() => handlePaymentTypeChange('longtime')}
 					type="button"
 				>
@@ -424,7 +424,7 @@
 					</div>
 				{/if}
 
-				<div class="p-6 {plan.popular ? 'pt-8' : ''}">
+				<div class="p-4 lg:p-6 {plan.popular ? 'pt-8' : ''}">
 					<div class="flex items-center">
 						<input
 							type="radio"
@@ -711,13 +711,16 @@
 
 			<div class="flex flex-col items-center md:flex-row">
 				<div class="p-2 md:w-3/4">
-					<h3 class="mb-2 text-xl font-bold text-white">Longtime-Zugang mit 20% Rabatt!</h3>
+					<h3 class="mb-2 text-xl font-bold text-white">
+						<span class="block sm:inline">Longtime-Zugang</span>
+						<span class="sm:inline"> mit 20% Rabatt!</span>
+					</h3>
 					<p class="text-sm text-indigo-100">
 						Sichere Dir <span class="font-bold">JETZT</span> Deinen 5 Jahre langen Zugang zu allen Features
 						und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.
 					</p>
 				</div>
-				<div class="mr-10 flex justify-center p-2 md:w-1/4">
+				<div class="flex justify-center p-2 md:w-1/4 lg:mr-10">
 					<button
 						onclick={() => handlePaymentTypeChange('longtime')}
 						class="btn btn-warning transform animate-pulse shadow-lg transition-transform duration-300 hover:scale-105"

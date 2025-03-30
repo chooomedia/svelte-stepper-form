@@ -7,7 +7,7 @@
 	interface Props {
 		form: SuperValidated<FormData>;
 		errors: Record<string, string>;
-		onValidation?: (isValid: boolean) => void; // Nur noch als Callback für den Stepper
+		onValidation?: (isValid: boolean) => void; // Callback für den Stepper
 	}
 
 	let { form, errors = {}, onValidation } = $props<Props>();
@@ -19,6 +19,7 @@
 	let formErrors = $state<string[]>([]);
 	let isFormValid = $state(false);
 	let preventReactivity = $state(true);
+	let lastValidationTime = $state(0); // Zeitstempel der letzten Validierung
 
 	// Prüft ein bestimmtes Feld
 	function validateField(fieldName: string): boolean {
@@ -97,15 +98,19 @@
 	function handleBlur(fieldName: string) {
 		touchedFields.add(fieldName);
 		validateField(fieldName);
-		updateFormState();
+		// Statt direktem Aufruf verwenden wir ein Throttling
+		scheduleUpdate();
 	}
 
-	$effect(() => {
-		// Update form state whenever a field is touched or validation is attempted
-		if (touchedFields.size > 0 || formSubmissionAttempted) {
+	// Verhindert zu häufige Aktualisierungen
+	function scheduleUpdate() {
+		const now = Date.now();
+		if (now - lastValidationTime > 100) {
+			// Min. 100ms zwischen Updates
+			lastValidationTime = now;
 			updateFormState();
 		}
-	});
+	}
 
 	// Aktualisiert den Formularstatus ohne Endlosschleifen auszulösen
 	function updateFormState() {
@@ -122,15 +127,20 @@
 				'email',
 				'privacy_agreement'
 			];
-			isFormValid = requiredFields.every((field) => validateField(field));
 
-			// Wichtig: Den Stepper über die Validität informieren
-			if (onValidation) {
-				onValidation(isFormValid);
+			const newIsValid = requiredFields.every((field) => validateField(field));
+
+			// Nur Callback aufrufen, wenn sich der Status geändert hat
+			if (isFormValid !== newIsValid) {
+				isFormValid = newIsValid;
+
+				// Wichtig: Den Stepper über die Validität informieren
+				if (onValidation) {
+					onValidation(isFormValid);
+				}
 			}
 		} else {
 			isFormValid = false;
-			if (onValidation) onValidation(false);
 		}
 	}
 
@@ -148,7 +158,7 @@
 		};
 	}
 
-	// Validiert alle Felder
+	// Validiert alle Felder und informiert den Stepper
 	function validateAllFields() {
 		formSubmissionAttempted = true;
 
@@ -172,38 +182,46 @@
 		return isFormValid;
 	}
 
-	// Bewusst keine automatische Validierung über Effekte
-	// um Endlosschleifen zu vermeiden
+	// Handler für Formular-Änderungen mit Throttling
+	function handleFormChange() {
+		if (preventReactivity) return;
+
+		// Wir verwenden ein Timeout, um die Anzahl der Aktualisierungen zu begrenzen
+		setTimeout(() => {
+			validateAllFields();
+		}, 100);
+	}
 
 	// Initialisierung
 	onMount(() => {
 		// Verzögerte Aktivierung von Reaktivität
 		setTimeout(() => {
 			preventReactivity = false;
-		}, 200);
 
-		if ($form?.company_name) {
-			// Wenn der Firmenname existiert, andere erforderliche Felder prüfen
-			const requiredFields = [
-				'salutation',
-				'first_name',
-				'last_name',
-				'email',
-				'privacy_agreement'
-			];
+			// Initiale Validierung
+			if ($form?.company_name) {
+				// Wenn der Firmenname existiert, andere erforderliche Felder prüfen
+				const requiredFields = [
+					'salutation',
+					'first_name',
+					'last_name',
+					'email',
+					'privacy_agreement'
+				];
 
-			// Prüfen, ob alle Felder vorausgefüllt sind
-			const allFilled = requiredFields.every((field) => !!$form?.[field]);
+				// Prüfen, ob alle Felder vorausgefüllt sind
+				const allFilled = requiredFields.every((field) => !!$form?.[field]);
 
-			if (allFilled) {
-				// Erste manuelle Validierung
-				validateAllFields();
+				if (allFilled) {
+					// Erste manuelle Validierung
+					validateAllFields();
+				}
 			}
-		}
+		}, 200);
 	});
 </script>
 
-<form method="POST" class="space-y-6" novalidate>
+<form method="POST" class="space-y-6" onsubmit={validateAllFields} novalidate>
 	{#if showFormValidationOverview && formErrors.length > 0}
 		<div
 			class="mb-4 rounded-md bg-red-50 p-4"
@@ -261,6 +279,7 @@
 			bind:value={$form.salutation}
 			class="input-field {shouldShowError('salutation') ? 'error' : ''}"
 			onblur={() => handleBlur('salutation')}
+			onchange={handleFormChange}
 			{...getAriaAttrs('salutation', 'Bitte wähle Deine Anrede')}
 		>
 			<option value="">Bitte wählen</option>
@@ -285,6 +304,7 @@
 				bind:value={$form.first_name}
 				class="input-field {shouldShowError('first_name') ? 'error' : ''}"
 				onblur={() => handleBlur('first_name')}
+				oninput={handleFormChange}
 				{...getAriaAttrs('first_name', 'Bitte gib Deinen Vornamen ein')}
 			/>
 			{#if shouldShowError('first_name')}
@@ -302,6 +322,7 @@
 				bind:value={$form.last_name}
 				class="input-field {shouldShowError('last_name') ? 'error' : ''}"
 				onblur={() => handleBlur('last_name')}
+				oninput={handleFormChange}
 				{...getAriaAttrs('last_name', 'Bitte gib Deinen Nachnamen ein')}
 			/>
 			{#if shouldShowError('last_name')}
@@ -321,6 +342,7 @@
 			bind:value={$form.email}
 			class="input-field {shouldShowError('email') ? 'error' : ''}"
 			onblur={() => handleBlur('email')}
+			oninput={handleFormChange}
 			{...getAriaAttrs('email', 'Bitte gib Deine E-Mail-Adresse ein')}
 		/>
 		{#if shouldShowError('email')}
@@ -358,6 +380,7 @@
 					bind:checked={$form.privacy_agreement}
 					class="form-checkbox"
 					onblur={() => handleBlur('privacy_agreement')}
+					onchange={handleFormChange}
 					{...getAriaAttrs('privacy_agreement', 'Datenschutzerklärung akzeptieren')}
 				/>
 			</div>

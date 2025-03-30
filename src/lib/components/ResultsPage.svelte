@@ -224,12 +224,12 @@
 
 <div class="results-page mb-16">
 	<!-- Score Section -->
-	<div class="grid grid-cols-1 gap-8 md:grid-cols-3" in:fade={{ duration: 500, delay: 700 }}>
+	<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
 		<!-- Left column: Score visualization and website screenshot -->
-		<div class="flex flex-col gap-6">
+		<div class="flex h-full flex-col gap-6">
 			<!-- Website Screenshot Card (if available) -->
 			<div
-				class="overflow-hidden rounded-lg bg-white shadow-lg transition-all duration-300 hover:shadow-xl"
+				class="h-full overflow-hidden rounded-lg bg-white shadow-lg transition-all duration-300 hover:shadow-xl"
 				in:fade={{ duration: 500, delay: 800 }}
 			>
 				{#if screenshot}
@@ -244,7 +244,7 @@
 					</div>
 				{/if}
 				<!-- Modern score visualization -->
-				<div class="p-6">
+				<div class="flex flex-grow flex-col p-6">
 					<h3 class="mb-2 text-center text-xl font-bold">Dein Marketing Score</h3>
 					<VisibilityScore score={processedScore} autoAdvance={360} {nextStep} />
 				</div>
@@ -253,7 +253,7 @@
 
 		<!-- Improved Performance Chart (2/3 width on desktop) -->
 		<div
-			class="rounded-lg bg-white shadow-lg transition-all duration-300 hover:shadow-xl md:col-span-2"
+			class="h-full rounded-lg bg-white shadow-lg transition-all duration-300 hover:shadow-xl md:col-span-2"
 		>
 			<PerformanceChart {score} auditData={getFallbackAuditData} animateOnResultLoad={pageLoaded} />
 		</div>
