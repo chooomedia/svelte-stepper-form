@@ -1,5 +1,3 @@
-// utils/payment.ts
-
 /**
  * Payment utility functions
  * @module utils/payment
@@ -13,8 +11,17 @@ export function generateClientReference(): string {
 	const now = new Date();
 	const year = now.getFullYear();
 	const month = String(now.getMonth() + 1).padStart(2, '0');
-	const random = crypto.getRandomValues(new Uint16Array(1))[0];
-	return `dp-${year}${month}-${String(random).padStart(7, '0')}`;
+
+	// In moderner Umgebung crypto.randomUUID() verwenden
+	// Fallback auf einfache Random-Implementierung
+	const randomId =
+		typeof crypto !== 'undefined' && crypto.getRandomValues
+			? Array.from(crypto.getRandomValues(new Uint8Array(6)))
+					.map((b) => b.toString(16).padStart(2, '0'))
+					.join('')
+			: Math.random().toString(36).substring(2, 8);
+
+	return `dp-${year}${month}-${randomId}`;
 }
 
 /**
@@ -76,51 +83,33 @@ export function calculateTax(total: number, vatRate: number): TaxInfo {
 }
 
 /**
- * Payment plan type definitions
- */
-export type PaymentPlan = '1-MONATS-PLAN' | '3-MONATS-PLAN' | '6-MONATS-PLAN';
-
-/**
  * PayPal order details structure
  */
 export interface PayPalOrderDetails {
 	id: string;
 	status: 'COMPLETED' | 'SAVED' | 'APPROVED' | 'VOIDED';
-	create_time: string;
-	payer: {
-		email_address: string;
-		name: {
-			given_name: string;
-			surname: string;
+	create_time?: string;
+	reference?: string;
+	payer?: {
+		email_address?: string;
+		name?: {
+			given_name?: string;
+			surname?: string;
 		};
 	};
-	purchase_units: Array<{
-		amount: {
-			currency_code: string;
-			value: string;
+	purchase_units?: Array<{
+		amount?: {
+			currency_code?: string;
+			value?: string;
 		};
-		description: string;
+		description?: string;
 	}>;
 }
 
 /**
- * Validates payment form data
- * @param {FormData} formData - User input data
- * @returns {Record<string, string>} Validation errors
+ * Payment plan type definitions
  */
-export function validatePaymentForm(formData: FormData): Record<string, string> {
-	const errors: Record<string, string> = {};
-
-	if (!formData.email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-		errors.email = 'Ungültige E-Mail-Adresse';
-	}
-
-	if (!formData.name?.trim()) {
-		errors.name = 'Name ist erforderlich';
-	}
-
-	return errors;
-}
+export type PaymentPlan = '1-MONATS-PLAN' | '3-MONATS-PLAN' | '6-MONATS-PLAN';
 
 /**
  * Formats currency values
@@ -156,4 +145,68 @@ export function parsePlanMeta(planName: PaymentPlan): PlanMeta {
 		months,
 		type: months === 1 ? 'BASIS' : months === 3 ? 'PREMIUM' : 'BUSINESS'
 	};
+}
+
+/**
+ * Gets the base monthly price for a plan
+ * @param {PaymentPlan} planName - Plan name
+ * @returns {number} Base monthly price
+ */
+export function getBasePriceForPlan(planName: PaymentPlan): number {
+	switch (planName) {
+		case '1-MONATS-PLAN':
+			return 1.98;
+		case '3-MONATS-PLAN':
+			return 3.98;
+		case '6-MONATS-PLAN':
+			return 6.98;
+		default:
+			return 1.98;
+	}
+}
+
+/**
+ * Calculates the full price for a plan based on payment type
+ * @param {PaymentPlan} planName - Plan name
+ * @param {PaymentType} paymentType - Payment type
+ * @returns {number} Calculated price
+ */
+export function calculateFullPrice(planName: PaymentPlan, paymentType: PaymentType): number {
+	const basePrice = getBasePriceForPlan(planName);
+	const months = parseInt(planName.split('-')[0], 10);
+
+	switch (paymentType) {
+		case 'monatlich':
+			return basePrice;
+		case 'einmalig': {
+			const fullPrice = basePrice * months;
+			const discount = fullPrice * 0.08; // 8% Rabatt
+			return fullPrice - discount;
+		}
+		case 'longtime': {
+			const fullPrice = basePrice * months * 5; // 5 Jahre
+			const discount = fullPrice * 0.2; // 20% Rabatt
+			return fullPrice - discount;
+		}
+		default:
+			return basePrice;
+	}
+}
+
+/**
+ * Get appropriate icon for payment type
+ * @param {PaymentType} paymentType - Payment type
+ * @returns {string} Icon name
+ */
+export function getPaymentTypeIcon(paymentType: PaymentType): string {
+	switch (paymentType) {
+		case 'monatlich':
+			return 'calendar';
+		case 'einmalig':
+			return 'credit-card';
+		case 'longtime':
+			return 'infinity';
+		default:
+			return 'credit-card';
+	}
 }
