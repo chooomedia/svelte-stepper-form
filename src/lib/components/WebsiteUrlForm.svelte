@@ -7,7 +7,9 @@
 	import {
 		extractScoreFromResponse,
 		calculateFinalScore,
-		calculateVisibilityScore
+		calculateVisibilityScore,
+		extractScreenshot,
+		analyzeResponseStructure
 	} from '$lib/utils/scoring';
 	import { stepperStore } from '$lib/stores/stepperStore';
 	import { scoreStore } from '$lib/utils/scoring';
@@ -308,6 +310,19 @@
 				);
 			}
 
+			try {
+				// Extract screenshot if available in the response
+				const screenshotData = extractScreenshot(data);
+				if (screenshotData) {
+					processed.screenshot = screenshotData;
+					console.log('Screenshot erfolgreich verarbeitet');
+				} else {
+					console.log('Kein Screenshot in den API-Daten gefunden');
+				}
+			} catch (screenshotError) {
+				console.error('Fehler bei der Screenshot-Verarbeitung:', screenshotError);
+			}
+
 			return processed;
 		} catch (error) {
 			console.error('Error processing webhook data:', error);
@@ -397,6 +412,8 @@
 			// Parse response data - explicitly wait for this
 			const data = await response.json();
 			console.log('Webhook response data:', data);
+
+			analyzeResponseStructure(data);
 
 			// Check if we have usable data
 			if (!data || (Array.isArray(data) && data.length === 0)) {

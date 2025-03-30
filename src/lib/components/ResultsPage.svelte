@@ -233,11 +233,46 @@
 				in:fade={{ duration: 500, delay: 800 }}
 			>
 				{#if screenshot}
-					<div class="overflow-hidden">
-						{screenshot}
+					<div class="screenshot-container overflow-hidden rounded-t-lg">
+						<!-- Wenn der Screenshot eine Daten-URL ist -->
+						{#if screenshot.startsWith('data:')}
+							<img
+								src={screenshot}
+								alt="Website Screenshot"
+								class="h-auto w-full object-cover shadow-sm"
+								onerror={(e) => {
+									console.error('Screenshot Fehler:', e);
+								}}
+							/>
+							<!-- Falls der Screenshot als HTML/SVG kommt -->
+						{:else if screenshot.startsWith('<')}
+							<div class="h-48 w-full bg-gray-100 p-2">
+								{@html screenshot}
+							</div>
+							<!-- Fallback für andere Fälle -->
+						{:else}
+							<div class="flex h-48 w-full items-center justify-center bg-gray-200 p-4">
+								<div class="text-center text-gray-500">
+									<svg
+										class="mx-auto h-12 w-12"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+										/>
+									</svg>
+									<p class="mt-2">Screenshot-Daten vorhanden, aber Format nicht unterstützt</p>
+								</div>
+							</div>
+						{/if}
 					</div>
 				{:else}
-					<div class="overflow-hidden">
+					<div class="overflow-hidden rounded-t-lg">
 						<div class="bg-gray-300">
 							<img src="/ui-mockup.svg" alt="Website Mockup" class="h-48 w-full p-5" />
 						</div>

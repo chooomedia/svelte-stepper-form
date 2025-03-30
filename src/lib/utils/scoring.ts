@@ -168,15 +168,37 @@ export function extractScreenshot(data: any): string | null {
 	if (!data) return null;
 
 	try {
-		// Try alternate format
+		// Try to extract screenshot data from various possible structures
+
+		// First format: direct lighthouseResult path (most common)
 		if (data.lighthouseResult?.audits?.['final-screenshot']?.details?.data) {
 			return data.lighthouseResult.audits['final-screenshot'].details.data;
 		}
 
-		// Try first format
-		if (data?.lighthouse_report?.audits?.['final-screenshot']?.details?.data) {
+		// Second format: nested under lighthouse_report
+		if (data.lighthouse_report?.audits?.['final-screenshot']?.details?.data) {
 			return data.lighthouse_report.audits['final-screenshot'].details.data;
 		}
+
+		// Third format: In case of an array response
+		if (Array.isArray(data) && data.length > 0) {
+			for (const item of data) {
+				// Try both paths for each item in the array
+				if (item.lighthouseResult?.audits?.['final-screenshot']?.details?.data) {
+					return item.lighthouseResult.audits['final-screenshot'].details.data;
+				}
+				if (item.lighthouse_report?.audits?.['final-screenshot']?.details?.data) {
+					return item.lighthouse_report.audits['final-screenshot'].details.data;
+				}
+			}
+		}
+
+		// Fourth format: Sometimes available at top-level 'screenshot' property
+		if (data.screenshot && typeof data.screenshot === 'string') {
+			return data.screenshot;
+		}
+
+		console.warn('Screenshot data structure not recognized:', data);
 	} catch (e) {
 		console.warn('Could not extract screenshot from data:', e);
 	}
@@ -266,6 +288,15 @@ const createScoreStore = () => {
 				// Screenshot extrahieren, falls verfügbar
 				const screenshot = extractScreenshot(data);
 
+				if (screenshot) {
+					console.log(
+						'Screenshot wurde erfolgreich extrahiert',
+						screenshot.substring(0, 50) + '...'
+					); // Nur Anfang zum Debuggen zeigen
+				} else {
+					console.warn('Kein Screenshot in den Daten gefunden:', data);
+				}
+
 				// Detaillierte Metriken extrahieren
 				const metrics = extractDetailedMetrics(data);
 
@@ -351,4 +382,76 @@ export function updateVisibilityScore(formData: Partial<FormData>, form: any) {
 	scoreStore.updateFormScore(formData);
 
 	return score;
+}
+
+export function analyzeResponseStructure(data: any): void {
+	if (!data) {
+		console.log('Keine Daten vorhanden');
+		return;
+	}
+
+	console.group('API-Antwort Struktur-Analyse');
+
+	// Bestimme den Typ der Daten
+	if (Array.isArray(data)) {
+		console.log(`Antwort ist ein Array mit ${data.length} Elementen`);
+
+		// Analysiere das erste Element
+		if (data.length > 0) {
+			console.log('Struktur des ersten Elements:');
+			logObjectKeys(data[0], 1);
+		}
+	} else if (typeof data === 'object') {
+		console.log('Antwort ist ein Objekt');
+		logObjectKeys(data, 1);
+	} else {
+		console.log(`Antwort ist ein primitiver Typ: ${typeof data}`);
+	}
+
+	// Suche nach Screenshot-relevanten Pfaden
+	const screenshotPaths = findPaths(data, 'screenshot');
+	const auditPaths = findPaths(data, 'audit');
+	const imagePaths = findPaths(data, 'image');
+
+	console.log('Mögliche Screenshot-Pfade:', screenshotPaths);
+	console.log('Pfade mit "audit":', auditPaths);
+	console.log('Pfade mit "image":', imagePaths);
+
+	console.groupEnd();
+}
+
+// Hilfsfunktion zum Ausgeben von Objektschlüsseln
+function logObjectKeys(obj: any, depth: number, maxDepth: number = 2) {
+	if (depth > maxDepth || !obj || typeof obj !== 'object') return;
+
+	Object.keys(obj).forEach((key) => {
+		const value = obj[key];
+		const valueType = Array.isArray(value) ? `Array(${value.length})` : typeof value;
+		console.log(`${'  '.repeat(depth)}${key}: ${valueType}`);
+
+		if (typeof value === 'object' && value !== null) {
+			logObjectKeys(value, depth + 1, maxDepth);
+		}
+	});
+}
+
+// Hilfsfunktion zum Finden von Pfaden, die einen bestimmten String enthalten
+function findPaths(obj: any, searchTerm: string, currentPath: string = ''): string[] {
+	let results: string[] = [];
+
+	if (!obj || typeof obj !== 'object') return results;
+
+	Object.keys(obj).forEach((key) => {
+		const newPath = currentPath ? `${currentPath}.${key}` : key;
+
+		if (key.toLowerCase().includes(searchTerm.toLowerCase())) {
+			results.push(newPath);
+		}
+
+		if (typeof obj[key] === 'object' && obj[key] !== null) {
+			results = [...results, ...findPaths(obj[key], searchTerm, newPath)];
+		}
+	});
+
+	return results;
 }

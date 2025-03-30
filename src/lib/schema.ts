@@ -46,7 +46,9 @@ export const baseFormSchema = z.object({
 		.string()
 		.regex(/^\+?[0-9\s\-()]{7,20}$/, 'Ungültiges Telefonformat')
 		.optional(),
-	privacy_agreement: z.boolean(),
+	privacy_agreement: z.boolean().refine((val) => val === true, {
+		message: 'Bitte akzeptiere die Datenschutzerklärung'
+	}),
 	marketing_consent: z.boolean().optional(),
 	visibility_score: z.number().optional()
 });

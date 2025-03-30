@@ -5,7 +5,6 @@
 	import type { FormData } from '$lib/schema';
 	import { step_10, last_step } from '$lib/schema';
 	import { z } from 'zod';
-
 	interface Props {
 		form: SuperValidated<FormData>;
 		errors: Record<string, string>;
@@ -309,6 +308,11 @@
 					bind:checked={$form.privacy_agreement}
 					class="form-checkbox"
 					onblur={() => handleBlur('privacy_agreement')}
+					onchange={() => {
+						touchedFields.add('privacy_agreement');
+						validateField('privacy_agreement');
+						updateFormState();
+					}}
 					{...getAriaAttrs('privacy_agreement', 'Datenschutzerklärung akzeptieren')}
 				/>
 			</div>
