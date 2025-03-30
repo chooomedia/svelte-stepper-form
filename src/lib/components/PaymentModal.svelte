@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { tweened } from 'svelte/motion';
 	import { cubicInOut } from 'svelte/easing';
@@ -38,6 +39,14 @@
 	let totalWithDonation = $derived(
 		includeDonation ? parseFloat(((totalPrice / 100) * 3).toFixed(2)) : totalPrice
 	);
+	let modalElement: HTMLDialogElement;
+
+	function handleModalClick(event: MouseEvent) {
+		// Prüfe, ob das angeklickte Element das Modal-Overlay ist
+		if (event.target === event.currentTarget) {
+			handleClose();
+		}
+	}
 
 	// Helper function to generate plan name
 	function getPlanDisplayName(planName: string, payType: string): string {
@@ -310,22 +319,51 @@
 			paymentError = 'Fehler beim Laden der PayPal-Zahlungsoption';
 		}
 	}
+
+	onMount(() => {
+		if (modalElement) {
+			modalElement.addEventListener('click', handleModalClick);
+
+			// Escape-Taste zum Schließen
+			const handleEscapeKey = (e: KeyboardEvent) => {
+				if (e.key === 'Escape' && showModal) {
+					handleClose();
+				}
+			};
+
+			document.addEventListener('keydown', handleEscapeKey);
+
+			return () => {
+				modalElement.removeEventListener('click', handleModalClick);
+				document.removeEventListener('keydown', handleEscapeKey);
+			};
+		}
+	});
 </script>
 
 <!-- Modal Structure -->
-<div
+<dialog
+	bind:this={modalElement}
 	class="modal backdrop-blur-[2px] {showModal ? 'modal-open' : ''}"
 	transition:fade={{ duration: 300 }}
-	onclick={handleClose}
+	aria-modal="true"
+	open={showModal}
+	tabindex="-1"
 >
 	<div
 		class="modal-box relative max-w-xl"
+		aria-labelledby="payment-modal-title"
 		transition:fly={{ y: 20 }}
-		onclick={(e) => e.stopPropagation()}
+		role="document"
 	>
 		<div class="mb-6 flex items-center justify-between">
-			<h3 class="text-xl font-bold lg:text-2xl">Bezahlung abschließen</h3>
-			<div class="btn btn-circle btn-sm" onclick={handleClose} aria-label="Schließen">✕</div>
+			<h3 id="payment-modal-title" class="text-xl font-bold lg:text-2xl">Bezahlung abschließen</h3>
+			<button
+				type="button"
+				class="btn btn-circle btn-sm"
+				onclick={handleClose}
+				aria-label="Schließen">✕</button
+			>
 		</div>
 		{#if paymentSuccess}
 			<!-- Success State -->
@@ -596,9 +634,11 @@
 			<!-- Footer Links -->
 			<div class="mt-6 text-center text-xs text-gray-500">
 				Mit der Bestellung akzeptierst du unsere
-				<a href="#" class="text-blue-600 underline hover:text-blue-800">AGB</a> und
-				<a href="#" class="text-blue-600 underline hover:text-blue-800">Datenschutzerklärung</a>.
+				<a href="/agb" class="text-blue-600 underline hover:text-blue-800">AGB</a> und
+				<a href="/datenschutz" class="text-blue-600 underline hover:text-blue-800"
+					>Datenschutzerklärung</a
+				>.
 			</div>
 		{/if}
 	</div>
-</div>
+</dialog>
