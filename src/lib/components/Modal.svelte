@@ -2,7 +2,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
-	// Modal types for controlling appearance and behavior
 	export type ModalType = 'default' | 'success' | 'error' | 'warning' | 'info' | 'action';
 	export type ModalSize =
 		| 'sm'
@@ -17,7 +16,6 @@
 		| '7xl'
 		| 'full'
 		| 'wide';
-
 	export type ModalPosition = 'center' | 'top' | 'bottom';
 
 	interface Props {
@@ -36,21 +34,11 @@
 		fullHeight?: boolean;
 		transitionDuration?: number;
 		bodyScrollLock?: boolean;
-		// Action-specific props
-		primaryAction?: {
-			label: string;
-			onClick: () => void;
-			variant?: string;
-		};
-		secondaryAction?: {
-			label: string;
-			onClick: () => void;
-			variant?: string;
-		};
-		icon?: string; // SVG path or predefined icon key
+		primaryAction?: { label: string; onClick: () => void; variant?: string };
+		secondaryAction?: { label: string; onClick: () => void; variant?: string };
+		icon?: string;
 	}
 
-	// Props with defaults
 	const {
 		isOpen = false,
 		onClose,
@@ -72,70 +60,51 @@
 		icon = undefined
 	} = $props<Props>();
 
-	// Internal state
 	let dialogElement: HTMLDialogElement;
 	let isClosing = $state(false);
 	let scrollPosition = $state(0);
 
-	// Styles based on type
 	const typeStyles = $derived(() => {
 		switch (type) {
 			case 'success':
 				return {
 					iconBg: 'bg-success bg-opacity-20',
 					iconColor: 'text-success',
-					headerBg: '',
-					headerText: 'text-success-content',
 					icon: icon || 'M5 13l4 4L19 7'
 				};
 			case 'error':
 				return {
 					iconBg: 'bg-error bg-opacity-20',
 					iconColor: 'text-error',
-					headerBg: '',
-					headerText: 'text-error-content',
 					icon: icon || 'M6 18L18 6M6 6l12 12'
 				};
 			case 'warning':
 				return {
 					iconBg: 'bg-warning bg-opacity-20',
 					iconColor: 'text-warning',
-					headerBg: '',
-					headerText: 'text-warning-content',
-					icon:
-						icon ||
-						'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+					icon: icon || 'M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
 				};
 			case 'info':
 				return {
 					iconBg: 'bg-info bg-opacity-20',
 					iconColor: 'text-info',
-					headerBg: '',
-					headerText: 'text-info-content',
 					icon: icon || 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
 				};
 			case 'action':
 				return {
 					iconBg: 'bg-primary bg-opacity-20',
 					iconColor: 'text-primary',
-					headerBg: '',
-					headerText: 'text-primary-content',
-					icon:
-						icon ||
-						'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+					icon: icon || 'M8.228 9c.549-1.165 2.03-2 3.772-2'
 				};
 			default:
 				return {
 					iconBg: 'bg-neutral bg-opacity-10',
 					iconColor: 'text-neutral',
-					headerBg: '',
-					headerText: 'text-base-content',
 					icon: icon || null
 				};
 		}
 	});
 
-	// Size classes for the modal
 	function getSizeClass(currentSize: ModalSize): string {
 		switch (currentSize) {
 			case 'sm':
@@ -167,31 +136,24 @@
 		}
 	}
 
-	// Action variant styles
 	const getButtonVariant = (actionType: 'primary' | 'secondary', defaultVariant: string) => {
 		const action = actionType === 'primary' ? primaryAction : secondaryAction;
 		return action?.variant || defaultVariant;
 	};
 
-	// Handle outside click - close when clicking outside the modal content
 	function handleOutsideClick(e: MouseEvent) {
 		if (!closeOnClickOutside) return;
-
 		const target = e.target as HTMLElement;
-		if (target === dialogElement) {
-			handleClose();
-		}
+		if (target === dialogElement) handleClose();
 	}
 
-	// Handle ESC key press
 	function handleKeydown(e: KeyboardEvent) {
 		if (closeOnEsc && e.key === 'Escape' && isOpen && !isClosing) {
-			e.preventDefault(); // Prevent the default ESC behavior
+			e.preventDefault();
 			handleClose();
 		}
 	}
 
-	// Close with animation
 	function handleClose() {
 		isClosing = true;
 		setTimeout(() => {
@@ -200,55 +162,43 @@
 		}, transitionDuration);
 	}
 
-	// A11y focus management
 	function trapFocus() {
 		if (!dialogElement || !isOpen) return;
 
 		const focusableElements = dialogElement.querySelectorAll(
 			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 		);
-
 		if (focusableElements.length === 0) return;
 
 		const firstElement = focusableElements[0] as HTMLElement;
 		const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
-		// Focus the first element when opened (after animation completes)
 		setTimeout(() => {
 			firstElement.focus();
 		}, transitionDuration + 50);
 
-		// Override tab behavior for focus trapping
 		dialogElement.addEventListener('keydown', (e) => {
 			if (e.key !== 'Tab') return;
 
-			// If shift+tab on first element, go to last element
 			if (e.shiftKey && document.activeElement === firstElement) {
 				e.preventDefault();
 				lastElement.focus();
-			}
-			// If tab on last element, go to first element
-			else if (!e.shiftKey && document.activeElement === lastElement) {
+			} else if (!e.shiftKey && document.activeElement === lastElement) {
 				e.preventDefault();
 				firstElement.focus();
 			}
 		});
 	}
 
-	// Manage body scroll locking
 	function manageBodyScroll(lock: boolean) {
 		if (!bodyScrollLock) return;
-
 		if (lock) {
-			// Store current scroll position
 			scrollPosition = window.scrollY;
-			// Lock the scroll
 			document.body.style.position = 'fixed';
 			document.body.style.top = `-${scrollPosition}px`;
 			document.body.style.width = '100%';
 			document.body.style.overflow = 'hidden';
 		} else {
-			// Restore scroll
 			document.body.style.position = '';
 			document.body.style.top = '';
 			document.body.style.width = '';
@@ -257,47 +207,36 @@
 		}
 	}
 
-	// Set up event listeners and initial states
 	onMount(() => {
-		// Apply event listeners
 		document.addEventListener('keydown', handleKeydown);
 
-		// Initial focus trap setup if modal is open
 		if (isOpen) {
 			trapFocus();
 			if (bodyScrollLock) manageBodyScroll(true);
 		}
 
-		// Ensure we clean up scroll locking when the component unmounts
 		return () => {
 			if (bodyScrollLock) manageBodyScroll(false);
 		};
 	});
 
-	// Clean up event listeners
 	onDestroy(() => {
 		document.removeEventListener('keydown', handleKeydown);
 
-		// Ensure we restore scroll when the component is destroyed
 		if (bodyScrollLock) manageBodyScroll(false);
 	});
 
-	// React to changes in isOpen
 	$effect(() => {
 		if (isOpen) {
-			// Show the dialog when isOpen becomes true
 			if (dialogElement && !dialogElement.open) {
 				dialogElement.showModal();
 			}
-			// Set up focus trapping and scroll locking
 			trapFocus();
 			if (bodyScrollLock) manageBodyScroll(true);
 		} else {
-			// Close the dialog when isOpen becomes false
 			if (dialogElement && dialogElement.open) {
 				dialogElement.close();
 			}
-			// Restore scroll
 			if (bodyScrollLock) manageBodyScroll(false);
 		}
 	});
@@ -312,15 +251,12 @@
 	aria-describedby={subtitle ? 'modal-subtitle' : undefined}
 >
 	<div
-		class="modal-box relative overflow-y-scroll {getSizeClass(size)} {fullHeight
-			? 'h-full'
-			: ''} overflow-visible p-0"
+		class="modal-box relative {getSizeClass(size)} {fullHeight ? 'h-full' : ''} p-0"
 		in:fade={{ duration: transitionDuration }}
 		out:fade={{ duration: transitionDuration * 0.75 }}
 	>
-		<!-- Modal Header -->
 		{#if title || showCloseButton}
-			<div class="sticky top-0 z-10 rounded-t-xl bg-base-100 px-4 pt-4 shadow-sm lg:px-6 lg:pt-6">
+			<div class="sticky top-0 z-10 rounded-t-xl bg-base-100 px-4 py-4 lg:px-6 lg:pt-6">
 				<header class="flex items-center justify-between">
 					{#if title}
 						<h3 id="modal-title" class="text-xl font-bold lg:text-2xl">

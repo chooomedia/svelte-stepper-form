@@ -1,12 +1,29 @@
 <script lang="ts">
-	// Simple icon component for use in the PaymentModal
+	// Erweiterte Icon-Komponente mit Unterstützung für komplexe SVGs
 
 	export let name: string; // Icon name
 	export let size: number = 24; // Icon size in pixels
 	export let color: string = 'currentColor'; // Icon color
+	export let secondaryColor: string = ''; // Optional secondary color for multi-color icons
+	export let className: string = ''; // Additional CSS classes
 
-	// Icon paths mapped by name
-	const icons = {
+	// Interface für komplexe SVG-Icons mit mehreren Pfaden oder Elementen
+	interface ComplexIcon {
+		viewBox?: string; // Optional custom viewBox
+		content:
+			| string
+			| Array<{
+					type: 'path' | 'circle' | 'rect' | 'line' | 'polyline' | 'polygon' | 'g';
+					attrs: Record<string, string | number>; // Element attributes
+					children?: Array<{
+						type: string;
+						attrs: Record<string, string | number>;
+					}>;
+			  }>;
+	}
+
+	// Einfache Pfad-Icons
+	const pathIcons: Record<string, string> = {
 		heart:
 			'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z',
 		lock: 'M12 2a3 3 0 0 0-3 3v3H7a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-2V5a3 3 0 0 0-3-3zm0 2a1 1 0 0 1 1 1v3h-2V5a1 1 0 0 1 1-1z',
@@ -15,41 +32,222 @@
 		clock: 'M16 7L12.5 11M8 12L13.25 17L22 7M2 12L7.25 17C7.25 17 8.66939 15.3778 9.875 14',
 		alertCircle:
 			'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z',
-		checkCircle: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M16 17l-5-5 1.41-1.41L16 14.17l6.59-6.59L24 9',
-		visa: 'M3.125 0h17.75C22.5 0 24 .5 24 1.25v21.5C24 23.5 22.5 24 21.875 24H3.125C2.5 24 1 .5 1 .25V1.25C1 .5 2.5 0 3.125 0zM3.125 2h17.75c.69 0 1.25.56 1.25 1.25v19.5c0 .69-.56 1.25-1.25 1.25H3.125C2.44 24 .875 23.44 .875 22V2c0-.69.56-1.25 1.25-1.25z',
-		mastercard:
-			'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z',
-		amex: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z',
-		discover:
-			'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z',
-		jcb: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z',
-		dinersClub:
-			'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z',
-		unionPay:
-			'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z',
-		maestro:
-			'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z',
-		paypal:
-			'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1.5-11h-3v6h3v-6zm0-2h-3c-.55 0-1 .45-1 1v1h3V7z'
+		checkCircle: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M16 17l-5-5 1.41-1.41L16 14.17l6.59-6.59L24 9'
 	};
+
+	// Komplexe Icons mit mehreren Elementen
+	const complexIcons: Record<string, ComplexIcon> = {
+		// Fragezeichen-Icon mit mehreren Elementen
+		question: {
+			content: [
+				{
+					type: 'circle',
+					attrs: { cx: '12', cy: '12', r: '10', fill: 'none' }
+				},
+				{
+					type: 'path',
+					attrs: {
+						d: 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3',
+						strokeLinecap: 'round'
+					}
+				},
+				{
+					type: 'line',
+					attrs: { x1: '12', y1: '17', x2: '12.01', y2: '17', strokeLinecap: 'round' }
+				}
+			]
+		},
+		// Beispiel eines Icons mit einer Gruppe und verschachtelten Elementen
+		settings: {
+			content: [
+				{
+					type: 'path',
+					attrs: {
+						d: 'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z',
+						fill: 'none'
+					}
+				},
+				{
+					type: 'circle',
+					attrs: { cx: '12', cy: '12', r: '3', fill: 'none' }
+				}
+			]
+		},
+		// PayPal icon mit komplexer Darstellung
+		paypalComplex: {
+			viewBox: '0 0 24 24',
+			content: [
+				{
+					type: 'path',
+					attrs: {
+						d: 'M6.908 4.786A8.277 8.277 0 0 0 6.25 6.25c-1.389 3.472-1.333 10.5 9.25 10.5v3.75L21 15l-5.5-5.5v3.75c-5.806 0-7.139-3.083-6.167-6.167.306-.972 1.094-2.486 1.094-2.486 0 .195-1.75.195-3.519.189z',
+						fill: secondaryColor || '#002F87'
+					}
+				},
+				{
+					type: 'path',
+					attrs: {
+						d: 'M20.452 7.5h-3.866c-.34 0-.5.16-.63.3-.13.17-.24.44-.27.8L14.5 12.5h2.141l.31-1.89c.017-.09.077-.1.143-.1h1.456c.626 0 1.11-.63 1.11-1.28l.009-.21c.062-1.106-.532-1.52-1.217-1.52M17.337 9.75h-1.0l.037-.2c.027-.1.097-.1.157-.1h.7c.044 0 .23 0 .23.15 0 .15-.124.15-.124.15',
+						fill: secondaryColor || '#009BE0'
+					}
+				},
+				{
+					type: 'path',
+					attrs: {
+						d: 'M3.5 7.5v9h2v-4h2a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2h-4zm2.5 3h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1v2z',
+						fill: color
+					}
+				}
+			]
+		},
+		// Visa-Logo als komplexes Icon
+		visaComplex: {
+			viewBox: '0 0 24 24',
+			content: [
+				{
+					type: 'path',
+					attrs: {
+						d: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z',
+						fill: 'none'
+					}
+				},
+				{
+					type: 'path',
+					attrs: {
+						d: 'M9 13.5l2-7h2l-2 7h-2zm7 0l2-7h2l-2 7h-2zm-10 0l-2-7h2l2 7h-2z',
+						fill: secondaryColor || '#1434CB'
+					}
+				},
+				{
+					type: 'path',
+					attrs: {
+						d: 'M18.5 9.5h-1l-.5 2h2l-.5-2z',
+						fill: secondaryColor || '#1434CB'
+					}
+				}
+			]
+		}
+	};
+
+	// Hilfsfunktion zum Rendern von komplexen Icons
+	function renderComplexIcon(icon: ComplexIcon) {
+		if (typeof icon.content === 'string') {
+			// String-basiertes komplexes Icon (für vorab gerenderte SVGs)
+			return icon.content;
+		} else {
+			// Array von Elementen für komplexes Icon
+			return icon.content
+				.map((element, index) => {
+					const { type, attrs, children } = element;
+
+					// Für jedes Element den entsprechenden SVG-Tag generieren
+					const Tag = type;
+					const props = { ...attrs };
+
+					// Standardattribute hinzufügen, falls nicht definiert
+					if (type === 'path' && !props.stroke && !props.fill) {
+						props.stroke = color;
+					}
+
+					if (children && children.length > 0) {
+						return `<${Tag} ${Object.entries(props)
+							.map(([key, value]) => `${key}="${value}"`)
+							.join(' ')}>
+						${children
+							.map(
+								(child) =>
+									`<${child.type} ${Object.entries(child.attrs)
+										.map(([key, value]) => `${key}="${value}"`)
+										.join(' ')} />`
+							)
+							.join('')}
+					</${Tag}>`;
+					} else {
+						return `<${Tag} ${Object.entries(props)
+							.map(([key, value]) => `${key}="${value}"`)
+							.join(' ')} />`;
+					}
+				})
+				.join('');
+		}
+	}
+
+	// Bestimme das zu verwendende ViewBox
+	function getViewBox(iconName: string): string {
+		if (complexIcons[iconName]?.viewBox) {
+			return complexIcons[iconName].viewBox;
+		}
+		return '0 0 24 24'; // Standard-ViewBox
+	}
 </script>
 
 <svg
 	xmlns="http://www.w3.org/2000/svg"
 	width={size}
 	height={size}
-	viewBox="0 0 24 24"
+	viewBox={getViewBox(name)}
 	fill="none"
 	stroke={color}
-	stroke-width="1"
+	stroke-width="1.5"
 	stroke-linecap="round"
 	stroke-linejoin="round"
+	class={className}
 	aria-hidden="true"
 >
-	{#if icons[name]}
-		<path d={icons[name]} />
+	{#if pathIcons[name]}
+		<!-- Einfaches Icon mit einem Pfad -->
+		<path d={pathIcons[name]} />
+	{:else if complexIcons[name]}
+		<!-- Komplexes Icon mit mehreren Elementen -->
+		{#if typeof complexIcons[name].content === 'string'}
+			{@html complexIcons[name].content}
+		{:else}
+			{#each complexIcons[name].content as element}
+				{#if element.type === 'path'}
+					<path
+						{...element.attrs}
+						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+					/>
+				{:else if element.type === 'circle'}
+					<circle
+						{...element.attrs}
+						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+					/>
+				{:else if element.type === 'rect'}
+					<rect
+						{...element.attrs}
+						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+					/>
+				{:else if element.type === 'line'}
+					<line {...element.attrs} stroke={element.attrs.stroke || color} />
+				{:else if element.type === 'polyline'}
+					<polyline {...element.attrs} stroke={element.attrs.stroke || color} />
+				{:else if element.type === 'polygon'}
+					<polygon
+						{...element.attrs}
+						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+					/>
+				{:else if element.type === 'g'}
+					<g {...element.attrs}>
+						{#if element.children}
+							{#each element.children as child}
+								{#if child.type === 'path'}
+									<path {...child.attrs} />
+								{:else if child.type === 'circle'}
+									<circle {...child.attrs} />
+								{:else if child.type === 'rect'}
+									<rect {...child.attrs} />
+								{:else if child.type === 'line'}
+									<line {...child.attrs} />
+								{/if}
+							{/each}
+						{/if}
+					</g>
+				{/if}
+			{/each}
+		{/if}
 	{:else}
-		<!-- Fallback icon if name not found -->
+		<!-- Fallback Icon, wenn keine Übereinstimmung gefunden wurde -->
 		<circle cx="12" cy="12" r="10" />
 		<line x1="12" y1="8" x2="12" y2="16" />
 		<line x1="8" y1="12" x2="16" y2="12" />

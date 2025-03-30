@@ -2,21 +2,17 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { tweened } from 'svelte/motion';
 	import { cubicInOut } from 'svelte/easing';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
-
-	// Import our new components
 	import Modal from './Modal.svelte';
-	import Tooltip from './Tooltip.svelte';
 
 	// Utils
 	import {
 		generateClientReference,
 		getPlanDisplayName,
 		calculateTax,
-		type PayPalOrderDetails,
-		type TaxInfo
+		type PayPalOrderDetails
 	} from '$lib/utils/payment';
 
 	// Stores
@@ -34,8 +30,6 @@
 		Success: 'Success'
 	} as const;
 
-	let currentState: keyof typeof ModalState = ModalState.Closed;
-
 	interface Props {
 		showModal: boolean;
 		selectedPlan: string;
@@ -47,16 +41,8 @@
 		onSubmit: () => void;
 	}
 
-	const {
-		showModal,
-		selectedPlan,
-		paymentType,
-		totalPrice,
-		form,
-		errors = {},
-		onClose,
-		onSubmit
-	} = $props<Props>();
+	const { showModal, selectedPlan, paymentType, totalPrice, form, onClose, onSubmit } =
+		$props<Props>();
 
 	// State
 	let currentModal = $state<ModalState>(ModalState.Closed);
@@ -67,7 +53,7 @@
 	let redirectUrl = $state('');
 	let showBetterplace = $state(false);
 	let includeDonation = $state(false);
-	let showVatTooltip = $state(false);
+	let paymentSuccessDetails = $state<PayPalOrderDetails | null>(null);
 
 	// Calculated total with donation
 	const totalWithDonation = $derived(() => {
@@ -85,7 +71,6 @@
 
 	// Tax calculations
 	const currentTax = $derived(calculateTax(totalPrice, $taxInfo.rate));
-	const currentVatText = $derived($taxInfo.vatText);
 
 	// Special offer discount percentage based on payment type
 	const discountPercentage = $derived(() => {
@@ -399,6 +384,7 @@
 		console.log('Payment successful, details:', details);
 		isProcessing = false;
 
+		paymentSuccessDetails = details;
 		// Track analytics if available
 		await trackAnalyticsEvent(details);
 
@@ -435,11 +421,6 @@
 			currentModal = ModalState.Payment;
 			initPaymentFlow();
 		}
-	});
-
-	// Clean up resources when component is destroyed
-	onDestroy(() => {
-		// Clean up any resources
 	});
 </script>
 
@@ -486,26 +467,15 @@
 						{totalPrice.toFixed(2).replace('.', ',')}€
 					</p>
 					<div class="relative inline-flex items-center text-sm opacity-75">
-						<div class="relative inline-flex items-center text-sm">
-							<span>inkl. MwSt.</span>
-							<button
-								class="ml-1 text-gray-400 hover:text-gray-600"
-								onmouseenter={() => (showVatTooltip = true)}
-								onmouseleave={() => (showVatTooltip = false)}
-								onfocus={() => (showVatTooltip = true)}
-								onblur={() => (showVatTooltip = false)}
-								aria-label="MwSt Info"
-								type="button"
-							>
-								<Icon name="info" size={16} color="currentColor" />
-							</button>
-
-							<Tooltip show={showVatTooltip} position="left" color="info">
-								<div class="p-2 text-xs">
-									<p>Netto: {currentTax.net.toFixed(2).replace('.', ',')}€</p>
-									<p>MwSt. ({currentTax.rate}%): {currentTax.vat.toFixed(2).replace('.', ',')}€</p>
-								</div>
-							</Tooltip>
+						<!-- Tooltip mit Steuerdaten -->
+						<div
+							class="tooltip tooltip-left cursor-pointer"
+							data-tip={`Netto: ${currentTax.net.toFixed(2).replace('.', ',')}€\nMwSt. (${currentTax.rate}%): ${currentTax.vat.toFixed(2).replace('.', ',')}€`}
+						>
+							<div class="flex items-center">
+								<Icon name="question" className="h-4 w-4 text-gray-500" />
+								<p class="ml-1">inkl. MwSt.</p>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -625,7 +595,7 @@
 
 		<!-- Security Badges -->
 		<slot name="footer">
-			<div class="rounded-lg bg-base-200 p-4">
+			<div class="rounded-lg border border-gray-200 bg-base-200 p-4">
 				<div class="flex flex-wrap justify-center gap-4 text-xs">
 					<!-- Security Badge: Lock -->
 					{#each securityOptions as { icon, text }}
@@ -644,33 +614,6 @@
 >
 
 <!-- Success Modal -->
-<Modal
-	isOpen={currentModal === ModalState.Success}
-	onClose={handleFinalClose}
-	type="success"
-	title="Zahlung erfolgreich!"
-	subtitle="Vielen Dank für Deinen Kauf."
-	size="xl"
-	primaryAction={{
-		label: redirectUrl ? 'Zur Bestätigungsseite' : 'Schließen',
-		onClick: handleFinalClose,
-		variant: 'primary'
-	}}
->
-	{#if includeDonation && $animatedDonation > 0}
-		<div class="mb-6 rounded-lg bg-emerald-50 p-4 text-center" in:fly={{ y: 20, delay: 200 }}>
-			<p class="text-emerald-700">
-				Deine Spende von <strong class="font-mono">
-					{$animatedDonation.toFixed(2).replace('.', ',')}€
-				</strong> trägt dazu bei, unsere Welt ein Stück besser zu machen. Vielen Dank für Deine Unterstützung!
-			</p>
-		</div>
-	{/if}
-
-	<p class="mt-4 text-center text-sm text-gray-500">
-		Eine Bestätigung wurde an Deine E-Mail-Adresse gesendet.
-	</p>
-</Modal>
 
 <!-- Error Modal -->
 <Modal
