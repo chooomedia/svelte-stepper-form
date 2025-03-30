@@ -354,7 +354,7 @@
 	<button
 		class="fixed left-4 top-4 z-50 rounded-full bg-gray-800 p-2 text-white shadow-lg hover:bg-gray-700"
 		onclick={() => (showDebugSidebar = !showDebugSidebar)}
-		aria-label="Debug-Panel anzeigen/verbergen"
+		aria-label="Testing-Panel anzeigen/verbergen"
 	>
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6"
 			><path
@@ -372,7 +372,7 @@
 			transition:slide={{ duration: 300, axis: 'x' }}
 		>
 			<div class="flex items-center justify-between border-b border-gray-300 py-1">
-				<h3 class="text-grayto-sky-800 ml-12 text-lg font-semibold">🔧 Debug-Panel</h3>
+				<h3 class="text-grayto-sky-800 ml-12 text-lg font-semibold">Testing-Panel</h3>
 				<button
 					class="rounded-full p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
 					onclick={() => (showDebugSidebar = false)}

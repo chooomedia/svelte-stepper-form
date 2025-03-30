@@ -9,7 +9,7 @@
 		isResponseReceived?: boolean; // Flag to indicate if response was received
 	}
 
-	const { customTips = [], minDisplayTime = 3, isResponseReceived = false } = $props<Props>();
+	const { customTips = [], minDisplayTime = 8, isResponseReceived = false } = $props<Props>();
 
 	// Default SEO tips
 	const defaultSeoTips = [
@@ -39,7 +39,7 @@
 	let tipTitle = $state('SEO-Tipp während der Analyse:');
 
 	// Handle tip rotation
-	function startTipRotation(tips: string[], interval: number = 5000) {
+	function startTipRotation(tips: string[], interval: number = minDisplayTime * 1000) {
 		// Clear any existing interval
 		if (intervalId) clearInterval(intervalId);
 
