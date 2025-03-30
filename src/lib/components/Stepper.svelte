@@ -56,8 +56,8 @@
 	}
 </script>
 
-<div class="flex w-full flex-col items-center">
-	<div class="relative flex w-full items-center justify-between overflow-hidden py-1">
+<div class="relative flex w-full flex-col items-center">
+	<div class="flex h-[18px] w-full items-center justify-between">
 		<!-- Background track -->
 		<div class="absolute top-1/2 h-0.5 w-full -translate-y-1/2 bg-gray-200"></div>
 

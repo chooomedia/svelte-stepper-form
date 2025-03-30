@@ -13,7 +13,7 @@
 	{#each options as option}
 		<button
 			type="button"
-			class="relative flex cursor-pointer rounded-lg border bg-gray-50 px-4 py-6 shadow-sm focus:outline-none"
+			class="relative flex cursor-pointer rounded-lg border bg-white px-4 py-6 shadow-custom focus:outline-none"
 			class:border-indigo-500={value === option.value}
 			class:border-gray-100={value !== option.value}
 			onclick={() => {

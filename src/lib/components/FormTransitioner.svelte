@@ -65,7 +65,7 @@
 		<div
 			in:fade={{ duration: 300, delay: 150 }}
 			out:fade={{ duration: 150 }}
-			class="form-content absolute top-0 w-full"
+			class="form-content absolute top-0 w-full pb-20"
 		>
 			<slot />
 		</div>

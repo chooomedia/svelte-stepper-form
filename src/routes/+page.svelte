@@ -280,6 +280,9 @@
 						<ContactForm
 							{form}
 							error={$errors}
+							onsubmit={() => {
+								stepperStore.markStepValid($stepperStore.current.index);
+							}}
 							onValidation={(isValid) => {
 								contactFormValid = isValid;
 							}}
@@ -334,7 +337,6 @@
 	</div>
 </div>
 
-<!-- +page.svelte Debug-Sidebar -->
 {#if isDev}
 	<!-- Debug-Toggle Button -->
 	<button
@@ -367,12 +369,12 @@
 	<!-- Debug Sidebar -->
 	{#if showDebugSidebar}
 		<div
-			class="fixed left-0 top-0 h-full w-80 overflow-y-auto bg-gray-100 p-4 shadow-xl transition-transform duration-300"
+			class="fixed left-0 top-0 h-full w-80 overflow-y-auto bg-gray-100 p-4 shadow-2xl transition-transform duration-300"
 			style="transform: translateX({showDebugSidebar ? '0' : '100%'});"
 			transition:slide={{ duration: 300, axis: 'x' }}
 		>
-			<div class="flex items-center justify-between border-b border-gray-300 pb-3">
-				<h3 class="text-lg font-semibold text-gray-800">🔧 Debug-Panel</h3>
+			<div class="flex items-center justify-between border-b border-gray-300 py-1">
+				<h3 class="text-grayto-sky-800 ml-12 text-lg font-semibold">🔧 Debug-Panel</h3>
 				<button
 					class="rounded-full p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
 					onclick={() => (showDebugSidebar = false)}

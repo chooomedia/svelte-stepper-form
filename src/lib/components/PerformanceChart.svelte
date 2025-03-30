@@ -24,7 +24,7 @@
 		score = 50,
 		auditData = null,
 		animateOnResultLoad = false,
-		chartHeight = '400px'
+		chartHeight = '456px'
 	} = $props<Props>();
 
 	// DOM references
@@ -500,7 +500,7 @@
 	</div>
 
 	<!-- Metric Indicators -->
-	<div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+	<div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 		{#each metrics as metric, i}
 			<div
 				class="group relative cursor-pointer rounded-lg border border-gray-200 bg-white p-2 transition-all"

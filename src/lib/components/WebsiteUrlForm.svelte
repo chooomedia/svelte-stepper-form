@@ -466,7 +466,7 @@
 			clearInterval(countdownInterval);
 
 			// Mark current step as valid in the stepper store
-			stepperStore.markStepValid(stepperStore.current.index);
+			stepperStore.markStepValid($stepperStore.current.index);
 
 			// Navigate to the next step
 			stepperStore.nextStep();
@@ -523,12 +523,13 @@
 					<img src="/ui-mockup.svg" alt="Website Analysis Illustration" class="mb-4 h-32 w-auto" />
 					<!-- Input Form (always visible) -->
 					<div class="form-group">
-						<label for="company_url" class="form-label">Website URL</label>
-
-						<p class="mb-5 hyphens-auto break-words text-center text-sm text-gray-600">
+						<label
+							for="company_url"
+							class="form-label text-semibold mb-1 hyphens-auto break-words text-center text-sm text-gray-600"
+						>
 							Gib die URL Deiner Website ein und klicke auf "Analysieren", um einen umfassenden
 							Bericht zu erhalten.
-						</p>
+						</label>
 
 						<div class="flex">
 							<input
@@ -578,7 +579,7 @@
 					</div>
 
 					<!-- Feature List -->
-					<div class="mt-6 grid grid-cols-2 gap-4">
+					<div class="my-2 flex flex-wrap gap-4">
 						{#each ['Performance-Check', 'SEO-Analyse', 'Zugänglichkeitstest', 'Sicherheitsprüfung'] as feature, i}
 							<div class="flex items-start">
 								<svg class="mr-2 h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">

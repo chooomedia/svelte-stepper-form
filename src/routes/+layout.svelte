@@ -220,7 +220,7 @@
 
 	<section
 		class="px-4 py-6 sm:px-6 lg:px-8"
-		style="height: calc(100vh - 102px);"
+		style="min-height: calc(100vh - 102px);"
 		itemscope
 		itemtype="https://schema.org/WebPageElement"
 	>
