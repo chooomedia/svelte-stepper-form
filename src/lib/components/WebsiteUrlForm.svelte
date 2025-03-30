@@ -640,7 +640,7 @@
 							<svg class="absolute inset-0" viewBox="0 0 100 100">
 								<circle
 									class="text-blue-100"
-									stroke-width="8"
+									stroke-width="4"
 									stroke="currentColor"
 									fill="transparent"
 									r="42"
@@ -649,7 +649,7 @@
 								/>
 								<circle
 									class="text-blue-500"
-									stroke-width="8"
+									stroke-width="4"
 									stroke-dasharray="264"
 									stroke-dashoffset="0"
 									stroke-linecap="round"
@@ -665,7 +665,7 @@
 							<svg class="absolute inset-0" viewBox="0 0 100 100">
 								<circle
 									class="text-blue-100"
-									stroke-width="8"
+									stroke-width="4"
 									stroke="currentColor"
 									fill="transparent"
 									r="42"
@@ -674,7 +674,7 @@
 								/>
 								<circle
 									class="text-blue-500 transition-all duration-300 ease-in-out"
-									stroke-width="8"
+									stroke-width="4"
 									stroke-dasharray="264"
 									stroke-dashoffset={264 - (currentProgress * 264) / 100}
 									stroke-linecap="round"
