@@ -11,6 +11,7 @@
 	} from '$lib/utils/scoring';
 	import { stepperStore } from '$lib/stores/stepperStore';
 	import { scoreStore } from '$lib/utils/scoring';
+	import { websiteLoading } from '$lib/stores/loadingStore';
 
 	interface Props {
 		form: SuperValidated<FormData>;
@@ -32,6 +33,7 @@
 	let localErrors = $state<Record<string, string>>({});
 	let touchedFields = $state(new Set<string>());
 	let isUrlValid = $state(true);
+	let analysisComplete = $state(false); // New state to track when analysis is complete
 
 	// Für erweiterte SEO-Tips
 	let tipInterval: number | undefined;
@@ -97,15 +99,6 @@
 	// Get error message
 	function getErrorMessage(fieldName: string): string {
 		return localErrors[fieldName] || errors[fieldName] || '';
-	}
-
-	// Get ARIA attributes for field - fixed to return proper types
-	function getAriaAttrs(fieldName: string, label: string) {
-		return {
-			'aria-invalid': shouldShowError(fieldName) ? 'true' : 'false',
-			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
-			'aria-label': label
-		};
 	}
 
 	// Start progress animation for auto-advance
@@ -247,7 +240,7 @@
 		// Set some default values
 		const processed = {
 			url: formattedUrl,
-			score: extractScoreFromResponse(data) || 35,
+			score: extractScoreFromResponse(data) || 25,
 			performance: 0,
 			seo: 0,
 			accessibility: 0,
@@ -354,7 +347,10 @@
 		// Format URL for display
 		formattedUrl = webhookUrl;
 
+		// Update loading states
+		$websiteLoading = true;
 		isLoading = true;
+		analysisComplete = false;
 		analysisError = '';
 
 		// Clear any existing timeout
@@ -417,6 +413,9 @@
 
 			// Update the score store with the new data
 			scoreStore.setWebsiteAnalysis(analysisData, $form);
+
+			// Mark analysis as complete
+			analysisComplete = true;
 		} catch (error) {
 			console.warn('Error fetching from webhook, using mock data:', error);
 			analysisError = `Fehler bei der API-Anfrage: ${error.message}. Fallback-Daten werden verwendet.`;
@@ -426,6 +425,9 @@
 
 			// Update the score store with fallback data
 			scoreStore.setWebsiteAnalysis(analysisData, $form);
+
+			// Mark analysis as complete even with error (using fallback data)
+			analysisComplete = true;
 		} finally {
 			// Generate custom SEO tips based on analysis data
 			const generatedTips = generateCustomSeoTips(analysisData);
@@ -435,6 +437,9 @@
 
 			// Set remaining time to shorter value if analysis is complete
 			remainingSeconds = Math.min(remainingSeconds, 7);
+			$websiteLoading = false;
+			// We keep isLoading true to show the results UI
+			// but stop the loading animation by setting analysisComplete to true
 		}
 
 		// Calculate final score
@@ -461,13 +466,14 @@
 				clearInterval(tipInterval);
 				tipInterval = undefined;
 			}
+			if (countdownInterval) {
+				clearInterval(countdownInterval);
+			}
 
-			// Clear countdown interval
-			clearInterval(countdownInterval);
+			$websiteLoading = false;
 
 			// Mark current step as valid in the stepper store
 			stepperStore.markStepValid($stepperStore.current.index);
-
 			// Navigate to the next step
 			stepperStore.nextStep();
 		}, autoAdvanceDelay);
@@ -510,6 +516,7 @@
 			if (tipInterval) {
 				clearInterval(tipInterval);
 			}
+			$websiteLoading = false;
 		};
 	});
 </script>
@@ -540,6 +547,12 @@
 									? 'error'
 									: ''}"
 								on:blur={() => handleBlur('company_url')}
+								on:keydown={(e) => {
+									if (e.key === 'Enter' && !isLoading && $form?.company_url && isUrlValid) {
+										e.preventDefault();
+										analyzeWebsite();
+									}
+								}}
 								placeholder="https://www.example.com"
 								disabled={isLoading}
 								aria-invalid={shouldShowError('company_url') ? 'true' : 'false'}
@@ -603,70 +616,121 @@
 		<div class="analysis-in-progress mb-6" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
 			<div class="mx-auto max-w-lg rounded-lg bg-white p-6 shadow-lg">
 				<div class="flex flex-col items-center">
-					<!-- Animated Progress Indicator -->
+					<!-- Animated Progress Indicator - Only shows animation while not complete -->
 					<div class="relative mb-4 h-24 w-24">
-						<!-- Outer Circle -->
-						<svg class="absolute inset-0" viewBox="0 0 100 100">
-							<circle
-								class="text-blue-100"
-								stroke-width="8"
-								stroke="currentColor"
-								fill="transparent"
-								r="42"
-								cx="50"
-								cy="50"
-							/>
-							<circle
-								class="text-blue-500 transition-all duration-300 ease-in-out"
-								stroke-width="8"
-								stroke-dasharray="264"
-								stroke-dashoffset={264 - (currentProgress * 264) / 100}
-								stroke-linecap="round"
-								stroke="currentColor"
-								fill="transparent"
-								r="42"
-								cx="50"
-								cy="50"
-							/>
-						</svg>
+						<!-- Static completed circle when analysis is complete -->
+						{#if analysisComplete}
+							<svg class="absolute inset-0" viewBox="0 0 100 100">
+								<circle
+									class="text-blue-100"
+									stroke-width="8"
+									stroke="currentColor"
+									fill="transparent"
+									r="42"
+									cx="50"
+									cy="50"
+								/>
+								<circle
+									class="text-blue-500"
+									stroke-width="8"
+									stroke-dasharray="264"
+									stroke-dashoffset="0"
+									stroke-linecap="round"
+									stroke="currentColor"
+									fill="transparent"
+									r="42"
+									cx="50"
+									cy="50"
+								/>
+							</svg>
+						{:else}
+							<!-- Animated circle during loading -->
+							<svg class="absolute inset-0" viewBox="0 0 100 100">
+								<circle
+									class="text-blue-100"
+									stroke-width="8"
+									stroke="currentColor"
+									fill="transparent"
+									r="42"
+									cx="50"
+									cy="50"
+								/>
+								<circle
+									class="text-blue-500 transition-all duration-300 ease-in-out"
+									stroke-width="8"
+									stroke-dasharray="264"
+									stroke-dashoffset={264 - (currentProgress * 264) / 100}
+									stroke-linecap="round"
+									stroke="currentColor"
+									fill="transparent"
+									r="42"
+									cx="50"
+									cy="50"
+								/>
+							</svg>
+						{/if}
 
-						<!-- Pulse effect in center -->
-						<div class="absolute inset-0 flex items-center justify-center">
-							<div class="h-16 w-16 animate-ping rounded-full bg-blue-400 opacity-30"></div>
-						</div>
+						<!-- Pulse effect in center - only while loading -->
+						{#if !analysisComplete}
+							<div class="absolute inset-0 flex items-center justify-center">
+								<div class="h-16 w-16 animate-ping rounded-full bg-blue-400 opacity-30"></div>
+							</div>
+						{/if}
 
 						<!-- Icon in center -->
 						<div class="absolute inset-0 flex items-center justify-center">
-							<svg class="h-12 w-12 text-blue-600" viewBox="0 0 24 24" fill="none">
-								<path
-									d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-									stroke="currentColor"
-									stroke-width="1.5"
-								/>
-								<path
-									d="M12 8v4l3 3"
-									stroke="currentColor"
-									stroke-width="1.5"
-									stroke-linecap="round"
-								/>
-							</svg>
+							{#if analysisComplete}
+								<svg class="h-12 w-12 text-blue-600" viewBox="0 0 24 24" fill="none">
+									<path
+										d="M5 13l4 4L19 7"
+										stroke="currentColor"
+										stroke-width="3"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							{:else}
+								<svg class="h-12 w-12 text-blue-600" viewBox="0 0 24 24" fill="none">
+									<path
+										d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+										stroke="currentColor"
+										stroke-width="1.5"
+									/>
+									<path
+										d="M12 8v4l3 3"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linecap="round"
+									/>
+								</svg>
+							{/if}
 						</div>
 					</div>
 
 					<h3 class="mb-2 text-xl font-bold text-gray-800">
-						Analyse Deiner Website <span class="text-blue-600"
-							>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
-						>
+						{#if analysisComplete}
+							Analyse der Website <span class="text-blue-600"
+								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
+							> abgeschlossen
+						{:else}
+							Analyse Deiner Website <span class="text-blue-600"
+								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
+							>
+						{/if}
 					</h3>
 
 					<p class="mb-4 text-center text-gray-600">
-						Wir analysieren Deine Website und erstellen einen umfassenden Performance-Bericht.
+						{#if analysisComplete}
+							Bericht wurde erstellt. Du wirst automatisch zum nächsten Schritt weitergeleitet.
+						{:else}
+							Wir analysieren Deine Website und erstellen einen umfassenden Performance-Bericht.
+						{/if}
 					</p>
 
 					<!-- SEO Tips integrated within the loading box (always visible) -->
 					{#if showSeoTips && customTips.length > 0}
 						<div class="w-full">
-							<SeoTips {customTips} minDisplayTime={5} isResponseReceived={true} />
+							<SeoTips {customTips} minDisplayTime={8} isResponseReceived={analysisComplete} />
 						</div>
 					{/if}
 				</div>

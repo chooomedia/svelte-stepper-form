@@ -636,7 +636,7 @@
 			class="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto"
 			onclick={restartAssessment}
 		>
-			Neues Assessment starten
+			Quiz und Analyse neu starten
 		</button>
 
 		<button

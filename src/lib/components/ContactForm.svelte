@@ -3,153 +3,98 @@
 	import { fade, slide } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
+	import { step_10, last_step } from '$lib/schema';
+	import { z } from 'zod';
 
 	interface Props {
 		form: SuperValidated<FormData>;
 		errors: Record<string, string>;
-		onValidation?: (isValid: boolean) => void; // Callback für den Stepper
+		onValidation?: (isValid: boolean) => void; // Callback for the Stepper
 	}
 
 	let { form, errors = {}, onValidation } = $props<Props>();
 
-	// Statusvariablen für das Formular
+	// Status variables for the form
 	let touchedFields = $state(new Set<string>());
 	let formSubmissionAttempted = $state(false);
 	let showFormValidationOverview = $state(false);
 	let formErrors = $state<string[]>([]);
 	let isFormValid = $state(false);
-	let preventReactivity = $state(true);
-	let lastValidationTime = $state(0); // Zeitstempel der letzten Validierung
 
-	// Prüft ein bestimmtes Feld
+	// Required fields based on the schema (for step 10)
+	const requiredFields = ['salutation', 'first_name', 'last_name', 'email', 'privacy_agreement'];
+
+	// Validate a field using the Zod schema
 	function validateField(fieldName: string): boolean {
-		// Sicherstellen, dass $form definiert ist
+		// Ensure $form is defined
 		if (!$form) {
 			return false;
 		}
 
-		const requiredFields = ['salutation', 'first_name', 'last_name', 'email', 'privacy_agreement'];
-
-		// Für optionale Felder immer true zurückgeben
+		// For optional fields always return true
 		if (!requiredFields.includes(fieldName)) return true;
 
 		let currentFieldValid = true;
 
-		switch (fieldName) {
-			case 'salutation':
-				if (!$form.salutation) {
-					errors[fieldName] = 'Bitte wähle eine Anrede aus';
-					currentFieldValid = false;
-				} else {
-					delete errors[fieldName];
-				}
-				break;
+		try {
+			// Create a subset schema with just this field
+			const fieldSchema = z.object({
+				[fieldName]: last_step.shape[fieldName]
+			});
 
-			case 'first_name':
-				if (!$form.first_name) {
-					errors[fieldName] = 'Bitte gib Deinen Vornamen ein';
-					currentFieldValid = false;
-				} else if ($form.first_name.length < 2) {
-					errors[fieldName] = 'Vorname muss mindestens 2 Zeichen haben';
-					currentFieldValid = false;
-				} else {
-					delete errors[fieldName];
-				}
-				break;
+			// Validate just this field
+			fieldSchema.parse({ [fieldName]: $form[fieldName] });
 
-			case 'last_name':
-				if (!$form.last_name) {
-					errors[fieldName] = 'Bitte gib Deinen Nachnamen ein';
+			// If we get here, validation passed
+			delete errors[fieldName];
+			return true;
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				// Extract error message from Zod validation error
+				const fieldError = error.errors.find((err) => err.path[0] === fieldName);
+				if (fieldError) {
+					errors[fieldName] = fieldError.message;
 					currentFieldValid = false;
-				} else if ($form.last_name.length < 2) {
-					errors[fieldName] = 'Nachname muss mindestens 2 Zeichen haben';
-					currentFieldValid = false;
-				} else {
-					delete errors[fieldName];
 				}
-				break;
-
-			case 'email':
-				if (!$form.email) {
-					errors[fieldName] = 'Bitte gib Deine E-Mail-Adresse ein';
-					currentFieldValid = false;
-				} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($form.email)) {
-					errors[fieldName] = 'Bitte gib eine gültige E-Mail-Adresse ein';
-					currentFieldValid = false;
-				} else {
-					delete errors[fieldName];
-				}
-				break;
-
-			case 'privacy_agreement':
-				if (!$form.privacy_agreement) {
-					errors[fieldName] = 'Bitte stimme der Datenschutzerklärung zu';
-					currentFieldValid = false;
-				} else {
-					delete errors[fieldName];
-				}
-				break;
+			}
 		}
 
 		return currentFieldValid;
 	}
 
-	// Handler für Feld-Blur-Events
+	// Handler for field blur events
 	function handleBlur(fieldName: string) {
 		touchedFields.add(fieldName);
 		validateField(fieldName);
-		// Statt direktem Aufruf verwenden wir ein Throttling
-		scheduleUpdate();
+		updateFormState();
 	}
 
-	// Verhindert zu häufige Aktualisierungen
-	function scheduleUpdate() {
-		const now = Date.now();
-		if (now - lastValidationTime > 100) {
-			// Min. 100ms zwischen Updates
-			lastValidationTime = now;
-			updateFormState();
-		}
-	}
-
-	// Aktualisiert den Formularstatus ohne Endlosschleifen auszulösen
+	// Update form state without causing infinite loops
 	function updateFormState() {
-		// Fehlerliste aktualisieren
+		// Update error list
 		formErrors = Object.values(errors).filter(Boolean);
 		showFormValidationOverview = formErrors.length > 0;
 
-		// Formularvalidität prüfen
+		// Check form validity
 		if ($form) {
-			const requiredFields = [
-				'salutation',
-				'first_name',
-				'last_name',
-				'email',
-				'privacy_agreement'
-			];
+			isFormValid = requiredFields.every((field) => validateField(field));
 
-			const newIsValid = requiredFields.every((field) => validateField(field));
-
-			// Nur Callback aufrufen, wenn sich der Status geändert hat
-			if (isFormValid !== newIsValid) {
-				isFormValid = newIsValid;
-
-				// Wichtig: Den Stepper über die Validität informieren
-				if (onValidation) {
-					onValidation(isFormValid);
-				}
+			// Important: Inform the stepper about validity
+			if (onValidation) {
+				onValidation(isFormValid);
 			}
 		} else {
 			isFormValid = false;
+			if (onValidation) onValidation(false);
 		}
 	}
 
-	// Prüft, ob ein Fehler für ein bestimmtes Feld angezeigt werden soll
+	// Check if an error should be shown for a specific field
 	function shouldShowError(fieldName: string): boolean {
 		return (touchedFields.has(fieldName) || formSubmissionAttempted) && !!errors[fieldName];
 	}
 
-	// ARIA-Attribute für Felder
+	// ARIA attributes for fields
 	function getAriaAttrs(fieldName: string, label: string) {
 		return {
 			'aria-invalid': shouldShowError(fieldName) ? 'true' : 'false',
@@ -158,70 +103,58 @@
 		};
 	}
 
-	// Validiert alle Felder und informiert den Stepper
+	// Validate all fields
 	function validateAllFields() {
 		formSubmissionAttempted = true;
 
-		const fieldNames = [
-			'salutation',
-			'first_name',
-			'last_name',
-			'email',
-			'phone',
-			'privacy_agreement'
-		];
+		try {
+			// Validate the entire form using the schema
+			last_step.parse($form);
 
-		// Alle Felder als berührt markieren
-		fieldNames.forEach((field) => {
-			touchedFields.add(field);
-		});
+			// Clear all errors if validation succeeds
+			errors = {};
+			isFormValid = true;
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				// Process all validation errors
+				error.errors.forEach((err) => {
+					const fieldName = err.path[0] as string;
+					errors[fieldName] = err.message;
+					touchedFields.add(fieldName);
+				});
+				isFormValid = false;
+			}
+		}
 
-		// Zustand aktualisieren
+		// Update state
 		updateFormState();
-
 		return isFormValid;
 	}
 
-	// Handler für Formular-Änderungen mit Throttling
-	function handleFormChange() {
-		if (preventReactivity) return;
+	// Effect to check form state when touched fields change
+	$effect(() => {
+		// Update form state whenever a field is touched or validation is attempted
+		if (touchedFields.size > 0 || formSubmissionAttempted) {
+			updateFormState();
+		}
+	});
 
-		// Wir verwenden ein Timeout, um die Anzahl der Aktualisierungen zu begrenzen
-		setTimeout(() => {
-			validateAllFields();
-		}, 100);
-	}
-
-	// Initialisierung
+	// Initialize
 	onMount(() => {
-		// Verzögerte Aktivierung von Reaktivität
-		setTimeout(() => {
-			preventReactivity = false;
+		// Run initial validation if form has data
+		if ($form?.company_name) {
+			// If company name exists, check other required fields
+			const allFilled = requiredFields.every((field) => !!$form?.[field]);
 
-			// Initiale Validierung
-			if ($form?.company_name) {
-				// Wenn der Firmenname existiert, andere erforderliche Felder prüfen
-				const requiredFields = [
-					'salutation',
-					'first_name',
-					'last_name',
-					'email',
-					'privacy_agreement'
-				];
-
-				// Prüfen, ob alle Felder vorausgefüllt sind
-				const allFilled = requiredFields.every((field) => !!$form?.[field]);
-
-				if (allFilled) {
-					// Erste manuelle Validierung
-					validateAllFields();
-				}
+			if (allFilled) {
+				// First manual validation
+				validateAllFields();
 			}
-		}, 200);
+		}
 	});
 </script>
 
-<form method="POST" class="space-y-6" onsubmit={validateAllFields} novalidate>
+<form method="POST" class="space-y-6" novalidate>
 	{#if showFormValidationOverview && formErrors.length > 0}
 		<div
 			class="mb-4 rounded-md bg-red-50 p-4"
@@ -279,7 +212,6 @@
 			bind:value={$form.salutation}
 			class="input-field {shouldShowError('salutation') ? 'error' : ''}"
 			onblur={() => handleBlur('salutation')}
-			onchange={handleFormChange}
 			{...getAriaAttrs('salutation', 'Bitte wähle Deine Anrede')}
 		>
 			<option value="">Bitte wählen</option>
@@ -304,7 +236,6 @@
 				bind:value={$form.first_name}
 				class="input-field {shouldShowError('first_name') ? 'error' : ''}"
 				onblur={() => handleBlur('first_name')}
-				oninput={handleFormChange}
 				{...getAriaAttrs('first_name', 'Bitte gib Deinen Vornamen ein')}
 			/>
 			{#if shouldShowError('first_name')}
@@ -322,7 +253,6 @@
 				bind:value={$form.last_name}
 				class="input-field {shouldShowError('last_name') ? 'error' : ''}"
 				onblur={() => handleBlur('last_name')}
-				oninput={handleFormChange}
 				{...getAriaAttrs('last_name', 'Bitte gib Deinen Nachnamen ein')}
 			/>
 			{#if shouldShowError('last_name')}
@@ -342,7 +272,6 @@
 			bind:value={$form.email}
 			class="input-field {shouldShowError('email') ? 'error' : ''}"
 			onblur={() => handleBlur('email')}
-			oninput={handleFormChange}
 			{...getAriaAttrs('email', 'Bitte gib Deine E-Mail-Adresse ein')}
 		/>
 		{#if shouldShowError('email')}
@@ -380,7 +309,6 @@
 					bind:checked={$form.privacy_agreement}
 					class="form-checkbox"
 					onblur={() => handleBlur('privacy_agreement')}
-					onchange={handleFormChange}
 					{...getAriaAttrs('privacy_agreement', 'Datenschutzerklärung akzeptieren')}
 				/>
 			</div>

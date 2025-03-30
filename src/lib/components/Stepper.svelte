@@ -19,14 +19,17 @@
 		const baseClasses =
 			'relative z-10 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-300 ease-in-out';
 
+		// Spezieller Zustand für Schritt 2 während der Website-Analyse
 		if (stepStatus.index === 2 && get(websiteLoading)) {
-			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300 animate-pulse`;
+			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300`;
 		}
 
+		// Spezieller Zustand für Schritt 10 während der Formularübermittlung
 		if (stepStatus.index === 10 && get(formSubmitting)) {
-			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300 animate-pulse`;
+			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300`;
 		}
 
+		// Nach der Analyse oder wenn der Schritt gültig ist -> grün markieren
 		if (stepStatus.isValid) {
 			return `${baseClasses} !h-4 !w-4 scale-110 !border-green-500 !bg-green-500`;
 		}

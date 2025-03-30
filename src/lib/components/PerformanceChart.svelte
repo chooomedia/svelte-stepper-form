@@ -24,7 +24,7 @@
 		score = 50,
 		auditData = null,
 		animateOnResultLoad = false,
-		chartHeight = '436px'
+		chartHeight = '456px'
 	} = $props<Props>();
 
 	// DOM references
@@ -475,9 +475,23 @@
 			<div
 				class="flex cursor-pointer items-center transition-opacity hover:opacity-75"
 				on:mouseenter={() => {
-					if (i === 0) {
-						chart?.setActiveElements([]);
-						chart?.update('none');
+					if (chart) {
+						// Verstecke alle Linien außer der entsprechenden Linie
+						chart.data.datasets.forEach((dataset, index) => {
+							// Setze die Sichtbarkeit nach Index - 0 für "Aktueller Wert", 1 für "Durchschnitt", 2 für "Optimalwert"
+							const isVisible = index === i;
+							chart.setDatasetVisibility(index, isVisible);
+						});
+						chart.update();
+					}
+				}}
+				on:mouseleave={() => {
+					if (chart) {
+						// Stelle alle Datensätze wieder her
+						chart.data.datasets.forEach((dataset, index) => {
+							chart.setDatasetVisibility(index, true);
+						});
+						chart.update();
 					}
 				}}
 			>
@@ -500,16 +514,41 @@
 	</div>
 
 	<!-- Metric Indicators -->
+	<!-- Metric Indicators -->
 	<div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 		{#each metrics as metric, i}
 			<div
-				class="group relative cursor-pointer rounded-lg border border-gray-200 bg-white p-2 transition-all"
+				class="group relative cursor-pointer rounded-md border border-gray-200 bg-white p-2 transition-all hover:shadow-md"
 				style="border-top: 3px solid {metric.color};"
-				on:mouseenter={() => highlightPoint(i)}
-				on:mouseleave={() => highlightPoint(-1)}
+				on:mouseenter={() => {
+					if (chart) {
+						// Finde den entsprechenden Datenpunkt im Chart
+						chart.setActiveElements([{ datasetIndex: 0, index: i }]);
+
+						// Aktiviere den Tooltip für diesen Punkt
+						const meta = chart.getDatasetMeta(0);
+						if (meta.data[i]) {
+							const position = meta.data[i].getCenterPoint();
+							chart.tooltip.setActiveElements([{ datasetIndex: 0, index: i }], {
+								x: position.x,
+								y: position.y
+							});
+						}
+						chart.update();
+					}
+				}}
+				on:mouseleave={() => {
+					if (chart) {
+						// Entferne Hervorhebung
+						chart.setActiveElements([]);
+						// Verstecke Tooltip
+						chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+						chart.update();
+					}
+				}}
 			>
 				<div class="flex items-baseline">
-					<span class="text-2xl font-bold text-gray-900">
+					<span class="text-xl font-bold text-gray-900">
 						{Math.round(metric.value * $animationTween)}
 					</span>
 					<span class="ml-1 text-sm text-gray-500"> / 100</span>

@@ -355,7 +355,7 @@
 							></path>
 						</svg>
 					</div>
-					<p class="text-lg font-semibold text-white">Wert: 299€</p>
+					<p class="text-lg font-semibold text-white">Wert: 89€</p>
 					<p class="text-xs text-blue-300">Nur für begrenzte Zeit</p>
 				</div>
 			</div>

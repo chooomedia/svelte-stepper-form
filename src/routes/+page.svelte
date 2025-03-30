@@ -192,25 +192,15 @@
 
 						<!-- Step 2: Website URL -->
 					{:else if $stepperStore.current.index === 2}
-						<div itemprop="step" itemscope itemtype="https://schema.org/HowToStep">
-							<meta itemprop="position" content="2" />
-							<meta itemprop="name" content="Website Analysis" />
-							<div
-								itemprop="itemListElement"
-								itemscope
-								itemtype="https://schema.org/HowToDirection"
-							>
-								<WebsiteUrlForm
-									{form}
-									error={$errors}
-									onAnalysisComplete={handleAnalysisComplete}
-									onclick={() => {
-										stepperStore.markStepValid($stepperStore.current.index);
-										stepperStore.nextStep();
-									}}
-								/>
-							</div>
-						</div>
+						<WebsiteUrlForm
+							{form}
+							error={$errors}
+							onAnalysisComplete={handleAnalysisComplete}
+							onclick={() => {
+								stepperStore.markStepValid($stepperStore.current.index);
+								stepperStore.nextStep();
+							}}
+						/>
 
 						<!-- Step 3: Advertising Frequency -->
 					{:else if $stepperStore.current.index === 3}
@@ -279,7 +269,7 @@
 					{:else if $stepperStore.current.index === 10}
 						<ContactForm
 							{form}
-							errors={$errors}
+							error={$errors}
 							onValidation={(isValid) => {
 								contactFormValid = isValid;
 
@@ -326,16 +316,28 @@
 							/>
 
 							<Button
-								label="Weiter"
+								label={$stepperStore.current.index === 2 ? 'Überspringen' : 'Weiter'}
 								type="button"
-								variant="primary"
+								variant={$stepperStore.current.index === 2 ? 'secondary' : 'primary'}
 								disabled={$stepperStore.current.index === 10 && !contactFormValid}
 								on:click={() => {
-									if (contactFormValid) {
+									// Für Schritt 10: Prüfen ob das Kontaktformular gültig ist
+									if ($stepperStore.current.index === 10) {
+										if (contactFormValid) {
+											stepperStore.markStepValid($stepperStore.current.index);
+											stepperStore.nextStep();
+										} else {
+											stepperStore.markStepIncomplete($stepperStore.current.index);
+										}
+									}
+									// Für Schritt 2: Einfach überspringen ohne Validierung
+									else if ($stepperStore.current.index === 2) {
 										stepperStore.nextStep();
+									}
+									// Für alle anderen Schritte: Normales Verhalten
+									else {
 										stepperStore.markStepValid($stepperStore.current.index);
-									} else {
-										stepperStore.markStepIncomplete($stepperStore.current.index);
+										stepperStore.nextStep();
 									}
 								}}
 							/>
