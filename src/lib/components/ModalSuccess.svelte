@@ -1,10 +1,14 @@
+<!-- src/lib/components/ModalSuccess.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
-	import { cubicOut, elasticOut } from 'svelte/easing';
+	import { elasticOut } from 'svelte/easing';
 	import { tweened } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 	import type { PayPalOrderDetails } from '$lib/utils/payment';
 	import Modal from './Modal.svelte';
+	import { modalStore } from '$lib/stores/modalStore';
+	import { formatTime, AnimationSequencer } from '$lib/utils/animation';
 
 	// Import confetti function if available
 	let confetti: Function | undefined;
@@ -19,26 +23,27 @@
 	interface Props {
 		showModal: boolean;
 		onClose: () => void;
-		selectedPlan: string;
-		paymentType: 'monatlich' | 'einmalig' | 'longtime';
-		paymentDetails: PayPalOrderDetails | null;
-		includeDonation?: boolean;
-		donationAmount?: number;
-		customerName?: string;
-		redirectUrl?: string;
+		data?: {
+			details?: PayPalOrderDetails;
+			selectedPlan?: string;
+			paymentType?: 'monatlich' | 'einmalig' | 'longtime';
+			includeDonation?: boolean;
+			donationAmount?: number;
+			customerName?: string;
+			redirectUrl?: string;
+		};
 	}
 
-	const {
-		showModal = false,
-		onClose,
-		selectedPlan = '',
-		paymentType = 'einmalig',
-		paymentDetails = null,
-		includeDonation = false,
-		donationAmount = 0,
-		customerName = '',
-		redirectUrl = ''
-	} = $props<Props>();
+	const { showModal = false, onClose, data = {} } = $props<Props>();
+
+	// Daten aus dem data-Objekt extrahieren
+	const selectedPlan = $derived(data?.selectedPlan || '');
+	const paymentType = $derived(data?.paymentType || 'einmalig');
+	const paymentDetails = $derived(data?.details || null);
+	const includeDonation = $derived(data?.includeDonation || false);
+	const donationAmount = $derived(data?.donationAmount || 0);
+	const customerName = $derived(data?.customerName || '');
+	const redirectUrl = $derived(data?.redirectUrl || '');
 
 	// Animation States
 	let showCheckmark = $state(false);
@@ -46,8 +51,8 @@
 	let showNextSteps = $state(false);
 	let progress = $state(0);
 
-	// Timer für sequentielle Animationen
-	let timers: number[] = [];
+	// Animation Sequencer für ordentliches Timing
+	const animationSequencer = new AnimationSequencer();
 
 	// Nächste Schritte zum Erfolg
 	const nextSteps = [
@@ -69,68 +74,48 @@
 		easing: cubicOut
 	});
 
-	// Formatiert die Zeit für den Countdown
-	function formatTime(seconds: number) {
-		const mins = Math.floor(seconds / 60);
-		const secs = Math.floor(seconds % 60);
-		return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-	}
-
 	// Animation sequence starten
 	function startAnimationSequence() {
-		// Fortschrittsbalken starten
-		let progressInterval = setInterval(() => {
+		// Alle bestehenden Timer löschen
+		animationSequencer.clearAll();
+
+		// Progress-Animation starten
+		let progressComplete = false;
+		animationSequencer.addInterval(() => {
 			if (progress < 100) {
 				progress += 1;
+				return false;
 			} else {
-				clearInterval(progressInterval);
+				progressComplete = true;
+				return true;
 			}
 		}, 20);
 
 		// Animationssequenz
-		timers.push(
-			setTimeout(() => {
-				showCheckmark = true;
-			}, 4000)
-		);
+		animationSequencer.add(() => {
+			showCheckmark = true;
+		}, 500);
 
-		timers.push(
-			setTimeout(() => {
-				showConfetti = true;
-				triggerConfetti();
-			}, 8000)
-		);
+		animationSequencer.add(() => {
+			showConfetti = true;
+			triggerConfetti();
+		}, 1000);
 
-		timers.push(
-			setTimeout(() => {
-				showNextSteps = true;
-			}, 12000)
-		);
+		animationSequencer.add(() => {
+			showNextSteps = true;
+		}, 1500);
 
 		// Upsell Countdown starten
-		upsellSeconds.set(10000);
-		const countdownInterval = setInterval(() => {
-			upsellSeconds.update((val) => {
-				if (val <= 0) {
-					clearInterval(countdownInterval);
-					return 0;
-				}
-				return val - 1;
-			});
-		}, 10000);
-
-		timers.push(countdownInterval);
+		upsellSeconds.set(1800);
+		animationSequencer.addInterval(() => {
+			upsellSeconds.update((val) => Math.max(0, val - 1));
+			return false; // Niemals automatisch beenden
+		}, 1000);
 
 		// Donation-Animation starten wenn vorhanden
 		if (includeDonation && donationAmount > 0) {
 			animatedDonation.set(donationAmount);
 		}
-
-		return () => {
-			clearInterval(progressInterval);
-			clearInterval(countdownInterval);
-			timers.forEach((timer) => clearTimeout(timer));
-		};
 	}
 
 	// Confetti-Animation auslösen
@@ -154,6 +139,7 @@
 		}
 	}
 
+	// Zum Dashboard weiterleiten
 	function redirectToDashboard() {
 		if (redirectUrl) {
 			trackEvent('redirect_to_dashboard');
@@ -164,14 +150,11 @@
 	// Effekt wenn Modal geöffnet wird
 	$effect(() => {
 		if (showModal) {
+			// States zurücksetzen
 			progress = 0;
 			showCheckmark = false;
 			showConfetti = false;
 			showNextSteps = false;
-
-			// Timers zurücksetzen
-			timers.forEach((timer) => clearTimeout(timer));
-			timers = [];
 
 			// Animation starten
 			startAnimationSequence();
@@ -183,7 +166,7 @@
 
 	// Clean up
 	onDestroy(() => {
-		timers.forEach((timer) => clearTimeout(timer));
+		animationSequencer.clearAll();
 	});
 </script>
 

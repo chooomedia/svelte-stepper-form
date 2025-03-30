@@ -5,6 +5,7 @@
 	import { browser } from '$app/environment';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import PaymentModal from './PaymentModal.svelte';
+	import { modalStore } from '$lib/stores/modalStore';
 
 	interface Props {
 		score: number;
@@ -98,26 +99,26 @@
 
 	// Function to open the payment modal
 	function openPaymentModal() {
-		showPaymentModal = true;
+		modalStore.open('payment', {
+			selectedPlan,
+			paymentType,
+			totalPrice,
+			form,
+			errors
+		});
 	}
 
 	// Function to close the payment modal
 	function closePaymentModal() {
-		showPaymentModal = false;
+		modalStore.close();
 	}
 
 	// Function to process the payment submission
 	function handlePaymentSubmit() {
-		// Simulate successful payment
 		console.log('Payment submitted for', selectedPlan, 'with total price', totalPrice);
 
-		// Additional processing logic could be added here
-		// For example, sending data to a server or updating the user's account
-
-		// Close modal after successful payment
-		showPaymentModal = false;
-
-		// You could trigger a success message or redirect here
+		// Schließt das Modal nicht automatisch, sondern überlässt das der Erfolgsanimation
+		// Die erfolgreiche Zahlung wird über den modalStore kommuniziert
 	}
 
 	// Timer for discount
@@ -415,6 +416,7 @@
 					? 'ring-2 ring-blue-500'
 					: ''}"
 				onclick={() => handlePlanChange(plan.name)}
+				aria-label="Plan {plan.name} auswählen"
 			>
 				{#if plan.popular}
 					<div
@@ -756,7 +758,7 @@
 
 <!-- Payment Modal Component -->
 <PaymentModal
-	showModal={showPaymentModal}
+	showModal={$modalStore.isOpen && $modalStore.type === 'payment'}
 	{selectedPlan}
 	{paymentType}
 	{totalPrice}

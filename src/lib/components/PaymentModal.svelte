@@ -7,6 +7,8 @@
 	import type { FormData } from '$lib/schema';
 	import Modal from './Modal.svelte';
 	import ModalSuccess from './ModalSuccess.svelte';
+	import { modalStore, type ModalType } from '$lib/stores/modalStore';
+	import { taxInfo } from '$lib/stores/taxStore';
 
 	// Utils
 	import {
@@ -16,23 +18,10 @@
 		type PayPalOrderDetails,
 		type TaxInfo
 	} from '$lib/utils/payment';
-
-	// Stores
-	import { taxInfo } from '$lib/stores/taxStore';
+	import { formatTime, AnimationSequencer } from '$lib/utils/animation';
 
 	// Config
 	import { PAYPAL_SCRIPT_BASE } from '$lib/config';
-	import SecurityBadge from './SecurityBadge.svelte';
-	import Icon from './Icon.svelte';
-
-	// Modal states enum
-	export const ModalState = {
-		Closed: 'Closed',
-		Payment: 'Payment',
-		Success: 'Success',
-		Error: 'Error',
-		Action: 'Action'
-	} as const;
 
 	interface Props {
 		showModal: boolean;
@@ -44,6 +33,17 @@
 		onClose: () => void;
 		onSubmit: () => void;
 	}
+	import SecurityBadge from './SecurityBadge.svelte';
+	import Icon from './Icon.svelte';
+
+	// Modal states enum
+	export const ModalState = {
+		Closed: 'Closed',
+		Payment: 'Payment',
+		Success: 'Success',
+		Error: 'Error',
+		Action: 'Action'
+	} as const;
 
 	const {
 		showModal,
@@ -57,7 +57,7 @@
 	} = $props<Props>();
 
 	// State
-	let currentModal = $state<keyof typeof ModalState>(ModalState.Closed);
+	let currentModalType = $state<ModalType>('payment');
 	let paymentMethod: 'paypal' | 'betterplace' = $state('paypal');
 	let isProcessing = $state(false);
 	let paymentError = $state('');
@@ -67,11 +67,12 @@
 	let includeDonation = $state(false);
 	let showVatTooltip = $state(false);
 	let paymentSuccessDetails = $state<PayPalOrderDetails | null>(null);
+	let animationSequencer = new AnimationSequencer();
 
 	// Calculated total with donation
 	const totalWithDonation = $derived(() => {
 		if (includeDonation) {
-			return totalPrice + totalPrice * 0.03; // 3% extra
+			return totalPrice + totalPrice * 0.03;
 		}
 		return totalPrice;
 	});
@@ -99,7 +100,7 @@
 	});
 
 	// Animations
-	const animatedDonation = tweened(1, {
+	const animatedDonation = tweened(0, {
 		duration: 1500,
 		easing: cubicInOut
 	});
@@ -108,14 +109,18 @@
 	$effect(() => {
 		if (showModal) {
 			resetForm();
-			currentModal = ModalState.Payment;
+			modalStore.open('payment', {
+				selectedPlan,
+				paymentType,
+				totalPrice
+			});
 			initPaymentFlow();
 		} else {
-			currentModal = ModalState.Closed;
+			modalStore.close();
 		}
 	});
 
-	// Handle donation amount animation
+	// Animation for donation
 	$effect(() => {
 		animatedDonation.set(includeDonation ? totalPrice * 0.03 : 0);
 	});
@@ -130,25 +135,55 @@
 		includeDonation = false;
 		showBetterplace = false;
 		paymentSuccessDetails = null;
+		animationSequencer.clearAll();
 	}
 
 	// Modal close handlers
 	function handleMainClose() {
-		// If in the middle of payment, show confirmation dialog
-		if (currentModal === ModalState.Payment && !isProcessing) {
-			currentModal = ModalState.Action;
+		if (currentModalType === 'payment' && !isProcessing) {
+			currentModalType = 'action';
+			modalStore.open('action');
 		} else {
 			handleFinalClose();
 		}
 	}
 
 	function handleFinalClose() {
-		currentModal = ModalState.Closed;
+		modalStore.close();
 		onClose();
 	}
 
 	function continuePayment() {
-		currentModal = ModalState.Payment;
+		currentModalType = 'payment';
+		modalStore.open('payment');
+	}
+
+	async function handlePaymentSuccess(details: PayPalOrderDetails) {
+		console.log('Payment successful, details:', details);
+		isProcessing = false;
+		paymentSuccessDetails = details;
+
+		// Track analytics if available
+		await trackAnalyticsEvent(details);
+
+		// Update the store with success data
+		modalStore.open(
+			'success',
+			{
+				details,
+				selectedPlan,
+				paymentType,
+				includeDonation,
+				donationAmount: includeDonation ? totalPrice * 0.03 : 0,
+				customerName: getCustomerName(details)
+			},
+			{
+				autoClose: false
+			}
+		);
+
+		// Call the submit handler
+		onSubmit();
 	}
 
 	// Payment flow initialization
@@ -394,25 +429,6 @@
 		currentModal = ModalState.Error;
 	}
 
-	// Handle successful payment
-	// Handle successful payment
-	async function handlePaymentSuccess(details: PayPalOrderDetails) {
-		console.log('Payment successful, details:', details);
-		isProcessing = false;
-
-		paymentSuccessDetails = details;
-
-		// Track analytics if available
-		await trackAnalyticsEvent(details);
-
-		// Show success modal
-		currentModal = ModalState.Success;
-
-		// Direkt den Erfolg an die übergeordnete Komponente melden
-		// ohne automatisches Schließen
-		onSubmit();
-	}
-
 	// Analytics tracking
 	async function trackAnalyticsEvent(details: PayPalOrderDetails) {
 		if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
@@ -444,20 +460,19 @@
 	// Component lifecycle
 	onMount(() => {
 		if (showModal) {
-			currentModal = ModalState.Payment;
 			initPaymentFlow();
 		}
 	});
 
 	// Clean up on component destroy
 	onDestroy(() => {
-		// Clean up any resources
+		animationSequencer.clearAll();
 	});
 </script>
 
 <!-- Main Payment Modal -->
 <Modal
-	isOpen={currentModal === ModalState.Payment}
+	isOpen={$modalStore.isOpen && $modalStore.type === 'payment'}
 	onClose={handleMainClose}
 	title="Bezahlung abschließen"
 	size="xl"
@@ -643,15 +658,9 @@
 
 <!-- Success Modal -->
 <ModalSuccess
-	showModal={currentModal === ModalState.Success}
+	showModal={$modalStore.isOpen && $modalStore.type === 'success'}
 	onClose={handleFinalClose}
-	{selectedPlan}
-	{paymentType}
-	paymentDetails={paymentSuccessDetails}
-	{includeDonation}
-	donationAmount={$animatedDonation}
-	customerName={getCustomerName(paymentSuccessDetails)}
-	{redirectUrl}
+	data={$modalStore.data}
 />
 
 <!-- Error Modal -->

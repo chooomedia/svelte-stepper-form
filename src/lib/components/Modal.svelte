@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
+	import { modalStore } from '$lib/stores/modalStore';
+	import { modalTransitions } from '$lib/utils/animation';
 
 	export type ModalType = 'default' | 'success' | 'error' | 'warning' | 'info' | 'action';
 	export type ModalSize =
@@ -37,6 +39,8 @@
 		primaryAction?: { label: string; onClick: () => void; variant?: string };
 		secondaryAction?: { label: string; onClick: () => void; variant?: string };
 		icon?: string;
+		autoClose?: boolean;
+		autoCloseDelay?: number;
 	}
 
 	const {
@@ -57,12 +61,24 @@
 		bodyScrollLock = true,
 		primaryAction = undefined,
 		secondaryAction = undefined,
-		icon = undefined
+		icon = undefined,
+		autoClose = false,
+		autoCloseDelay = 0
 	} = $props<Props>();
 
 	let dialogElement: HTMLDialogElement;
 	let isClosing = $state(false);
 	let scrollPosition = $state(0);
+
+	$effect(() => {
+		if (isOpen && autoClose && autoCloseDelay > 0) {
+			const timer = setTimeout(() => {
+				handleClose();
+			}, autoCloseDelay);
+
+			return () => clearTimeout(timer);
+		}
+	});
 
 	const typeStyles = $derived(() => {
 		switch (type) {
