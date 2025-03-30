@@ -4,7 +4,20 @@
 
 	// Modal types for controlling appearance and behavior
 	export type ModalType = 'default' | 'success' | 'error' | 'warning' | 'info' | 'action';
-	export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+	export type ModalSize =
+		| 'sm'
+		| 'md'
+		| 'lg'
+		| 'xl'
+		| '2xl'
+		| '3xl'
+		| '4xl'
+		| '5xl'
+		| '6xl'
+		| '7xl'
+		| 'full'
+		| 'wide';
+
 	export type ModalPosition = 'center' | 'top' | 'bottom';
 
 	interface Props {
@@ -42,7 +55,7 @@
 		isOpen = false,
 		onClose,
 		type = 'default',
-		size = 'md',
+		size = '2xl',
 		position = 'center',
 		title = '',
 		subtitle = '',
@@ -123,8 +136,8 @@
 	});
 
 	// Size classes for the modal
-	const sizeClasses = $derived(() => {
-		switch (size) {
+	function getSizeClass(currentSize: ModalSize): string {
+		switch (currentSize) {
 			case 'sm':
 				return 'max-w-sm';
 			case 'md':
@@ -135,24 +148,24 @@
 				return 'max-w-xl';
 			case '2xl':
 				return 'max-w-2xl';
+			case '3xl':
+				return 'max-w-3xl';
+			case '4xl':
+				return 'max-w-4xl';
+			case '5xl':
+				return 'max-w-5xl';
+			case '6xl':
+				return 'max-w-6xl';
+			case '7xl':
+				return 'max-w-7xl';
 			case 'full':
 				return 'max-w-full';
+			case 'wide':
+				return 'max-w-[900px]';
 			default:
-				return 'max-w-md';
+				return 'max-w-lg';
 		}
-	});
-
-	// Position classes
-	const positionClasses = $derived(() => {
-		switch (position) {
-			case 'top':
-				return 'items-start pt-24';
-			case 'bottom':
-				return 'items-end pb-24';
-			default:
-				return 'items-center';
-		}
-	});
+	}
 
 	// Action variant styles
 	const getButtonVariant = (actionType: 'primary' | 'secondary', defaultVariant: string) => {
@@ -299,13 +312,15 @@
 	aria-describedby={subtitle ? 'modal-subtitle' : undefined}
 >
 	<div
-		class="modal-box relative {sizeClasses} {fullHeight ? 'h-full' : ''} overflow-visible p-0"
+		class="modal-box relative overflow-y-scroll {getSizeClass(size)} {fullHeight
+			? 'h-full'
+			: ''} overflow-visible p-0"
 		in:fade={{ duration: transitionDuration }}
 		out:fade={{ duration: transitionDuration * 0.75 }}
 	>
 		<!-- Modal Header -->
 		{#if title || showCloseButton}
-			<div class="sticky top-0 z-10 rounded-t-xl bg-base-100 p-4 shadow-sm">
+			<div class="sticky top-0 z-10 rounded-t-xl bg-base-100 px-4 pt-4 shadow-sm lg:px-6 lg:pt-6">
 				<header class="flex items-center justify-between">
 					{#if title}
 						<h3 id="modal-title" class="text-xl font-bold lg:text-2xl">
@@ -395,21 +410,3 @@
 		<slot name="footer" />
 	</div>
 </dialog>
-
-<style>
-	dialog {
-		border: none;
-		background: transparent;
-		padding: 0;
-		max-height: 100vh;
-		overflow: visible;
-	}
-
-	dialog::backdrop {
-		background-color: rgba(0, 0, 0, 0.5);
-	}
-
-	.modal-open {
-		transition: opacity 0.2s ease-out;
-	}
-</style>

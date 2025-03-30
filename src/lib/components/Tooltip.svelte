@@ -23,7 +23,6 @@
 		zIndex?: number; // Z-index of the tooltip
 		delay?: number; // Delay before showing the tooltip (ms)
 		duration?: number; // Transition duration (ms)
-		distance?: number; // Distance from the trigger element (px)
 		showOnFocus?: boolean; // Whether to show on focus events
 	}
 
@@ -33,59 +32,71 @@
 		position = 'top',
 		color = 'default',
 		arrow = true,
-		maxWidth = '16rem',
+		maxWidth = '20rem',
 		zIndex = 50,
 		delay = 0,
 		duration = 150,
-		distance = 8,
 		showOnFocus = true
 	} = $props<Props>();
 
-	// Internal state
+	// Interne Status-Variablen
 	let tooltipElement: HTMLDivElement;
 	let isVisible = $state(false);
 	let delayTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	// Calculate position classes
-	const positionClasses = $derived(() => {
-		const posMap = {
-			top: `bottom-full left-1/2 -translate-x-1/2 mb-${distance / 4}`,
-			right: `left-full top-1/2 -translate-y-1/2 ml-${distance / 4}`,
-			bottom: `top-full left-1/2 -translate-x-1/2 mt-${distance / 4}`,
-			left: `right-full top-1/2 -translate-y-1/2 mr-${distance / 4}`
-		};
-		return posMap[position] || posMap.top;
-	});
+	// DaisyUI-spezifische Klassen
+	function getDaisyUITooltipClasses(): string {
+		// DaisyUI verwendet die Kombination aus tooltip und tooltip-* für Positionen
+		let classes = 'tooltip';
 
-	// Calculate arrow position classes
-	const arrowClasses = $derived(() => {
-		if (!arrow) return '';
+		// Positionsklassen
+		switch (position) {
+			case 'top':
+				classes += ' tooltip-top';
+				break;
+			case 'right':
+				classes += ' tooltip-right';
+				break;
+			case 'bottom':
+				classes += ' tooltip-bottom';
+				break;
+			case 'left':
+				classes += ' tooltip-left';
+				break;
+			default:
+				classes += ' tooltip-top';
+		}
 
-		const arrowMap = {
-			top: `bottom-[-6px] left-1/2 -translate-x-1/2 border-t-current border-l-transparent border-r-transparent border-b-transparent`,
-			right: `left-[-6px] top-1/2 -translate-y-1/2 border-r-current border-t-transparent border-b-transparent border-l-transparent`,
-			bottom: `top-[-6px] left-1/2 -translate-x-1/2 border-b-current border-l-transparent border-r-transparent border-t-transparent`,
-			left: `right-[-6px] top-1/2 -translate-y-1/2 border-l-current border-t-transparent border-b-transparent border-r-transparent`
-		};
-		return arrowMap[position] || arrowMap.top;
-	});
+		// Farbklassen, DaisyUI verwendet tooltip-* für Farben
+		switch (color) {
+			case 'primary':
+				classes += ' tooltip-primary';
+				break;
+			case 'secondary':
+				classes += ' tooltip-secondary';
+				break;
+			case 'accent':
+				classes += ' tooltip-accent';
+				break;
+			case 'info':
+				classes += ' tooltip-info';
+				break;
+			case 'success':
+				classes += ' tooltip-success';
+				break;
+			case 'warning':
+				classes += ' tooltip-warning';
+				break;
+			case 'error':
+				classes += ' tooltip-error';
+				break;
+			// Bei default keine zusätzliche Klasse
+		}
 
-	// Calculate color classes
-	const colorClasses = $derived(() => {
-		const colorMap = {
-			default: 'bg-neutral text-neutral-content',
-			primary: 'bg-primary text-primary-content',
-			secondary: 'bg-secondary text-secondary-content',
-			accent: 'bg-accent text-accent-content',
-			info: 'bg-info text-info-content',
-			success: 'bg-success text-success-content',
-			warning: 'bg-warning text-warning-content',
-			error: 'bg-error text-error-content'
-		};
-		return colorMap[color] || colorMap.default;
-	});
+		return classes;
+	}
 
-	// Handle show/hide with delay
+	// Verzögerung/Animation behandeln
 	$effect(() => {
 		if (show) {
 			if (delayTimeout) clearTimeout(delayTimeout);
@@ -102,7 +113,7 @@
 		}
 	});
 
-	// Clean up on unmount
+	// Aufräumen beim Unmount
 	onMount(() => {
 		return () => {
 			if (delayTimeout) clearTimeout(delayTimeout);
@@ -113,31 +124,36 @@
 {#if isVisible}
 	<div
 		bind:this={tooltipElement}
-		class="tooltip absolute {positionClasses} {colorClasses} z-[{zIndex}]"
-		style="max-width: {maxWidth};"
+		class="{getDaisyUITooltipClasses()} z-50 m-w-[{maxWidth}] w-42 absolute bg-{color}"
+		data-tip={text ? text : undefined}
 		in:fade={{ duration }}
 		out:fade={{ duration: duration / 2 }}
 		role="tooltip"
 	>
-		<div class="rounded-md px-2 py-1 shadow-lg">
-			{#if text}
-				<span>{text}</span>
-			{:else}
+		{#if !text}
+			<div class="tooltip-conten">
 				<slot />
-			{/if}
-		</div>
-
-		<!-- Tooltip arrow -->
-		{#if arrow}
-			<div class="absolute h-0 w-0 border-[6px] text-[inherit] {arrowClasses}"></div>
+			</div>
 		{/if}
 	</div>
 {/if}
 
 <style>
+	/* Anpassungen für absolute Positionierung mit DaisyUI */
 	.tooltip {
 		pointer-events: none;
 		white-space: normal;
 		word-wrap: break-word;
+	}
+
+	/* Für benutzerdefinierte Inhalte (Slot) */
+	.tooltip-content {
+		background-color: inherit;
+		color: inherit;
+		border-radius: 0.375rem;
+		padding: 0.25rem 0.5rem;
+		box-shadow:
+			0 4px 6px -1px rgba(0, 0, 0, 0.1),
+			0 2px 4px -1px rgba(0, 0, 0, 0.06);
 	}
 </style>

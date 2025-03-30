@@ -425,7 +425,7 @@
 				{/if}
 
 				<div class="p-4 lg:p-6 {plan.popular ? 'pt-8' : ''}">
-					<div class="flex items-center pt-3">
+					<div class="flex items-center pt-2">
 						<input
 							type="radio"
 							id={plan.name}
