@@ -6,13 +6,15 @@
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
 	import Modal from './Modal.svelte';
+	import ModalSuccess from './ModalSuccess.svelte';
 
 	// Utils
 	import {
 		generateClientReference,
 		getPlanDisplayName,
 		calculateTax,
-		type PayPalOrderDetails
+		type PayPalOrderDetails,
+		type TaxInfo
 	} from '$lib/utils/payment';
 
 	// Stores
@@ -27,7 +29,9 @@
 	export const ModalState = {
 		Closed: 'Closed',
 		Payment: 'Payment',
-		Success: 'Success'
+		Success: 'Success',
+		Error: 'Error',
+		Action: 'Action'
 	} as const;
 
 	interface Props {
@@ -41,11 +45,19 @@
 		onSubmit: () => void;
 	}
 
-	const { showModal, selectedPlan, paymentType, totalPrice, form, onClose, onSubmit } =
-		$props<Props>();
+	const {
+		showModal,
+		selectedPlan,
+		paymentType,
+		totalPrice,
+		form,
+		errors = {},
+		onClose,
+		onSubmit
+	} = $props<Props>();
 
 	// State
-	let currentModal = $state<ModalState>(ModalState.Closed);
+	let currentModal = $state<keyof typeof ModalState>(ModalState.Closed);
 	let paymentMethod: 'paypal' | 'betterplace' = $state('paypal');
 	let isProcessing = $state(false);
 	let paymentError = $state('');
@@ -53,6 +65,7 @@
 	let redirectUrl = $state('');
 	let showBetterplace = $state(false);
 	let includeDonation = $state(false);
+	let showVatTooltip = $state(false);
 	let paymentSuccessDetails = $state<PayPalOrderDetails | null>(null);
 
 	// Calculated total with donation
@@ -71,6 +84,7 @@
 
 	// Tax calculations
 	const currentTax = $derived(calculateTax(totalPrice, $taxInfo.rate));
+	const currentVatText = $derived($taxInfo.vatText);
 
 	// Special offer discount percentage based on payment type
 	const discountPercentage = $derived(() => {
@@ -115,6 +129,7 @@
 		redirectUrl = '';
 		includeDonation = false;
 		showBetterplace = false;
+		paymentSuccessDetails = null;
 	}
 
 	// Modal close handlers
@@ -380,22 +395,22 @@
 	}
 
 	// Handle successful payment
+	// Handle successful payment
 	async function handlePaymentSuccess(details: PayPalOrderDetails) {
 		console.log('Payment successful, details:', details);
 		isProcessing = false;
 
 		paymentSuccessDetails = details;
+
 		// Track analytics if available
 		await trackAnalyticsEvent(details);
 
 		// Show success modal
 		currentModal = ModalState.Success;
 
-		// Notify parent component after a short delay
-		setTimeout(() => {
-			onSubmit();
-			handleFinalClose();
-		}, 10000);
+		// Direkt den Erfolg an die übergeordnete Komponente melden
+		// ohne automatisches Schließen
+		onSubmit();
 	}
 
 	// Analytics tracking
@@ -415,12 +430,28 @@
 		}
 	}
 
+	// Extracts customer name from payment details
+	function getCustomerName(details: PayPalOrderDetails | null): string {
+		if (!details || !details.payer) return '';
+
+		const payer = details.payer;
+		if (payer.name) {
+			return `${payer.name.given_name || ''} ${payer.name.surname || ''}`.trim();
+		}
+		return '';
+	}
+
 	// Component lifecycle
 	onMount(() => {
 		if (showModal) {
 			currentModal = ModalState.Payment;
 			initPaymentFlow();
 		}
+	});
+
+	// Clean up on component destroy
+	onDestroy(() => {
+		// Clean up any resources
 	});
 </script>
 
@@ -466,17 +497,24 @@
 					<p class="text-2xl font-bold">
 						{totalPrice.toFixed(2).replace('.', ',')}€
 					</p>
-					<div class="relative inline-flex items-center text-sm opacity-75">
-						<!-- Tooltip mit Steuerdaten -->
-						<div
-							class="tooltip tooltip-left cursor-pointer"
-							data-tip={`Netto: ${currentTax.net.toFixed(2).replace('.', ',')}€\nMwSt. (${currentTax.rate}%): ${currentTax.vat.toFixed(2).replace('.', ',')}€`}
+
+					<!-- Tooltip mit Steuerdaten -->
+					<div
+						class="tooltip tooltip-left text-sm"
+						data-tip={`Netto: ${currentTax.net.toFixed(2).replace('.', ',')}€\nMwSt. (${currentTax.rate}%): ${currentTax.vat.toFixed(2).replace('.', ',')}€`}
+					>
+						<button
+							class="flex-start flex gap-1 text-gray-400 hover:text-gray-600"
+							onmouseenter={() => (showVatTooltip = true)}
+							onmouseleave={() => (showVatTooltip = false)}
+							onfocus={() => (showVatTooltip = true)}
+							onblur={() => (showVatTooltip = false)}
+							aria-label="MwSt Info"
+							type="button"
 						>
-							<div class="flex items-center">
-								<Icon name="question" className="h-4 w-4 text-gray-500" />
-								<p class="ml-1">inkl. MwSt.</p>
-							</div>
-						</div>
+							<Icon name="question" size={20} color="currentColor" />
+							<p itemprop="tax">inkl. {currentVatText}</p>
+						</button>
 					</div>
 				</div>
 			</div>
@@ -567,14 +605,15 @@
 					<img src="/betterplace.svg" alt="Betterplace" class="h-4 lg:h-6" />
 				</div>
 			</label>
-
+		</div>
+		<div class="mt-3 rounded-lg border border-gray-200 p-4 shadow-custom">
 			<!-- Betterplace Info Box -->
 			{#if includeDonation}
 				<div
-					class="mb-4 mt-2 flex items-start gap-3 rounded-lg bg-emerald-50 p-4 text-sm"
+					class="mb-4 flex items-start gap-3 rounded-md border border-green-200 bg-green-100 p-4 text-sm"
 					in:fly={{ y: 20, delay: 100 }}
 				>
-					<div class="heart-icon text-2xl">❤️</div>
+					<div class="heart-icon animate-pulse text-2xl">❤️</div>
 					<p class="text-xs text-emerald-700">
 						Mit jedem Euro unterstützt Du direkt Umweltschutzprojekte.
 						<span class="font-semibold">93% Deiner Spende</span> fließt unmittelbar in nachhaltige Projekte
@@ -584,36 +623,36 @@
 			{/if}
 
 			<!-- PayPal Button Container -->
-			<div id="paypal-button-container" class="mt-6">
+			<div id="paypal-button-container">
 				{#if isProcessing}
 					<div class="flex justify-center py-8">
 						<span class="loading loading-spinner loading-lg"></span>
 					</div>
 				{/if}
 			</div>
-		</div>
-
-		<!-- Security Badges -->
-		<slot name="footer">
-			<div class="rounded-lg border border-gray-200 bg-base-200 p-4">
-				<div class="flex flex-wrap justify-center gap-4 text-xs">
-					<!-- Security Badge: Lock -->
-					{#each securityOptions as { icon, text }}
-						<SecurityBadge {icon} {text} />
-					{/each}
-				</div>
-
-				<p class="mt-4 text-center text-xs opacity-75">
-					Mit dem Fortfahren akzeptierst Du unsere<br />
-					<a href="/terms" class="link">AGB</a> und
-					<a href="/privacy" class="link">Datenschutzbestimmungen</a>
-				</p>
+			<!-- Security Badges -->
+			<div class="mt-1 flex flex-wrap justify-center gap-4 text-[11px] text-[#7b8388]">
+				<!-- Security Badge: Lock -->
+				{#each securityOptions as { icon, text }}
+					<SecurityBadge {icon} {text} />
+				{/each}
 			</div>
-		</slot>
-	</div></Modal
->
+		</div>
+	</div>
+</Modal>
 
 <!-- Success Modal -->
+<ModalSuccess
+	showModal={currentModal === ModalState.Success}
+	onClose={handleFinalClose}
+	{selectedPlan}
+	{paymentType}
+	paymentDetails={paymentSuccessDetails}
+	{includeDonation}
+	donationAmount={$animatedDonation}
+	customerName={getCustomerName(paymentSuccessDetails)}
+	{redirectUrl}
+/>
 
 <!-- Error Modal -->
 <Modal

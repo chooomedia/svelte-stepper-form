@@ -287,7 +287,7 @@
 		{/if}
 
 		<!-- Content Section -->
-		<div class="p-4 lg:p-6">
+		<div class="px-4 pb-4 lg:px-6 lg:pb-6">
 			<!-- Type-specific icon, if applicable -->
 			{#if type !== 'default' && typeStyles.icon}
 				<div class="mb-6 flex justify-center">

@@ -3,46 +3,145 @@
 	import { fade, fly, scale } from 'svelte/transition';
 	import { cubicOut, elasticOut } from 'svelte/easing';
 	import { tweened } from 'svelte/motion';
-	import confetti from '$lib/utils/confetti'; // Utility für Konfetti
 	import type { PayPalOrderDetails } from '$lib/utils/payment';
+	import Modal from './Modal.svelte';
 
-	// Props
-	export let showModal: boolean = false;
-	export let onClose: () => void;
-	export let redirectUrl: string = '';
-	export let includeDonation: boolean = false;
-	export let animatedDonation: any; // tweened store
-	export let planName: string = '';
-	export let paymentType: string = '';
-	export let customerName: string = '';
-	export let paymentDetails: PayPalOrderDetails | any = {};
+	// Import confetti function if available
+	let confetti: Function | undefined;
+
+	// Dynamisch importieren, damit es nur im Browser ausgeführt wird
+	if (typeof window !== 'undefined') {
+		import('$lib/utils/confetti').then((module) => {
+			confetti = module.default;
+		});
+	}
+
+	interface Props {
+		showModal: boolean;
+		onClose: () => void;
+		selectedPlan: string;
+		paymentType: 'monatlich' | 'einmalig' | 'longtime';
+		paymentDetails: PayPalOrderDetails | null;
+		includeDonation?: boolean;
+		donationAmount?: number;
+		customerName?: string;
+		redirectUrl?: string;
+	}
+
+	const {
+		showModal = false,
+		onClose,
+		selectedPlan = '',
+		paymentType = 'einmalig',
+		paymentDetails = null,
+		includeDonation = false,
+		donationAmount = 0,
+		customerName = '',
+		redirectUrl = ''
+	} = $props<Props>();
 
 	// Animation States
-	let progress = $state(0);
 	let showCheckmark = $state(false);
 	let showConfetti = $state(false);
 	let showNextSteps = $state(false);
-	let showUpsell = $state(false);
+	let progress = $state(0);
+
+	// Timer für sequentielle Animationen
 	let timers: number[] = [];
 
-	// Nächste Schritte zum Erfolg - basierend auf Zahlungstyp
-	let nextSteps = $state<string[]>([
+	// Nächste Schritte zum Erfolg
+	const nextSteps = [
 		'Überprüfe deine E-Mail für die Zahlungsbestätigung',
-		'Erkunde dein neues Dashboard',
+		'Entdecke nützliche Ressourcen in deinem Dashboard',
 		'Lade ein Teammitglied ein für bessere Ergebnisse'
-	]);
+	];
 
-	// Upsell Countdown
+	// Animierter Countdown für begrenzte Angebote
 	const upsellSeconds = tweened(1800, {
 		// 30 Minuten
 		duration: 1000,
 		easing: cubicOut
 	});
 
+	// Animierte Darstellung der Spende
+	const animatedDonation = tweened(0, {
+		duration: 1200,
+		easing: cubicOut
+	});
+
+	// Formatiert die Zeit für den Countdown
 	function formatTime(seconds: number) {
 		const mins = Math.floor(seconds / 60);
 		const secs = Math.floor(seconds % 60);
 		return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+	}
+
+	// Animation sequence starten
+	function startAnimationSequence() {
+		// Fortschrittsbalken starten
+		let progressInterval = setInterval(() => {
+			if (progress < 100) {
+				progress += 1;
+			} else {
+				clearInterval(progressInterval);
+			}
+		}, 20);
+
+		// Animationssequenz
+		timers.push(
+			setTimeout(() => {
+				showCheckmark = true;
+			}, 4000)
+		);
+
+		timers.push(
+			setTimeout(() => {
+				showConfetti = true;
+				triggerConfetti();
+			}, 8000)
+		);
+
+		timers.push(
+			setTimeout(() => {
+				showNextSteps = true;
+			}, 12000)
+		);
+
+		// Upsell Countdown starten
+		upsellSeconds.set(10000);
+		const countdownInterval = setInterval(() => {
+			upsellSeconds.update((val) => {
+				if (val <= 0) {
+					clearInterval(countdownInterval);
+					return 0;
+				}
+				return val - 1;
+			});
+		}, 10000);
+
+		timers.push(countdownInterval);
+
+		// Donation-Animation starten wenn vorhanden
+		if (includeDonation && donationAmount > 0) {
+			animatedDonation.set(donationAmount);
+		}
+
+		return () => {
+			clearInterval(progressInterval);
+			clearInterval(countdownInterval);
+			timers.forEach((timer) => clearTimeout(timer));
+		};
+	}
+
+	// Confetti-Animation auslösen
+	function triggerConfetti() {
+		if (typeof window !== 'undefined' && confetti) {
+			confetti({
+				particleCount: 100,
+				spread: 70,
+				origin: { y: 0.6 }
+			});
+		}
 	}
 
 	// Event Tracking
@@ -55,249 +154,195 @@
 		}
 	}
 
-	// Animation sequence starten
-	function startAnimationSequence() {
-		// Fortschrittsbalken starten
-		const progressInterval = setInterval(() => {
-			if (progress < 100) {
-				progress += 1;
-			} else {
-				clearInterval(progressInterval);
-			}
-		}, 20);
-		timers.push(progressInterval as unknown as number);
-
-		// Animationssequenz
-		timers.push(
-			setTimeout(() => {
-				showCheckmark = true;
-			}, 400)
-		);
-		timers.push(
-			setTimeout(() => {
-				showConfetti = true;
-				triggerConfetti();
-			}, 800)
-		);
-		timers.push(
-			setTimeout(() => {
-				showNextSteps = true;
-			}, 1200)
-		);
-		timers.push(
-			setTimeout(() => {
-				showUpsell = true;
-			}, 1800)
-		);
-
-		// Upsell Countdown starten
-		upsellSeconds.set(1800);
-		const countdownInterval = setInterval(() => {
-			upsellSeconds.update((val) => {
-				if (val <= 0) {
-					clearInterval(countdownInterval);
-					return 0;
-				}
-				return val - 1;
-			});
-		}, 1000);
-		timers.push(countdownInterval as unknown as number);
-	}
-
-	// Confetti Animation auslösen
-	function triggerConfetti() {
-		if (typeof window !== 'undefined' && typeof confetti === 'function') {
-			confetti({
-				particleCount: 100,
-				spread: 70,
-				origin: { y: 0.6 }
-			});
+	function redirectToDashboard() {
+		if (redirectUrl) {
+			trackEvent('redirect_to_dashboard');
+			window.location.href = redirectUrl;
 		}
 	}
 
-	// Dynamische Anpassung der nächsten Schritte basierend auf dem Zahlungstyp
+	// Effekt wenn Modal geöffnet wird
 	$effect(() => {
-		if (paymentType === 'monatlich') {
-			nextSteps = [
-				'Überprüfe deine E-Mail für die Zahlungsbestätigung',
-				'Richte dein monatliches Reporting ein',
-				'Erkunde dein neues Dashboard'
-			];
-		} else if (paymentType === 'longtime') {
-			nextSteps = [
-				'Überprüfe deine E-Mail für die Zahlungsbestätigung',
-				'Buche dein Strategie-Gespräch mit einem Experten',
-				'Lade dein Team ein, um die Plattform zu nutzen'
-			];
-		}
-		// Bei 'einmalig' bleiben die Standard-Steps
-	});
-
-	onMount(() => {
 		if (showModal) {
-			const cleanup = startAnimationSequence();
+			progress = 0;
+			showCheckmark = false;
+			showConfetti = false;
+			showNextSteps = false;
+
+			// Timers zurücksetzen
+			timers.forEach((timer) => clearTimeout(timer));
+			timers = [];
+
+			// Animation starten
+			startAnimationSequence();
+
+			// Event tracken
 			trackEvent('success_modal_viewed');
-			return cleanup;
 		}
 	});
 
+	// Clean up
 	onDestroy(() => {
-		timers.forEach((timer) => {
-			if (typeof timer === 'number') {
-				clearTimeout(timer);
-			}
-		});
+		timers.forEach((timer) => clearTimeout(timer));
 	});
 </script>
 
-<!-- Success Modal Content -->
-<div class="success-modal-content">
-	<!-- Header mit animiertem Fortschrittsbalken -->
-	<div class="relative mb-8">
-		<div class="h-1.5 w-full rounded-full bg-gray-100">
-			<div
-				class="h-full rounded-full bg-green-500 transition-all duration-300 ease-out"
-				style="width: {progress}%"
-			></div>
-		</div>
-	</div>
-
-	<!-- Success Animation -->
-	<div class="mb-10 flex justify-center">
-		<div
-			class="relative flex h-24 w-24 items-center justify-center rounded-full bg-green-50 text-green-500"
-			in:scale={{ duration: 800, easing: elasticOut }}
-		>
-			{#if showCheckmark}
-				<svg
-					class="h-12 w-12"
-					in:scale={{ duration: 600, delay: 200, easing: elasticOut }}
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"
-					></path>
-				</svg>
-
-				<!-- Pulsierende Ringe -->
-				<div class="absolute -inset-1 animate-ping rounded-full bg-green-200 opacity-75"></div>
+<Modal
+	isOpen={showModal}
+	{onClose}
+	type="success"
+	title="Zahlung erfolgreich!"
+	subtitle="Vielen Dank für Deinen Kauf."
+	size="xl"
+	primaryAction={{
+		label: redirectUrl ? 'Zum Dashboard' : 'Schließen',
+		onClick: redirectUrl ? redirectToDashboard : onClose,
+		variant: 'primary'
+	}}
+>
+	<!-- Success Modal Content -->
+	<div class="success-modal-content">
+		<!-- Header mit animiertem Fortschrittsbalken -->
+		<div class="relative mb-8">
+			<div class="h-1.5 w-full rounded-full bg-gray-100">
 				<div
-					class="absolute -inset-3 animate-ping rounded-full bg-green-100 opacity-50"
-					style="animation-delay: 0.3s"
+					class="h-full rounded-full bg-green-500 transition-all duration-300 ease-out"
+					style="width: {progress}%"
 				></div>
-			{/if}
-		</div>
-	</div>
-
-	<!-- Hauptnachricht -->
-	<div class="mb-8 text-center">
-		<h3 class="mb-1 text-2xl font-bold text-gray-900" in:fly={{ y: 30, duration: 600 }}>
-			🎉 Perfekt! Deine Bestellung ist erfolgreich
-		</h3>
-		<p class="mb-4 text-lg text-gray-700" in:fly={{ y: 20, duration: 600, delay: 200 }}>
-			{#if customerName}
-				Hallo {customerName}, wir haben dein {planName || 'Paket'} für dich freigeschaltet
-			{:else}
-				Wir haben dein {planName || 'Paket'} für dich freigeschaltet
-			{/if}
-		</p>
-
-		<!-- Zahlungsdetails -->
-		<div
-			class="mx-auto mb-6 max-w-md rounded-xl bg-gray-50 p-4 shadow-sm"
-			in:fly={{ y: 20, duration: 500, delay: 400 }}
-		>
-			<div class="flex items-center justify-between border-b border-gray-200 pb-3">
-				<span class="text-sm font-medium text-gray-500">Zahlungs-ID</span>
-				<span class="font-mono text-sm text-gray-700"
-					>{paymentDetails?.id || 'DP-' + Math.random().toString(36).substr(2, 9)}</span
-				>
-			</div>
-			<div class="flex items-center justify-between py-3">
-				<span class="text-sm font-medium text-gray-500">Datum</span>
-				<span class="text-sm text-gray-700">{new Date().toLocaleDateString('de-DE')}</span>
-			</div>
-			<div class="flex items-center justify-between border-t border-gray-200 pt-3">
-				<span class="text-sm font-medium text-gray-500">Status</span>
-				<span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800"
-					>Bezahlt</span
-				>
 			</div>
 		</div>
-	</div>
 
-	<!-- Spenden-Feedback wenn aktiviert -->
-	{#if includeDonation && $animatedDonation > 0}
-		<div
-			class="mb-8 overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 shadow-sm"
-			in:fly={{ y: 30, duration: 500, delay: 600 }}
-		>
-			<div class="p-4">
-				<div class="flex items-center">
-					<div class="mr-4 flex-shrink-0">
-						<div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-							<svg class="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
-								<path
-									d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-								/>
-							</svg>
+		<!-- Success Animation -->
+		<div class="mb-10 flex justify-center">
+			<div
+				class="relative flex h-24 w-24 items-center justify-center rounded-full bg-green-50 text-green-500"
+				in:scale={{ duration: 800, easing: elasticOut }}
+			>
+				{#if showCheckmark}
+					<svg
+						class="h-12 w-12"
+						in:scale={{ duration: 600, delay: 200, easing: elasticOut }}
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"
+						></path>
+					</svg>
+
+					<!-- Pulsierende Ringe -->
+					<div class="absolute -inset-1 animate-ping rounded-full bg-green-200 opacity-75"></div>
+					<div
+						class="absolute -inset-3 animate-ping rounded-full bg-green-100 opacity-50"
+						style="animation-delay: 0.3s"
+					></div>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Hauptnachricht -->
+		<div class="mb-8 text-center">
+			<h3 class="mb-1 text-2xl font-bold text-gray-900" in:fly={{ y: 30, duration: 600 }}>
+				🎉 Perfekt! Deine Bestellung ist erfolgreich
+			</h3>
+			<p class="mb-4 text-lg text-gray-700" in:fly={{ y: 20, duration: 600, delay: 200 }}>
+				Wir haben dein {selectedPlan || 'Paket'} für dich freigeschaltet
+			</p>
+
+			<!-- Zahlungsdetails -->
+			<div
+				class="mx-auto mb-6 max-w-md rounded-xl bg-gray-50 p-4 shadow-sm"
+				in:fly={{ y: 20, duration: 500, delay: 400 }}
+			>
+				<div class="flex items-center justify-between border-b border-gray-200 pb-3">
+					<span class="text-sm font-medium text-gray-500">Zahlungs-ID</span>
+					<span class="font-mono text-sm text-gray-700"
+						>{paymentDetails?.id || 'DP-' + Math.random().toString(36).substr(2, 9)}</span
+					>
+				</div>
+				<div class="flex items-center justify-between py-3">
+					<span class="text-sm font-medium text-gray-500">Datum</span>
+					<span class="text-sm text-gray-700">{new Date().toLocaleDateString('de-DE')}</span>
+				</div>
+				<div class="flex items-center justify-between border-t border-gray-200 pt-3">
+					<span class="text-sm font-medium text-gray-500">Status</span>
+					<span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800"
+						>Bezahlt</span
+					>
+				</div>
+			</div>
+		</div>
+
+		<!-- Spenden-Feedback wenn aktiviert -->
+		{#if includeDonation && $animatedDonation > 0}
+			<div
+				class="mb-8 overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 shadow-sm"
+				in:fly={{ y: 30, duration: 500, delay: 600 }}
+			>
+				<div class="p-4">
+					<div class="flex items-center">
+						<div class="mr-4 flex-shrink-0">
+							<div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+								<svg class="h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
+									<path
+										d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+									/>
+								</svg>
+							</div>
+						</div>
+						<div>
+							<h4 class="mb-1 font-semibold text-emerald-700">Impact bereit!</h4>
+							<p class="text-sm text-emerald-700">
+								Deine großzügige Spende von <span class="font-mono font-bold"
+									>{$animatedDonation.toFixed(2).replace('.', ',')}€</span
+								>
+								unterstützt wichtige Umweltprojekte. Zusammen bewirken wir Großes!
+							</p>
 						</div>
 					</div>
-					<div>
-						<h4 class="mb-1 font-semibold text-emerald-700">Impact bereit!</h4>
-						<p class="text-sm text-emerald-700">
-							Deine großzügige Spende von <span class="font-mono font-bold"
-								>{$animatedDonation.toFixed(2).replace('.', ',')}€</span
+
+					<!-- Impact-Visualisierung -->
+					<div class="mt-3 flex justify-between gap-2 rounded-md bg-white p-3">
+						<div class="text-center">
+							<div class="text-lg font-bold text-emerald-600">93%</div>
+							<div class="text-xs text-gray-500">Direkte Hilfe</div>
+						</div>
+						<div class="text-center">
+							<div class="text-lg font-bold text-emerald-600">5+</div>
+							<div class="text-xs text-gray-500">Projekte</div>
+						</div>
+						<div class="text-center">
+							<div class="text-lg font-bold text-emerald-600">100%</div>
+							<div class="text-xs text-gray-500">Transparenz</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Nächste Schritte -->
+		{#if showNextSteps}
+			<div
+				class="mb-8 rounded-lg border border-blue-100 bg-blue-50 p-4"
+				in:fly={{ y: 20, duration: 500, delay: 800 }}
+			>
+				<h4 class="mb-3 font-medium text-blue-700">Deine nächsten Schritte:</h4>
+				<ul class="space-y-2">
+					{#each nextSteps as step, i}
+						<li class="flex items-start" in:fly={{ x: -20, duration: 300, delay: 1000 + i * 150 }}>
+							<div
+								class="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-200 text-xs font-bold text-blue-700"
 							>
-							unterstützt wichtige Umweltprojekte. Zusammen bewirken wir Großes!
-						</p>
-					</div>
-				</div>
-
-				<!-- Impact-Visualisierung -->
-				<div class="mt-3 flex justify-between gap-2 rounded-md bg-white p-3">
-					<div class="text-center">
-						<div class="text-lg font-bold text-emerald-600">93%</div>
-						<div class="text-xs text-gray-500">Direkte Hilfe</div>
-					</div>
-					<div class="text-center">
-						<div class="text-lg font-bold text-emerald-600">5+</div>
-						<div class="text-xs text-gray-500">Projekte</div>
-					</div>
-					<div class="text-center">
-						<div class="text-lg font-bold text-emerald-600">100%</div>
-						<div class="text-xs text-gray-500">Transparenz</div>
-					</div>
-				</div>
+								{i + 1}
+							</div>
+							<span class="text-sm text-blue-700">{step}</span>
+						</li>
+					{/each}
+				</ul>
 			</div>
-		</div>
-	{/if}
+		{/if}
 
-	<!-- Nächste Schritte -->
-	{#if showNextSteps}
-		<div
-			class="mb-8 rounded-lg border border-blue-100 bg-blue-50 p-4"
-			in:fly={{ y: 20, duration: 500, delay: 800 }}
-		>
-			<h4 class="mb-3 font-medium text-blue-700">Deine nächsten Schritte:</h4>
-			<ul class="space-y-2">
-				{#each nextSteps as step, i}
-					<li class="flex items-start" in:fly={{ x: -20, duration: 300, delay: 1000 + i * 150 }}>
-						<div
-							class="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-200 text-xs font-bold text-blue-700"
-						>
-							{i + 1}
-						</div>
-						<span class="text-sm text-blue-700">{step}</span>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
-
-	<!-- Exklusives Upgrade-Angebot (Upsell) -->
-	{#if showUpsell}
+		<!-- Exklusives Upgrade-Angebot (Upsell) -->
 		<div
 			class="mb-8 overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
 			in:fly={{ y: 20, duration: 500, delay: 1000 }}
@@ -312,15 +357,7 @@
 
 				<div class="flex flex-col md:flex-row md:items-center">
 					<div class="mb-4 md:mb-0 md:flex-1">
-						<h4 class="mb-1 text-lg font-bold">
-							{#if planName.includes('1-MONATS-PLAN')}
-								Upgrade auf den 3-Monats-Plan und spare 25%
-							{:else if planName.includes('3-MONATS-PLAN')}
-								Füge Premium-Features hinzu und steigere deine Ergebnisse
-							{:else}
-								Füge ein zusätzliches Teammitglied für nur 19€/Monat hinzu
-							{/if}
-						</h4>
+						<h4 class="mb-1 text-lg font-bold">Erweitere dein Paket und spare 30%</h4>
 						<p class="text-sm text-indigo-100">
 							Nur für Neukunden: Füge jetzt Premium-Features hinzu und hebe dein Ergebnis auf das
 							nächste Level!
@@ -351,68 +388,58 @@
 				</div>
 			</div>
 		</div>
-	{/if}
 
-	<!-- Verweise und Support-Infos -->
-	<div class="mb-6 text-center" in:fade={{ duration: 500, delay: 1200 }}>
-		<p class="mb-2 text-sm text-gray-600">
-			Eine Bestätigung mit allen Details wurde an deine E-Mail-Adresse gesendet.
-		</p>
-		<p class="text-sm text-gray-500">
-			Fragen? Kontaktiere unseren <a
-				href="mailto:support@digitalpusher.de"
-				class="font-medium text-blue-600 hover:underline">Kundensupport</a
-			>
-		</p>
+		<!-- Verweise und Support-Infos -->
+		<div class="mb-6 text-center" in:fade={{ duration: 500, delay: 1200 }}>
+			<p class="mb-2 text-sm text-gray-600">
+				Eine Bestätigung mit allen Details wurde an deine E-Mail-Adresse gesendet.
+			</p>
+			<p class="text-sm text-gray-500">
+				Fragen? Kontaktiere unseren <a
+					href="mailto:support@digitalpusher.de"
+					class="font-medium text-blue-600 hover:underline">Kundensupport</a
+				>
+			</p>
+		</div>
+
+		<!-- Action-Buttons -->
+		<div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
+			{#if redirectUrl}
+				<button
+					class="btn btn-primary flex items-center justify-center gap-2"
+					on:click={() => {
+						trackEvent('redirect_clicked');
+						window.location.href = redirectUrl;
+					}}
+				>
+					<span>Zum Dashboard</span>
+					<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+						<path
+							fill-rule="evenodd"
+							d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</button>
+			{:else}
+				<button
+					class="btn btn-outline flex items-center justify-center gap-2"
+					on:click={() => {
+						trackEvent('share_clicked');
+						// Hier könnte eine Share-Funktion implementiert werden
+					}}
+				>
+					<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+						<path
+							d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
+						/>
+					</svg>
+					Teilen
+				</button>
+			{/if}
+		</div>
 	</div>
-
-	<!-- Action-Buttons -->
-	<div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
-		{#if redirectUrl}
-			<button
-				class="btn btn-primary flex items-center justify-center gap-2"
-				on:click={() => {
-					trackEvent('redirect_clicked');
-					window.location.href = redirectUrl;
-				}}
-			>
-				<span>Zum Dashboard</span>
-				<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-					<path
-						fill-rule="evenodd"
-						d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-			</button>
-		{:else}
-			<button
-				class="btn btn-primary"
-				on:click={() => {
-					trackEvent('close_clicked');
-					onClose();
-				}}
-			>
-				Schließen
-			</button>
-		{/if}
-
-		<button
-			class="btn btn-outline"
-			on:click={() => {
-				trackEvent('share_clicked');
-				// Hier könnte eine Share-Funktion implementiert werden
-			}}
-		>
-			<svg class="mr-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-				<path
-					d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
-				/>
-			</svg>
-			Teilen
-		</button>
-	</div>
-</div>
+</Modal>
 
 <style>
 	/* Zusätzliche Styles für Animationen */

@@ -6,6 +6,6 @@
 </script>
 
 <div class="flex items-center">
-	<Icon name={icon} size={16} class="mr-1" />
+	<Icon name={icon} size={20} class="mr-1" />
 	<span>{text}</span>
 </div>
