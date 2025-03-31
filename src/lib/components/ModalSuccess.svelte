@@ -1,176 +1,163 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
-	import { elasticOut } from 'svelte/easing';
+	import { elasticOut, cubicOut } from 'svelte/easing';
 	import { tweened } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
-	import type { PayPalOrderDetails } from '$lib/utils/payment';
 	import Modal from './Modal.svelte';
 	import { modalStore } from '$lib/stores/modalStore';
-	import { formatTime, AnimationSequencer } from '$lib/utils/animation';
+	import { formatTime } from '$lib/utils/animation';
+	import { type PayPalOrderDetails } from '$lib/utils/payment';
 
-	// Import confetti function if available
+	interface Props {
+		onClose: () => void;
+		data?: {
+			details?: PayPalOrderDetails | null;
+			selectedPlan?: string;
+			paymentType?: 'monatlich' | 'einmalig' | 'longtime';
+			includeDonation?: boolean;
+			donationAmount?: number;
+			customerName?: string;
+			redirectUrl?: string;
+		};
+	}
+
+	const { onClose = () => {}, data = {} } = $props<Props>();
+
+	// Dynamic import of confetti to ensure it only runs in browser
 	let confetti: Function | undefined;
-
-	// Dynamisch importieren, damit es nur im Browser ausgeführt wird
 	if (typeof window !== 'undefined') {
 		import('$lib/utils/confetti').then((module) => {
 			confetti = module.default;
 		});
 	}
 
-	interface Props {
-		onClose: () => void;
-		data?: any;
-	}
-
-	const { onClose, data = {} } = $props<Props>();
-
-	// Daten aus dem Store extrahieren
-	const storeData = $derived($modalStore.type === 'success' ? $modalStore.data || {} : {});
-
-	// Kombiniere Daten aus Props und Store mit Vorrang für Store-Daten
-	const paymentData = $derived({
-		...data,
-		...storeData
-	});
-
-	// Daten extrahieren
-	const selectedPlan = $derived(paymentData?.selectedPlan || '');
-	const paymentType = $derived(paymentData?.paymentType || 'einmalig');
-	const paymentDetails = $derived(paymentData?.details || null);
-	const includeDonation = $derived(paymentData?.includeDonation || false);
-	const donationAmount = $derived(paymentData?.donationAmount || 0);
-	const customerName = $derived(paymentData?.customerName || '');
-	const redirectUrl = $derived(paymentData?.redirectUrl || '');
-
-	// Animation States
+	// State management
 	let showCheckmark = $state(false);
 	let showConfetti = $state(false);
 	let showNextSteps = $state(false);
 	let progress = $state(0);
 
-	// Animation Sequencer für ordentliches Timing
-	const animationSequencer = new AnimationSequencer();
+	// Animation timers
+	let timers: number[] = [];
 
-	// Nächste Schritte zum Erfolg
+	// Countdown for special offer
+	const upsellSeconds = tweened(30, {
+		duration: 1000,
+		easing: cubicOut
+	});
+
+	// Donation animation
+	const animatedDonation = tweened(0, {
+		duration: 1200,
+		easing: cubicOut
+	});
+
+	// Content information
 	const nextSteps = [
 		'Überprüfe deine E-Mail für die Zahlungsbestätigung',
 		'Entdecke nützliche Ressourcen in deinem Dashboard',
 		'Lade ein Teammitglied ein für bessere Ergebnisse'
 	];
 
-	// Animierter Countdown für begrenzte Angebote
-	const upsellSeconds = tweened(1800, {
-		// 30 Minuten
-		duration: 1000,
-		easing: cubicOut
-	});
-
-	// Animierte Darstellung der Spende
-	const animatedDonation = tweened(0, {
-		duration: 1200,
-		easing: cubicOut
-	});
-
-	// Animation sequence starten
-	function startAnimationSequence() {
-		// Alle bestehenden Timer löschen
-		animationSequencer.clearAll();
-
-		// Progress-Animation starten
-		let progressComplete = false;
-		animationSequencer.addInterval(() => {
-			if (progress < 100) {
-				progress += 1;
-				return false;
-			} else {
-				progressComplete = true;
-				return true;
-			}
-		}, 20);
-
-		// Animationssequenz
-		animationSequencer.add(() => {
-			showCheckmark = true;
-		}, 500);
-
-		animationSequencer.add(() => {
-			showConfetti = true;
-			triggerConfetti();
-		}, 1000);
-
-		animationSequencer.add(() => {
-			showNextSteps = true;
-		}, 1500);
-
-		// Upsell Countdown starten
-		upsellSeconds.set(1800);
-		animationSequencer.addInterval(() => {
-			upsellSeconds.update((val) => Math.max(0, val - 1));
-			return false; // Niemals automatisch beenden
-		}, 1000);
-
-		// Donation-Animation starten wenn vorhanden
-		if (includeDonation && donationAmount > 0) {
-			animatedDonation.set(donationAmount);
-		}
+	// Helper functions
+	function addTimer(callback: () => void, delay: number) {
+		const id = setTimeout(callback, delay);
+		timers.push(id);
+		return id;
 	}
 
-	// Confetti-Animation auslösen
+	function clearAllTimers() {
+		timers.forEach((id) => clearTimeout(id));
+		timers = [];
+	}
+
 	function triggerConfetti() {
 		if (typeof window !== 'undefined' && confetti) {
 			confetti({
-				particleCount: 300, // Erhöht für besseren visuellen Effekt
-				spread: 100, // Breitere Verteilung
-				origin: { y: 0.5 }, // Mitte des Bildschirms
-				colors: ['#FF5252', '#FFD740', '#2196F3', '#4CAF50', '#9C27B0'] // Bunte Farben
+				particleCount: 200,
+				spread: 100,
+				origin: { y: 0.5 },
+				colors: ['#FF5252', '#FFD740', '#2196F3', '#4CAF50', '#9C27B0']
 			});
 		}
 	}
 
-	// Event Tracking
 	function trackEvent(action: string) {
 		if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+			const paymentData = $modalStore.data || {};
 			window.gtag('event', action, {
 				event_category: 'success_modal',
-				event_label: paymentType
+				event_label: paymentData.paymentType || 'unknown'
 			});
 		}
 	}
 
-	// Zum Dashboard weiterleiten
 	function redirectToDashboard() {
-		if (redirectUrl) {
+		const paymentData = data || $modalStore.data || {};
+		if (paymentData.redirectUrl) {
 			trackEvent('redirect_to_dashboard');
-			window.location.href = redirectUrl;
+			window.location.href = paymentData.redirectUrl;
 		}
 	}
 
-	// Effekt wenn Modal geöffnet wird via Store
+	function startAnimations() {
+		// Reset state
+		clearAllTimers();
+		progress = 0;
+		showCheckmark = false;
+		showConfetti = false;
+		showNextSteps = false;
+
+		// Progress animation
+		const progressInterval = setInterval(() => {
+			if (progress < 100) {
+				progress += 1;
+			} else {
+				clearInterval(progressInterval);
+			}
+		}, 20);
+
+		// Animation sequence
+		addTimer(() => {
+			showCheckmark = true;
+		}, 3500);
+		addTimer(() => {
+			showConfetti = true;
+			triggerConfetti();
+		}, 31000);
+		addTimer(() => {
+			showNextSteps = true;
+		}, 31500);
+
+		// Countdown timer
+		upsellSeconds.set(1800);
+		const countdownInterval = setInterval(() => {
+			upsellSeconds.update((val) => Math.max(0, val - 1));
+		}, 31000);
+		timers.push(countdownInterval as unknown as number);
+
+		// Donation animation if applicable
+		const paymentData = data || $modalStore.data || {};
+		if (paymentData.includeDonation && paymentData.donationAmount > 0) {
+			animatedDonation.set(paymentData.donationAmount);
+		}
+
+		// Track view event
+		trackEvent('success_modal_viewed');
+	}
+
+	// Effect to handle modal open state
 	$effect(() => {
 		const isSuccessModalOpen = $modalStore.isOpen && $modalStore.type === 'success';
 
 		if (isSuccessModalOpen) {
-			console.log('Success modal opened with data:', $modalStore.data);
-
-			// States zurücksetzen
-			progress = 0;
-			showCheckmark = false;
-			showConfetti = false;
-			showNextSteps = false;
-
-			// Animation starten
-			startAnimationSequence();
-
-			// Event tracken
-			trackEvent('success_modal_viewed');
+			startAnimations();
 		}
 	});
 
-	// Clean up
+	// Cleanup on component destroy
 	onDestroy(() => {
-		animationSequencer.clearAll();
+		clearAllTimers();
 	});
 </script>
 
@@ -182,14 +169,14 @@
 	subtitle="Vielen Dank für Deinen Kauf."
 	size="xl"
 	primaryAction={{
-		label: redirectUrl ? 'Zum Dashboard' : 'Schließen',
-		onClick: redirectUrl ? redirectToDashboard : onClose,
+		label: data?.redirectUrl || $modalStore.data?.redirectUrl ? 'Zum Dashboard' : 'Schließen',
+		onClick: data?.redirectUrl || $modalStore.data?.redirectUrl ? redirectToDashboard : onClose,
 		variant: 'primary'
 	}}
 >
 	<!-- Success Modal Content -->
 	<div class="success-modal-content">
-		<!-- Header mit animiertem Fortschrittsbalken -->
+		<!-- Progress Bar -->
 		<div class="relative mb-8">
 			<div class="h-1.5 w-full rounded-full bg-gray-100">
 				<div
@@ -217,7 +204,7 @@
 						></path>
 					</svg>
 
-					<!-- Pulsierende Ringe -->
+					<!-- Animated rings -->
 					<div class="absolute -inset-1 animate-ping rounded-full bg-green-200 opacity-75"></div>
 					<div
 						class="absolute -inset-3 animate-ping rounded-full bg-green-100 opacity-50"
@@ -227,24 +214,26 @@
 			</div>
 		</div>
 
-		<!-- Hauptnachricht -->
+		<!-- Main Message -->
 		<div class="mb-8 text-center">
 			<h3 class="mb-1 text-2xl font-bold text-gray-900" in:fly={{ y: 30, duration: 600 }}>
 				🎉 Perfekt! Deine Bestellung ist erfolgreich
 			</h3>
 			<p class="mb-4 text-lg text-gray-700" in:fly={{ y: 20, duration: 600, delay: 200 }}>
-				Wir haben dein {selectedPlan || 'Paket'} für dich freigeschaltet
+				Wir haben dein {data?.selectedPlan || $modalStore.data?.selectedPlan || 'Paket'} für dich freigeschaltet
 			</p>
 
-			<!-- Zahlungsdetails -->
+			<!-- Payment Details -->
 			<div
-				class="mx-auto mb-6 max-w-md rounded-xl bg-gray-50 p-4 shadow-sm"
+				class="mx-auto mb-6 rounded-xl bg-gray-50 p-4 shadow-sm"
 				in:fly={{ y: 20, duration: 500, delay: 400 }}
 			>
 				<div class="flex items-center justify-between border-b border-gray-200 pb-3">
 					<span class="text-sm font-medium text-gray-500">Zahlungs-ID</span>
 					<span class="font-mono text-sm text-gray-700"
-						>{paymentDetails?.id || 'DP-' + Math.random().toString(36).substr(2, 9)}</span
+						>{data?.details?.id ||
+							$modalStore.data?.details?.id ||
+							'DP-' + Math.random().toString(36).substr(2, 9)}</span
 					>
 				</div>
 				<div class="flex items-center justify-between py-3">
@@ -260,8 +249,8 @@
 			</div>
 		</div>
 
-		<!-- Spenden-Feedback wenn aktiviert -->
-		{#if includeDonation && $animatedDonation > 0}
+		<!-- Donation Feedback (if applicable) -->
+		{#if $modalStore.data?.includeDonation && $animatedDonation > 0}
 			<div
 				class="mb-8 overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 shadow-sm"
 				in:fly={{ y: 30, duration: 500, delay: 600 }}
@@ -288,7 +277,7 @@
 						</div>
 					</div>
 
-					<!-- Impact-Visualisierung -->
+					<!-- Impact Visualization -->
 					<div class="mt-3 flex justify-between gap-2 rounded-md bg-white p-3">
 						<div class="text-center">
 							<div class="text-lg font-bold text-emerald-600">93%</div>
@@ -307,7 +296,7 @@
 			</div>
 		{/if}
 
-		<!-- Nächste Schritte -->
+		<!-- Next Steps -->
 		{#if showNextSteps}
 			<div
 				class="mb-8 rounded-lg border border-blue-100 bg-blue-50 p-4"
@@ -329,28 +318,28 @@
 			</div>
 		{/if}
 
-		<!-- Exklusives Upgrade-Angebot (Upsell) -->
+		<!-- Exclusive Upgrade Offer -->
 		<div
 			class="mb-8 overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
 			in:fly={{ y: 20, duration: 500, delay: 1000 }}
 		>
 			<div class="relative p-5 text-white">
-				<!-- Zeitlich begrenztes Angebot Badge -->
+				<!-- Limited Time Offer Badge -->
 				<div
-					class="absolute -right-8 top-4 rotate-45 bg-yellow-400 px-10 py-1 text-center text-xs font-bold uppercase text-gray-800 shadow-md"
+					class="absolute -right-9 top-4 rotate-45 bg-yellow-400 px-10 py-1 text-center text-xs font-bold uppercase text-gray-800 shadow-md"
 				>
 					Exklusiv
 				</div>
 
-				<div class="flex flex-col md:flex-row md:items-center">
-					<div class="mb-4 md:mb-0 md:flex-1">
+				<div class="flex-end flex flex-col md:flex-row md:items-center">
+					<div class="mb-4 text-left md:mb-0 md:flex-1">
 						<h4 class="mb-1 text-lg font-bold">Erweitere dein Paket und spare 30%</h4>
 						<p class="text-sm text-indigo-100">
 							Nur für Neukunden: Füge jetzt Premium-Features hinzu und hebe dein Ergebnis auf das
 							nächste Level!
 						</p>
 
-						<!-- Countdown-Timer -->
+						<!-- Countdown Timer -->
 						<div class="mt-2 flex items-center text-xs font-medium text-indigo-100">
 							<svg class="mr-1 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 								<path
@@ -376,60 +365,56 @@
 			</div>
 		</div>
 
-		<!-- Verweise und Support-Infos -->
+		<!-- Support Information -->
 		<div class="mb-6 text-center" in:fade={{ duration: 500, delay: 1200 }}>
 			<p class="mb-2 text-sm text-gray-600">
 				Eine Bestätigung mit allen Details wurde an deine E-Mail-Adresse gesendet.
 			</p>
 			<p class="text-sm text-gray-500">
-				Fragen? Kontaktiere unseren <a
-					href="mailto:support@digitalpusher.de"
-					class="font-medium text-blue-600 hover:underline">Kundensupport</a
+				Fragen? Kontaktiere unseren
+				<a href="mailto:support@digitalpusher.de" class="font-medium text-blue-600 hover:underline"
+					>Kundensupport</a
 				>
 			</p>
 		</div>
 
-		<!-- Action-Buttons -->
-		<div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
-			{#if redirectUrl}
-				<button
-					class="btn btn-primary flex items-center justify-center gap-2"
-					on:click={() => {
-						trackEvent('redirect_clicked');
-						window.location.href = redirectUrl;
-					}}
-				>
-					<span>Zum Dashboard</span>
-					<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-						<path
-							fill-rule="evenodd"
-							d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-				</button>
-			{:else}
-				<button
-					class="btn btn-outline flex items-center justify-center gap-2"
-					on:click={() => {
-						trackEvent('share_clicked');
-						// Hier könnte eine Share-Funktion implementiert werden
-					}}
-				>
-					<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-						<path
-							d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
-						/>
-					</svg>
-					Teilen
-				</button>
-			{/if}
+		<!-- Action Buttons -->
+		<div class="mt-8 flex flex-row gap-3 sm:justify-center sm:gap-4">
+			<button
+				class="btn btn-primary flex items-center justify-center gap-2"
+				on:click={() => {
+					trackEvent('redirect_clicked');
+					window.location.href = $modalStore.data.redirectUrl;
+				}}
+			>
+				<span>Zum Dashboard</span>
+				<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+					<path
+						fill-rule="evenodd"
+						d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+			</button>
+			<button
+				class="btn btn-outline flex items-center justify-center gap-2"
+				on:click={() => {
+					trackEvent('share_clicked');
+				}}
+			>
+				<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+					<path
+						d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
+					/>
+				</svg>
+				Teilen
+			</button>
 		</div>
 	</div>
 </Modal>
 
 <style>
-	/* Zusätzliche Styles für Animationen */
+	/* Animation styles */
 	@keyframes pulse-ring {
 		0% {
 			transform: scale(0.8);

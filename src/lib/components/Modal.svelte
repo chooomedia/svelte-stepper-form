@@ -43,6 +43,8 @@
 		autoCloseDelay?: number;
 	}
 
+	const className = 'modal modal-open modal-bottom sm:modal-middle';
+
 	const {
 		isOpen = false,
 		onClose,
@@ -69,16 +71,6 @@
 	let dialogElement: HTMLDialogElement;
 	let isClosing = $state(false);
 	let scrollPosition = $state(0);
-
-	$effect(() => {
-		if (isOpen && autoClose && autoCloseDelay > 0) {
-			const timer = setTimeout(() => {
-				handleClose();
-			}, autoCloseDelay);
-
-			return () => clearTimeout(timer);
-		}
-	});
 
 	const typeStyles = $derived(() => {
 		switch (type) {
@@ -256,18 +248,50 @@
 			if (bodyScrollLock) manageBodyScroll(false);
 		}
 	});
+
+	$effect(() => {
+		console.log('Modal.svelte - isOpen status:', isOpen);
+	});
+
+	$effect(() => {
+		if (isOpen && autoClose && autoCloseDelay > 0) {
+			const timer = setTimeout(() => {
+				handleClose();
+			}, autoCloseDelay);
+
+			return () => clearTimeout(timer);
+		}
+	});
+	$effect(() => {
+		if (isOpen) {
+			if (dialogElement && !dialogElement.open) {
+				console.log('Opening modal dialog via showModal()');
+				dialogElement.showModal();
+			}
+			// weitere Logik...
+		} else {
+			if (dialogElement && dialogElement.open) {
+				console.log('Closing modal dialog');
+				dialogElement.close();
+			}
+		}
+	});
 </script>
 
 <dialog
 	bind:this={dialogElement}
-	class="modal flex items-center justify-center {backdropBlur ? 'backdrop-blur-sm' : ''}"
+	class="modal flex items-center justify-center {backdropBlur
+		? 'backdrop-blur-sm'
+		: ''} {className}"
 	class:modal-open={isOpen && !isClosing}
 	on:click={handleOutsideClick}
 	aria-labelledby={title ? 'modal-title' : undefined}
 	aria-describedby={subtitle ? 'modal-subtitle' : undefined}
 >
 	<div
-		class="modal-box relative {getSizeClass(size)} {fullHeight ? 'h-full' : ''} p-0"
+		class="modal-box absolute bottom-0 lg:relative {getSizeClass(size)} {fullHeight
+			? 'h-full'
+			: ''} p-0"
 		in:fade={{ duration: transitionDuration }}
 		out:fade={{ duration: transitionDuration * 0.75 }}
 	>
@@ -303,7 +327,7 @@
 		{/if}
 
 		<!-- Content Section -->
-		<div class="px-4 pb-4 lg:px-6 lg:pb-6">
+		<div class="overflow-hidden rounded-b-lg px-4 pb-4 lg:px-6 lg:pb-6">
 			<!-- Type-specific icon, if applicable -->
 			{#if type !== 'default' && typeStyles.icon}
 				<div class="mb-6 flex justify-center">
@@ -343,15 +367,6 @@
 							on:click={secondaryAction.onClick}
 						>
 							{secondaryAction.label}
-						</button>
-					{/if}
-
-					{#if primaryAction}
-						<button
-							class="btn btn-{getButtonVariant('primary', 'primary')}"
-							on:click={primaryAction.onClick}
-						>
-							{primaryAction.label}
 						</button>
 					{/if}
 				</div>

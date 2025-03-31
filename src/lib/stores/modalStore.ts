@@ -6,7 +6,7 @@ export type ModalType = 'payment' | 'success' | 'error' | 'action' | 'custom';
 
 interface ModalState {
 	isOpen: boolean;
-	type: ModalType;
+	type: 'payment' | 'success' | 'error' | 'action';
 	data: any;
 	closable: boolean;
 	animating: boolean;
@@ -32,7 +32,8 @@ function createModalStore() {
 		subscribe,
 
 		// Modal öffnen
-		open: (type: ModalType, data: any = null, options: Partial<ModalState> = {}) =>
+		open: (type: ModalType, data: any = null, options: Partial<ModalState> = {}) => {
+			console.log(`Opening modal of type ${type} with data:`, data);
 			update((state) => ({
 				...state,
 				isOpen: true,
@@ -42,7 +43,8 @@ function createModalStore() {
 				autoClose: options.autoClose ?? false,
 				autoCloseDelay: options.autoCloseDelay ?? 0,
 				animating: true
-			})),
+			}));
+		},
 
 		// Modal schließen
 		close: () =>
@@ -70,3 +72,17 @@ export const modalStore = createModalStore();
 // Abgeleiteter Store, der anzeigt, ob ein Modal des angegebenen Typs geöffnet ist
 export const isModalOpen = (type: ModalType) =>
 	derived(modalStore, ($modalStore) => $modalStore.isOpen && $modalStore.type === type);
+
+function open(type: ModalType, data: any = null, options: Partial<ModalState> = {}) {
+	console.log(`Opening modal of type ${type} with data:`, data);
+	update((state) => ({
+		...state,
+		isOpen: true,
+		type,
+		data,
+		closable: options.closable ?? true,
+		autoClose: options.autoClose ?? false,
+		autoCloseDelay: options.autoCloseDelay ?? 0,
+		animating: true
+	}));
+}

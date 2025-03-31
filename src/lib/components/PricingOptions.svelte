@@ -4,7 +4,7 @@
 	import type { FormData } from '$lib/schema';
 	import { browser } from '$app/environment';
 	import type { SuperValidated } from 'sveltekit-superforms';
-	import PaymentModal from './PaymentModal.svelte';
+	import PaymentModal from './ModalPayment.svelte';
 	import { modalStore } from '$lib/stores/modalStore';
 
 	interface Props {
@@ -319,7 +319,7 @@
 				</p>
 				<div class="mt-4 flex items-center">
 					<div
-						class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
+						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
 					>
 						✓
 					</div>
@@ -327,7 +327,7 @@
 				</div>
 				<div class="mt-2 flex items-center">
 					<div
-						class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
+						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
 					>
 						✓
 					</div>
@@ -335,7 +335,7 @@
 				</div>
 				<div class="mt-2 flex items-center">
 					<div
-						class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
+						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
 					>
 						✓
 					</div>

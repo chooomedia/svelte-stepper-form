@@ -15,10 +15,9 @@
 		generateClientReference,
 		getPlanDisplayName,
 		calculateTax,
-		type PayPalOrderDetails,
-		type TaxInfo
+		type PayPalOrderDetails
 	} from '$lib/utils/payment';
-	import { formatTime, AnimationSequencer } from '$lib/utils/animation';
+	import { AnimationSequencer } from '$lib/utils/animation';
 
 	// Config
 	import { PAYPAL_SCRIPT_BASE } from '$lib/config';
@@ -33,6 +32,7 @@
 		onClose: () => void;
 		onSubmit: () => void;
 	}
+
 	import SecurityBadge from './SecurityBadge.svelte';
 	import Icon from './Icon.svelte';
 
@@ -57,7 +57,6 @@
 	} = $props<Props>();
 
 	// State
-	let currentModalType = $state<ModalType>('payment');
 	let paymentMethod: 'paypal' | 'betterplace' = $state('paypal');
 	let isProcessing = $state(false);
 	let paymentError = $state('');
@@ -68,6 +67,13 @@
 	let showVatTooltip = $state(false);
 	let paymentSuccessDetails = $state<PayPalOrderDetails | null>(null);
 	let animationSequencer = new AnimationSequencer();
+	let localModalType = $state<ModalType>('payment');
+
+	// Keep track of transition state
+	let isTransitioning = $state(false);
+
+	// Timer registry for cleanup
+	let timers: number[] = [];
 
 	// Calculated total with donation
 	const totalWithDonation = $derived(() => {
@@ -120,13 +126,42 @@
 		}
 	});
 
+	$effect(() => {
+		if ($modalStore.isOpen) {
+			// Prevent immediate removal of PayPal container
+			if ($modalStore.type !== 'payment' && localModalType === 'payment') {
+				isTransitioning = true;
+
+				// Give PayPal some time to finish processing before we switch views
+				setTimeout(() => {
+					localModalType = $modalStore.type;
+					isTransitioning = false;
+				}, 300); // Transition delay
+			} else {
+				localModalType = $modalStore.type;
+			}
+		}
+	});
+
 	// Animation for donation
 	$effect(() => {
 		animatedDonation.set(includeDonation ? totalPrice * 0.03 : 0);
 	});
 
+	// Helper function to manage timers
+	function addTimer(callback: () => void, delay: number): number {
+		const id = setTimeout(callback, delay);
+		timers.push(id);
+		return id;
+	}
+
+	function clearAllTimers(): void {
+		timers.forEach(clearTimeout);
+		timers = [];
+	}
+
 	// Reset the form state
-	function resetForm() {
+	function resetForm(): void {
 		paymentMethod = 'paypal';
 		isProcessing = false;
 		paymentError = '';
@@ -136,65 +171,67 @@
 		showBetterplace = false;
 		paymentSuccessDetails = null;
 		animationSequencer.clearAll();
+		clearAllTimers();
 	}
 
 	// Modal close handlers
-	function handleMainClose() {
-		if (currentModalType === 'payment' && !isProcessing) {
-			currentModalType = 'action';
+	function handleMainClose(): void {
+		if ($modalStore.type === 'payment' && !isProcessing) {
 			modalStore.open('action');
 		} else {
 			handleFinalClose();
 		}
 	}
 
-	function handleFinalClose() {
+	function handleFinalClose(): void {
 		modalStore.close();
 		onClose();
 	}
 
-	function continuePayment() {
-		currentModalType = 'payment';
+	function continuePayment(): void {
 		modalStore.open('payment');
 	}
 
-	async function handlePaymentSuccess(details: PayPalOrderDetails) {
+	async function handlePaymentSuccess(details: PayPalOrderDetails): Promise<void> {
 		console.log('Payment successful, details:', details);
-		isProcessing = false;
+		isProcessing = true; // Keep processing state to prevent removal
 		paymentSuccessDetails = details;
 
 		// Track analytics if available
 		await trackAnalyticsEvent(details);
 
-		// Update the store with success data
-		modalStore.open(
-			'success',
-			{
-				details,
-				selectedPlan,
-				paymentType,
-				includeDonation,
-				donationAmount: includeDonation ? totalPrice * 0.03 : 0,
-				customerName: getCustomerName(details)
-			},
-			{
-				autoClose: false
-			}
-		);
+		// Store the success details before switching modals
+		const successData = {
+			details,
+			selectedPlan,
+			paymentType,
+			includeDonation,
+			donationAmount: includeDonation ? totalPrice * 0.03 : 0,
+			customerName: getCustomerName(details)
+		};
 
-		// Call the submit handler
-		onSubmit();
+		// Set a brief delay to ensure PayPal has completed its operations
+		setTimeout(() => {
+			// Switch to success modal
+			modalStore.open('success', successData, { autoClose: false });
+
+			// Call the submit handler after modal transition is complete
+			setTimeout(() => {
+				onSubmit();
+				isProcessing = false;
+			}, 500);
+		}, 500);
 	}
 
 	// Payment flow initialization
-	async function initPaymentFlow() {
+	async function initPaymentFlow(): Promise<void> {
 		await loadPayPalSDK();
 		renderPayPalButtons();
 		loadBetterplaceProjectInfo();
 	}
 
 	// Load Betterplace project info
-	async function loadBetterplaceProjectInfo() {
+	async function loadBetterplaceProjectInfo(): Promise<void> {
 		try {
 			// In a real scenario, this would fetch data from an API
 			showBetterplace = true;
@@ -207,7 +244,7 @@
 	// PayPal Script Loading
 	let paypalSDKLoaded = $state(false);
 
-	async function loadPayPalSDK() {
+	async function loadPayPalSDK(): Promise<void> {
 		if (typeof window !== 'undefined' && typeof window.paypal !== 'undefined') {
 			paypalSDKLoaded = true;
 			return;
@@ -219,7 +256,7 @@
 		script.onload = () => {
 			console.log('PayPal SDK loaded successfully');
 			paypalSDKLoaded = true;
-			setTimeout(() => {
+			addTimer(() => {
 				renderPayPalButtons();
 			}, 300);
 		};
@@ -232,7 +269,7 @@
 	}
 
 	// Configure PayPal parameters
-	function getPayPalConfig() {
+	function getPayPalConfig(): string {
 		return new URLSearchParams({
 			'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID || 'test',
 			currency: 'EUR',
@@ -245,7 +282,7 @@
 	}
 
 	// Handle payment method change
-	function handlePaymentMethodChange(method: 'paypal' | 'betterplace') {
+	function handlePaymentMethodChange(method: 'paypal' | 'betterplace'): void {
 		// Wenn paypal gewählt wird, behalten wir den paymentMethod-Wert bei
 		if (method === 'paypal') {
 			paymentMethod = 'paypal';
@@ -260,7 +297,7 @@
 	}
 
 	// Toggle donation option
-	function toggleDonation() {
+	function toggleDonation(): void {
 		includeDonation = !includeDonation;
 
 		// Betterplace info anzeigen oder verstecken basierend auf Spendenstatus
@@ -271,13 +308,13 @@
 		}
 
 		// PayPal-Buttons mit aktualisiertem Betrag neu rendern
-		setTimeout(() => {
+		addTimer(() => {
 			renderPayPalButtons();
 		}, 300);
 	}
 
 	// Render PayPal Buttons
-	function renderPayPalButtons() {
+	function renderPayPalButtons(): void {
 		if (!paypalSDKLoaded || typeof window === 'undefined' || typeof window.paypal === 'undefined') {
 			console.warn('PayPal SDK not loaded yet');
 			return;
@@ -296,7 +333,7 @@
 			window.paypal
 				.Buttons({
 					// Use createOrder for all payment types for consistency
-					createOrder: async (data, actions) => {
+					createOrder: async (data: any, actions: any) => {
 						// Start processing animation
 						isProcessing = true;
 
@@ -336,7 +373,7 @@
 							}
 						});
 					},
-					onApprove: async (data, actions) => {
+					onApprove: async (data: any, actions: any) => {
 						try {
 							console.log('Payment approved:', data);
 							isProcessing = true;
@@ -351,13 +388,13 @@
 							handlePaymentError(error);
 						}
 					},
-					onCancel: (data) => {
+					onCancel: (data: any) => {
 						console.log('Payment cancelled:', data);
 						isProcessing = false;
 						paymentError = 'Die Zahlung wurde abgebrochen.';
 						modalStore.open('error', { error: paymentError });
 					},
-					onError: (err) => {
+					onError: (err: any) => {
 						console.error('PayPal error:', err);
 
 						let errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
@@ -393,7 +430,6 @@
 			console.error('Error rendering PayPal buttons:', error);
 			paymentError =
 				'Fehler beim Rendern der PayPal-Schaltflächen. Bitte versuche es später erneut.';
-			currentModalType = 'error';
 			modalStore.open('error', { errorMessage: paymentError, errorDetails });
 		}
 	}
@@ -411,7 +447,7 @@
 	}
 
 	// Handle payment errors
-	function handlePaymentError(error: unknown) {
+	function handlePaymentError(error: unknown): void {
 		console.error('Payment error:', error);
 		isProcessing = false;
 
@@ -432,7 +468,7 @@
 	}
 
 	// Analytics tracking
-	async function trackAnalyticsEvent(details: PayPalOrderDetails) {
+	async function trackAnalyticsEvent(details: PayPalOrderDetails): Promise<void> {
 		if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
 			window.gtag('event', 'purchase', {
 				transaction_id: details.id,
@@ -469,278 +505,274 @@
 	// Clean up on component destroy
 	onDestroy(() => {
 		animationSequencer.clearAll();
+		clearAllTimers();
 	});
 </script>
 
-<!-- Main Payment Modal -->
-<Modal
-	isOpen={$modalStore.isOpen && $modalStore.type === 'payment'}
-	onClose={handleMainClose}
-	title="Bezahlung abschließen"
-	size="xl"
-	type="default"
-	closeOnClickOutside={!isProcessing}
-	closeOnEsc={!isProcessing}
->
-	<!-- Price Summary -->
-	<div class="card">
-		<div class="card-body mb-4 rounded-lg bg-base-200 p-4">
-			<div class="flex items-center justify-between">
-				<div>
-					<h4 class="text-lg font-semibold" itemprop="name">
-						{getPlanDisplayName(selectedPlan, paymentType)}
-					</h4>
-					<div class="flex gap-1">
-						<p class="text-sm opacity-75">
-							{paymentType === 'monatlich'
-								? 'Monatliche Zahlung'
-								: paymentType === 'einmalig'
-									? 'Einmalzahlung'
-									: 'Longtime-Zugang'}
-						</p>
-						{#if discountPercentage() > 0}
-							<p class="text-sm text-error" itemprop="discount">
-								{discountPercentage()}% Rabatt
+{#if $modalStore.isOpen}
+	{#if localModalType === 'payment' || isTransitioning}
+		<!-- Main Payment Modal -->
+		<Modal
+			isOpen={localModalType === 'payment'}
+			onClose={handleMainClose}
+			title="Bezahlung abschließen"
+			size="xl"
+			type="default"
+			closeOnClickOutside={!isProcessing}
+			closeOnEsc={!isProcessing}
+		>
+			<!-- Price Summary -->
+			<div class="card">
+				<div class="card-body mb-4 rounded-lg bg-base-200 p-4">
+					<div class="flex items-center justify-between">
+						<div>
+							<h4 class="text-lg font-semibold" itemprop="name">
+								{getPlanDisplayName(selectedPlan, paymentType)}
+							</h4>
+							<div class="flex gap-1">
+								<p class="text-sm opacity-75">
+									{paymentType === 'monatlich'
+										? 'Monatliche Zahlung'
+										: paymentType === 'einmalig'
+											? 'Einmalzahlung'
+											: 'Longtime-Zugang'}
+								</p>
+								{#if discountPercentage() > 0}
+									<p class="text-sm text-error" itemprop="discount">
+										{discountPercentage()}% Rabatt
+									</p>
+								{/if}
+								{#if includeDonation}
+									<p class="text-sm text-success" itemprop="donation">
+										inkl. {$animatedDonation.toFixed(2).replace('.', ',')}€ Spende
+									</p>
+								{/if}
+							</div>
+						</div>
+						<div class="text-right">
+							<p class="text-2xl font-bold">
+								{totalPrice.toFixed(2).replace('.', ',')}€
 							</p>
-						{/if}
-						{#if includeDonation}
-							<p class="text-sm text-success" itemprop="donation">
-								inkl. {$animatedDonation.toFixed(2).replace('.', ',')}€ Spende
-							</p>
-						{/if}
+
+							<!-- Tooltip mit Steuerdaten -->
+							<div
+								class="tooltip tooltip-left text-sm"
+								data-tip={`Netto: ${currentTax.net.toFixed(2).replace('.', ',')}€\nMwSt. (${currentTax.rate}%): ${currentTax.vat.toFixed(2).replace('.', ',')}€`}
+							>
+								<button
+									class="flex-start flex gap-1 text-gray-400 hover:text-gray-600"
+									onmouseenter={() => (showVatTooltip = true)}
+									onmouseleave={() => (showVatTooltip = false)}
+									onfocus={() => (showVatTooltip = true)}
+									onblur={() => (showVatTooltip = false)}
+									aria-label="MwSt Info"
+									type="button"
+								>
+									<Icon name="question" size={20} color="currentColor" />
+									<p itemprop="tax">inkl. {currentVatText}</p>
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="text-right">
-					<p class="text-2xl font-bold">
-						{totalPrice.toFixed(2).replace('.', ',')}€
-					</p>
 
-					<!-- Tooltip mit Steuerdaten -->
-					<div
-						class="tooltip tooltip-left text-sm"
-						data-tip={`Netto: ${currentTax.net.toFixed(2).replace('.', ',')}€\nMwSt. (${currentTax.rate}%): ${currentTax.vat.toFixed(2).replace('.', ',')}€`}
+				<!-- Payment Options -->
+				<div class="mb-1 space-y-3">
+					<!-- PayPal Input -->
+					<label
+						class="form-input group cursor-pointer bg-blue-50 ring-2 ring-blue-500"
+						for="payment-paypal"
 					>
-						<button
-							class="flex-start flex gap-1 text-gray-400 hover:text-gray-600"
-							onmouseenter={() => (showVatTooltip = true)}
-							onmouseleave={() => (showVatTooltip = false)}
-							onfocus={() => (showVatTooltip = true)}
-							onblur={() => (showVatTooltip = false)}
-							aria-label="MwSt Info"
-							type="button"
+						<div class="flex items-center">
+							<div class="relative h-6 w-6">
+								<input
+									type="checkbox"
+									id="payment-paypal"
+									name="payment"
+									value="paypal"
+									checked={paymentMethod === 'paypal' || true}
+									onchange={() => handlePaymentMethodChange('paypal')}
+								/>
+								<div
+									class="absolute inset-0 rounded-md border-2 border-blue-500 bg-blue-500 transition-all"
+								>
+									<svg
+										class="absolute inset-0 m-auto h-4 w-4 text-white"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="3"
+											d="M5 13l4 4L19 7"
+										/>
+									</svg>
+								</div>
+							</div>
+							<span class="ml-3 text-sm font-medium">PayPal</span>
+						</div>
+						<div class="ml-auto flex items-center gap-1 lg:gap-2 lg:pl-4">
+							{#each ['visa', 'mastercard', 'maestro', 'amex'] as brand}
+								<img src={`/${brand}.svg`} alt={brand} class="h-6" />
+							{/each}
+						</div>
+					</label>
+
+					<label
+						class="form-input group cursor-pointer hover:border-emerald-200 hover:bg-emerald-50
+				{includeDonation ? 'bg-emerald-50 ring-2 ring-emerald-500' : ''}"
+						for="payment-betterplace"
+					>
+						<div class="flex items-center">
+							<div class="relative h-6 w-6">
+								<input
+									type="checkbox"
+									id="payment-betterplace"
+									name="donation"
+									checked={includeDonation}
+									onchange={toggleDonation}
+								/>
+								<div
+									class="absolute inset-0 rounded-md border-2 border-emerald-500 transition-all
+							{includeDonation ? 'bg-emerald-500' : 'bg-white'}"
+								>
+									{#if includeDonation}
+										<svg
+											class="absolute inset-0 m-auto h-4 w-4 text-white"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="3"
+												d="M5 13l4 4L19 7"
+											/>
+										</svg>
+									{/if}
+								</div>
+							</div>
+							<span class="ml-3 text-sm font-medium">3% Spende hinzufügen</span>
+						</div>
+						<div class="ml-auto lg:pl-4">
+							<img src="/betterplace.svg" alt="Betterplace" class="h-4 lg:h-6" />
+						</div>
+					</label>
+				</div>
+				<div class="mt-3 rounded-lg border border-gray-200 p-4 shadow-custom">
+					<!-- Betterplace Info Box -->
+					{#if includeDonation}
+						<div
+							class="mb-4 flex items-start gap-3 rounded-md border border-green-200 bg-green-100 p-4 text-sm"
+							in:fly={{ y: 20, delay: 100 }}
 						>
-							<Icon name="question" size={20} color="currentColor" />
-							<p itemprop="tax">inkl. {currentVatText}</p>
-						</button>
+							<div class="heart-icon animate-pulse text-2xl">❤️</div>
+							<p class="text-xs text-emerald-700">
+								Mit jedem Euro unterstützt Du direkt Umweltschutzprojekte.
+								<span class="font-semibold">93% Deiner Spende</span> fließt unmittelbar in nachhaltige
+								Projekte - nachweislich und transparent!
+							</p>
+						</div>
+					{/if}
+
+					<!-- PayPal Button Container -->
+					<div id="paypal-button-container">
+						{#if isProcessing}
+							<div class="flex justify-center py-8">
+								<span class="loading loading-spinner loading-lg"></span>
+							</div>
+						{/if}
+					</div>
+					<!-- Security Badges -->
+					<div
+						class="mt-1 flex flex-wrap justify-center gap-2 text-[9px] text-[#7b8388] lg:gap-4 lg:text-[11px]"
+					>
+						<!-- Security Badge: Lock -->
+						{#each securityOptions as { icon, text }}
+							<SecurityBadge {icon} {text} />
+						{/each}
 					</div>
 				</div>
 			</div>
-		</div>
-
-		<!-- Payment Options -->
-		<div class="mb-1 space-y-3">
-			<!-- PayPal Input -->
-			<label
-				class="form-input group cursor-pointer bg-blue-50 ring-2 ring-blue-500"
-				for="payment-paypal"
-			>
-				<div class="flex items-center">
-					<div class="relative h-6 w-6">
-						<input
-							type="checkbox"
-							id="payment-paypal"
-							name="payment"
-							value="paypal"
-							checked={paymentMethod === 'paypal' || true}
-							onchange={() => handlePaymentMethodChange('paypal')}
-						/>
+		</Modal>
+	{:else if localModalType === 'success' && !isTransitioning}
+		<!-- Success Modal -->
+		<ModalSuccess onClose={handleFinalClose} data={$modalStore.data} />
+	{:else if localModalType === 'error' && !isTransitioning}
+		<!-- Error Modal -->
+		<Modal
+			isOpen={true}
+			onClose={handleFinalClose}
+			type="error"
+			title="Zahlungsfehler"
+			size="xl"
+			subtitle={paymentError}
+			primaryAction={{
+				label: 'Schließen',
+				onClick: handleFinalClose,
+				variant: 'outline'
+			}}
+			secondaryAction={{
+				label: 'Erneut versuchen',
+				onClick: () => {
+					modalStore.open('payment');
+					addTimer(() => {
+						renderPayPalButtons();
+					}, 500);
+				},
+				variant: 'primary'
+			}}
+		>
+			{#if errorDetails}
+				<div class="mx-auto mt-4 w-full max-w-md">
+					<details class="text-left">
+						<summary class="mb-2 cursor-pointer text-sm text-blue-600 hover:text-blue-800">
+							Technische Details anzeigen
+						</summary>
 						<div
-							class="absolute inset-0 rounded-md border-2 border-blue-500 bg-blue-500 transition-all"
+							class="max-h-32 overflow-auto rounded-md bg-gray-100 p-3 text-left font-mono text-xs text-gray-700"
 						>
-							<svg
-								class="absolute inset-0 m-auto h-4 w-4 text-white"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="3"
-									d="M5 13l4 4L19 7"
-								/>
-							</svg>
+							{errorDetails}
 						</div>
-					</div>
-					<span class="ml-3 text-sm font-medium">PayPal</span>
-				</div>
-				<div class="ml-auto flex items-center gap-1 lg:gap-2 lg:pl-4">
-					{#each ['visa', 'mastercard', 'maestro', 'amex'] as brand}
-						<img src={`/${brand}.svg`} alt={brand} class="h-6" />
-					{/each}
-				</div>
-			</label>
-
-			<label
-				class="form-input group cursor-pointer hover:border-emerald-200 hover:bg-emerald-50
-	{includeDonation ? 'bg-emerald-50 ring-2 ring-emerald-500' : ''}"
-				for="payment-betterplace"
-			>
-				<div class="flex items-center">
-					<div class="relative h-6 w-6">
-						<input
-							type="checkbox"
-							id="payment-betterplace"
-							name="donation"
-							checked={includeDonation}
-							onchange={toggleDonation}
-						/>
-						<div
-							class="absolute inset-0 rounded-md border-2 border-emerald-500 transition-all
-				{includeDonation ? 'bg-emerald-500' : 'bg-white'}"
-						>
-							{#if includeDonation}
-								<svg
-									class="absolute inset-0 m-auto h-4 w-4 text-white"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="3"
-										d="M5 13l4 4L19 7"
-									/>
-								</svg>
-							{/if}
-						</div>
-					</div>
-					<span class="ml-3 text-sm font-medium">3% Spende hinzufügen</span>
-				</div>
-				<div class="ml-auto lg:pl-4">
-					<img src="/betterplace.svg" alt="Betterplace" class="h-4 lg:h-6" />
-				</div>
-			</label>
-		</div>
-		<div class="mt-3 rounded-lg border border-gray-200 p-4 shadow-custom">
-			<!-- Betterplace Info Box -->
-			{#if includeDonation}
-				<div
-					class="mb-4 flex items-start gap-3 rounded-md border border-green-200 bg-green-100 p-4 text-sm"
-					in:fly={{ y: 20, delay: 100 }}
-				>
-					<div class="heart-icon animate-pulse text-2xl">❤️</div>
-					<p class="text-xs text-emerald-700">
-						Mit jedem Euro unterstützt Du direkt Umweltschutzprojekte.
-						<span class="font-semibold">93% Deiner Spende</span> fließt unmittelbar in nachhaltige Projekte
-						- nachweislich und transparent!
-					</p>
+					</details>
 				</div>
 			{/if}
 
-			<!-- PayPal Button Container -->
-			<div id="paypal-button-container">
-				{#if isProcessing}
-					<div class="flex justify-center py-8">
-						<span class="loading loading-spinner loading-lg"></span>
-					</div>
-				{/if}
+			<p class="mt-6 text-sm text-gray-500">
+				Bei weiteren Problemen wende Dich bitte an unseren
+				<a href="mailto:support@digitalpusher.de" class="text-blue-600 hover:underline">
+					Kundensupport
+				</a>.
+			</p>
+		</Modal>
+	{:else if localModalType === 'action' && !isTransitioning}
+		<!-- Action Modal (Confirmation when closing) -->
+		<Modal
+			isOpen={true}
+			onClose={handleFinalClose}
+			type="warning"
+			title="Kaufprozess verlassen?"
+			size="xl"
+			subtitle="Wenn Du jetzt abbrichst, geht Deine aktuelle Auswahl verloren und der Kauf wird nicht abgeschlossen."
+			primaryAction={{
+				label: 'Kaufprozess fortsetzen',
+				onClick: continuePayment,
+				variant: 'primary'
+			}}
+			secondaryAction={{
+				label: 'Abbrechen und verlassen',
+				onClick: handleFinalClose,
+				variant: 'outline'
+			}}
+		>
+			<!-- Special Offer -->
+			<div class="mb-6 mt-4 rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
+				<p class="font-semibold">Exklusiv: 10% Rabatt bei Abschluss in den nächsten 24 Stunden!</p>
+				<p>Nutze diese Gelegenheit für ein noch besseres Angebot.</p>
 			</div>
-			<!-- Security Badges -->
-			<div class="mt-1 flex flex-wrap justify-center gap-4 text-[11px] text-[#7b8388]">
-				<!-- Security Badge: Lock -->
-				{#each securityOptions as { icon, text }}
-					<SecurityBadge {icon} {text} />
-				{/each}
-			</div>
-		</div>
-	</div>
-</Modal>
-
-<!-- Success Modal -->
-<ModalSuccess
-	showModal={$modalStore.isOpen && $modalStore.type === 'success'}
-	onClose={handleFinalClose}
-	type="success"
-	data={$modalStore.data}
-/>
-
-<!-- Error Modal -->
-<Modal
-	isOpen={$modalStore.isOpen && $modalStore.type === 'error'}
-	onClose={handleFinalClose}
-	type="error"
-	title="Zahlungsfehler"
-	size="xl"
-	subtitle={paymentError}
-	primaryAction={{
-		label: 'Schließen',
-		onClick: handleFinalClose,
-		variant: 'outline'
-	}}
-	secondaryAction={{
-		label: 'Erneut versuchen',
-		onClick: () => {
-			currentModalType = ModalState.Payment;
-			setTimeout(() => {
-				renderPayPalButtons();
-			}, 500);
-		},
-		variant: 'primary'
-	}}
->
-	{#if errorDetails}
-		<div class="mx-auto mt-4 w-full max-w-md">
-			<details class="text-left">
-				<summary class="mb-2 cursor-pointer text-sm text-blue-600 hover:text-blue-800">
-					Technische Details anzeigen
-				</summary>
-				<div
-					class="max-h-32 overflow-auto rounded-md bg-gray-100 p-3 text-left font-mono text-xs text-gray-700"
-				>
-					{errorDetails}
-				</div>
-			</details>
-		</div>
+		</Modal>
 	{/if}
-
-	<p class="mt-6 text-sm text-gray-500">
-		Bei weiteren Problemen wende Dich bitte an unseren
-		<a href="mailto:support@digitalpusher.de" class="text-blue-600 hover:underline">
-			Kundensupport
-		</a>.
-	</p>
-</Modal>
-
-<!-- Action Modal (Confirmation when closing) -->
-<Modal
-	isOpen={$modalStore.isOpen && $modalStore.type === 'action'}
-	onClose={handleFinalClose}
-	type="warning"
-	title="Kaufprozess verlassen?"
-	size="xl"
-	subtitle="Wenn Du jetzt abbrichst, geht Deine aktuelle Auswahl verloren und der Kauf wird nicht abgeschlossen."
-	primaryAction={{
-		label: 'Kaufprozess fortsetzen',
-		onClick: continuePayment,
-		variant: 'primary'
-	}}
-	secondaryAction={{
-		label: 'Abbrechen und verlassen',
-		onClick: handleFinalClose,
-		variant: 'outline'
-	}}
->
-	<!-- Special Offer -->
-	<div class="mb-6 mt-4 rounded-lg bg-blue-50 p-4 text-sm text-blue-700">
-		<p class="font-semibold">Exklusiv: 10% Rabatt bei Abschluss in den nächsten 24 Stunden!</p>
-		<p>Nutze diese Gelegenheit für ein noch besseres Angebot.</p>
-	</div>
-</Modal>
-
-<style>
-	.form-input {
-		@apply relative flex cursor-pointer items-center rounded-lg border p-4 transition-all duration-200 hover:border-blue-200 hover:bg-blue-50;
-	}
-</style>
+{/if}
