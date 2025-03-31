@@ -4,8 +4,7 @@
 	import type { FormData } from '$lib/schema';
 	import { browser } from '$app/environment';
 	import type { SuperValidated } from 'sveltekit-superforms';
-	import PaymentModal from './ModalPayment.svelte';
-	import { modalStore } from '$lib/stores/modalStore';
+	import { ModalController, modalStore } from '$lib/components/modal';
 
 	interface Props {
 		score: number;
@@ -39,9 +38,6 @@
 	let selectedPlan = $state('3-MONATS-PLAN'); // Default to the most popular option
 	let paymentType = $state('monatlich'); // Default to monthly payment
 
-	// Modal state
-	let showPaymentModal = $state(false);
-
 	// Animation visibility states
 	let showBonusBox = $state(false);
 	let sectionsInView = $state({
@@ -49,6 +45,14 @@
 		pricing: false,
 		discountBanner: false
 	});
+
+	const paymentMethods = [
+		{ name: 'Visa', icon: '/visa.svg', alt: 'Visa' },
+		{ name: 'Maestro', icon: '/maestro.svg', alt: 'Maestro' },
+		{ name: 'MasterCard', icon: '/mastercard.svg', alt: 'MasterCard' },
+		{ name: 'American Express', icon: '/amex.svg', alt: 'American Express' },
+		{ name: 'PayPal', icon: '/paypal.svg', alt: 'PayPal' }
+	];
 
 	// Calculate pricing for a given plan and payment type
 	function calculatePricing(planName: string, paymentMethod: string) {
@@ -104,21 +108,22 @@
 			paymentType,
 			totalPrice,
 			form,
-			errors
+			errors,
+			redirectUrl: '/dashboard' // Optional: Wohin nach erfolgreicher Zahlung
 		});
 	}
 
-	// Function to close the payment modal
-	function closePaymentModal() {
-		modalStore.close();
-	}
-
-	// Function to process the payment submission
-	function handlePaymentSubmit() {
-		console.log('Payment submitted for', selectedPlan, 'with total price', totalPrice);
-
-		// Schließt das Modal nicht automatisch, sondern überlässt das der Erfolgsanimation
-		// Die erfolgreiche Zahlung wird über den modalStore kommuniziert
+	// Handle success callback from payment process
+	function handlePaymentSuccess(details: any) {
+		console.log(
+			'Payment successful for',
+			selectedPlan,
+			'with total price',
+			totalPrice,
+			'details:',
+			details
+		);
+		// Hier können zusätzliche Verarbeitungsschritte nach erfolgreicher Zahlung erfolgen
 	}
 
 	// Timer for discount
@@ -159,7 +164,6 @@
 	}
 
 	// Intersection Observer for animations
-	// Modernere Implementierung der Intersection Observer-Funktionalität
 	function setupIntersectionObserver() {
 		if (!browser) return;
 
@@ -685,11 +689,9 @@
 		class="mb-8 mt-6 flex flex-wrap justify-center gap-4"
 		in:fade={{ duration: 300, delay: 700 }}
 	>
-		<img src="/visa.svg" alt="Visa" class="h-8" />
-		<img src="/mastercard.svg" alt="Mastercard" class="h-8" />
-		<img src="/maestro.svg" alt="Maestro" class="h-8" />
-		<img src="/amex.svg" alt="American Express" class="h-8" />
-		<img src="/paypal.svg" alt="PayPal" class="h-8" />
+		{#each paymentMethods as method}
+			<img src={method.icon} alt={method.name} class="h-8" title={method.name} />
+		{/each}
 	</div>
 
 	<!-- Discount Banner (animated) -->
@@ -756,14 +758,5 @@
 	</div>
 </div>
 
-<!-- Payment Modal Component -->
-<PaymentModal
-	showModal={$modalStore.isOpen && $modalStore.type === 'payment'}
-	{selectedPlan}
-	{paymentType}
-	{totalPrice}
-	{form}
-	{errors}
-	onClose={closePaymentModal}
-	onSubmit={handlePaymentSubmit}
-/>
+<!-- Neue Modal-Controller Komponente für die Zahlungsabwicklung -->
+<ModalController onSuccess={handlePaymentSuccess} />
