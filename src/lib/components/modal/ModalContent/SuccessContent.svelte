@@ -3,8 +3,10 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { tweened } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
+	import { cubicInOut, cubicOut } from 'svelte/easing';
 	import { formatTime } from '$lib/utils/animation';
+	import Icon from '$lib/components/Icon.svelte';
+	import { celebrationConfetti } from '$lib/utils/confetti';
 
 	// Props
 	const {
@@ -14,7 +16,7 @@
 		donationAmount = 0,
 		customerName = '',
 		redirectUrl = '',
-		totalPrice = 0,
+
 		onSuccess = () => {}
 	} = $props();
 
@@ -22,19 +24,24 @@
 	let showCheckmark = $state(false);
 	let showConfetti = $state(false);
 	let showNextSteps = $state(false);
+	let showMainMessage = $state(false);
+	let showPaymentDetails = $state(false);
+	let showDonation = $state(false);
+	let showUpgradeOffer = $state(false);
+	let showSupportInfo = $state(false);
+	let showActionButtons = $state(false);
 	let progress = $state(0);
 	let timers: number[] = [];
 
 	// Animation controllers
-
 	const upsellSeconds = tweened(0, {
 		duration: 1000,
-		easing: cubicOut
+		easing: cubicInOut
 	});
 
 	const animatedDonation = tweened(0, {
 		duration: 1200,
-		easing: cubicOut
+		easing: cubicInOut
 	});
 
 	// Content
@@ -56,10 +63,15 @@
 		timers = [];
 	}
 
-	// Trigger confetti effect (optional)
+	// Trigger confetti effect
 	function triggerConfetti() {
-		console.log('Confetti would display here');
-		// Add your confetti implementation if needed
+		showConfetti = true;
+
+		// Hier würde die Confetti-Animation ausgelöst
+		// Diese Funktion sollte in $lib/utils/confetti.ts implementiert sein
+		// Beispiel: confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+		console.log('Confetti animation triggered');
 	}
 
 	// Track analytic events (optional)
@@ -80,45 +92,71 @@
 		}
 	}
 
-	// Start animations
+	// Start animations in sequence
 	function startAnimations() {
 		// Reset state
 		clearAllTimers();
 		progress = 0;
-		showCheckmark = false;
-		showConfetti = false;
-		showNextSteps = false;
 
-		// Progress animation
+		// Smooth Progress Animation
 		const progressInterval = setInterval(() => {
 			if (progress < 100) {
-				progress += 1;
+				progress += 0.5; // Noch sanfter
 			} else {
 				clearInterval(progressInterval);
 			}
-		}, 20);
+		}, 40);
 		timers.push(progressInterval as unknown as number);
 
-		// Animation sequence
+		// 1. Checkmark (sanft nach 700ms)
 		addTimer(() => {
 			showCheckmark = true;
-		}, 500);
+		}, 700);
 
+		// 2. Confetti sanft nach Checkmark (nach 1400ms)
 		addTimer(() => {
-			showConfetti = true;
 			triggerConfetti();
-		}, 1000);
+		}, 1400);
 
+		// 3. Hauptnachricht später für bessere Aufnahme (2100ms)
 		addTimer(() => {
-			showNextSteps = true;
-		}, 1500);
+			showMainMessage = true;
+		}, 2100);
 
-		// Animate donation if applicable
+		// 4. Zahlungsdetails mit Delay für sanftere Wahrnehmung (2800ms)
+		addTimer(() => {
+			showPaymentDetails = true;
+		}, 2800);
+
+		// 5. Donation Feedback falls vorhanden (3500ms)
 		if (donationAmount > 0) {
-			animatedDonation.set(donationAmount);
+			addTimer(() => {
+				showDonation = true;
+				animatedDonation.set(donationAmount);
+			}, 3500);
 		}
 
-		// Track view event
+		// 6. Nächste Schritte (4200ms, später für bessere UX)
+		addTimer(() => {
+			showNextSteps = true;
+		}, 4200);
+
+		// 7. Support-Info (5000ms)
+		addTimer(() => {
+			showSupportInfo = true;
+		}, 5000);
+
+		// 8. Upgrade-Angebot **ganz zum Schluss** (6000ms)
+		addTimer(() => {
+			showUpgradeOffer = true;
+		}, 6000);
+
+		// 9. Action Buttons (6500ms, das Letzte)
+		addTimer(() => {
+			showActionButtons = true;
+		}, 6500);
+
+		// Track event
 		trackEvent('success_modal_viewed');
 	}
 
@@ -126,7 +164,7 @@
 	onMount(() => {
 		startAnimations();
 
-		// Countdown for special offer
+		// Countdown für Sonderangebot
 		upsellSeconds.set(1800);
 		const countdownInterval = setInterval(() => {
 			upsellSeconds.update((val) => Math.max(0, val - 1));
@@ -160,7 +198,7 @@
 			{#if showCheckmark}
 				<svg
 					class="h-12 w-12"
-					in:scale={{ duration: 600, delay: 200, easing: cubicOut }}
+					in:scale={{ duration: 600, easing: cubicOut }}
 					fill="none"
 					viewBox="0 0 24 24"
 					stroke="currentColor"
@@ -180,19 +218,20 @@
 	</div>
 
 	<!-- Main Message -->
-	<div class="mb-8 text-center">
-		<h3 class="mb-1 text-2xl font-bold text-gray-900" in:fly={{ y: 30, duration: 600 }}>
-			🎉 Perfekt! Deine Bestellung ist erfolgreich
-		</h3>
-		<p class="mb-4 text-lg text-gray-700" in:fly={{ y: 20, duration: 600, delay: 200 }}>
-			Wir haben dein {selectedPlan} für dich freigeschaltet
-		</p>
+	{#if showMainMessage}
+		<div class="mb-8 text-center" in:fly={{ y: 30, duration: 600 }}>
+			<h3 class="mb-1 text-2xl font-bold text-gray-900">
+				🎉 Perfekt{customerName ? ', ' + customerName : ''}! Deine Bestellung ist erfolgreich
+			</h3>
+			<p class="mt-2 text-lg text-gray-700">
+				Wir haben dein {selectedPlan} für dich freigeschaltet
+			</p>
+		</div>
+	{/if}
 
-		<!-- Payment Details -->
-		<div
-			class="mx-auto mb-6 rounded-xl bg-gray-50 p-4 shadow-sm"
-			in:fly={{ y: 20, duration: 500, delay: 400 }}
-		>
+	<!-- Payment Details -->
+	{#if showPaymentDetails}
+		<div class="mx-auto mb-6 rounded-xl bg-white p-4 shadow-sm" in:fly={{ y: 20, duration: 500 }}>
 			<div class="flex items-center justify-between border-b border-gray-200 pb-3">
 				<span class="text-sm font-medium text-gray-500">Zahlungs-ID</span>
 				<span class="font-mono text-sm text-gray-700">
@@ -210,13 +249,13 @@
 				>
 			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Donation Feedback (if applicable) -->
-	{#if donationAmount > 0 && $animatedDonation > 0}
+	{#if donationAmount > 0 && showDonation}
 		<div
 			class="mb-8 overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50 shadow-sm"
-			in:fly={{ y: 30, duration: 500, delay: 600 }}
+			in:fly={{ y: 30, duration: 500 }}
 		>
 			<div class="p-4">
 				<div class="flex items-center">
@@ -263,12 +302,12 @@
 	{#if showNextSteps}
 		<div
 			class="mb-8 rounded-lg border border-blue-100 bg-blue-50 p-4"
-			in:fly={{ y: 20, duration: 500, delay: 800 }}
+			in:fly={{ y: 20, duration: 500 }}
 		>
 			<h4 class="mb-3 font-medium text-blue-700">Deine nächsten Schritte:</h4>
-			<ul class="space-y-2">
+			<ul class="space-y-3">
 				{#each nextSteps as step, i}
-					<li class="flex items-start" in:fly={{ x: -20, duration: 300, delay: 1000 + i * 150 }}>
+					<li class="flex items-start" in:fly={{ x: -20, duration: 400, delay: 200 * i }}>
 						<div
 							class="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-200 text-xs font-bold text-blue-700"
 						>
@@ -282,94 +321,96 @@
 	{/if}
 
 	<!-- Exclusive Upgrade Offer -->
-	<div
-		class="mb-8 overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
-		in:fly={{ y: 20, duration: 500, delay: 1000 }}
-	>
-		<div class="relative p-5 text-white">
-			<!-- Limited Time Offer Badge -->
-			<div
-				class="absolute -right-9 top-4 rotate-45 bg-yellow-400 px-10 py-1 text-center text-xs font-bold uppercase text-gray-800 shadow-md"
-			>
-				Exklusiv
-			</div>
-
-			<div class="flex-end flex flex-col md:flex-row md:items-center">
-				<div class="mb-4 text-left md:mb-0 md:flex-1">
-					<h4 class="mb-1 text-lg font-bold">Erweitere dein Paket und spare 30%</h4>
-					<p class="text-sm text-indigo-100">
-						Nur für Neukunden: Füge jetzt Premium-Features hinzu und hebe dein Ergebnis auf das
-						nächste Level!
-					</p>
-
-					<!-- Countdown Timer -->
-					<div class="mt-2 flex items-center text-xs font-medium text-indigo-100">
-						<svg class="mr-1 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
-						Angebot endet in <span class="ml-1 font-mono">{formatTime($upsellSeconds)}</span>
-					</div>
+	{#if showUpgradeOffer}
+		<div
+			class="mb-8 overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
+			in:fly={{ y: 20, duration: 500 }}
+		>
+			<div class="relative p-5 text-white">
+				<!-- Limited Time Offer Badge -->
+				<div
+					class="absolute -right-9 top-4 rotate-45 bg-yellow-400 px-10 py-1 text-center text-xs font-bold uppercase text-gray-800 shadow-md"
+				>
+					Exklusiv
 				</div>
 
-				<div class="flex-shrink-0">
-					<button
-						class="btn btn-sm bg-white px-4 font-bold text-indigo-600 transition-transform hover:scale-105 hover:shadow-lg"
-						on:click={() => trackEvent('upsell_clicked')}
-					>
-						Upgrade sichern
-					</button>
+				<div class="flex flex-col items-center md:flex-row md:items-center">
+					<div class="mb-4 text-left md:mb-0 md:flex-1">
+						<h4 class="mb-1 text-lg font-bold">Erweitere dein Paket und spare 30%</h4>
+						<p class="text-sm text-indigo-100">
+							Nur für Neukunden: Füge jetzt Premium-Features hinzu und hebe dein Ergebnis auf das
+							nächste Level!
+						</p>
+
+						<!-- Countdown Timer -->
+						<div class="mt-2 flex items-center text-xs font-medium text-indigo-100">
+							<svg class="mr-1 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+							Angebot endet in <span class="ml-1 font-mono">{formatTime($upsellSeconds)}</span>
+						</div>
+					</div>
+
+					<div class="flex-shrink-0">
+						<button
+							class="btn btn-sm bg-white px-4 font-bold text-indigo-600 transition-transform hover:scale-105 hover:bg-primary hover:shadow-lg"
+							on:click={() => trackEvent('upsell_clicked')}
+						>
+							Upgrade sichern
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Support Information -->
-	<div class="mb-6 text-center" in:fade={{ duration: 500, delay: 1200 }}>
-		<p class="mb-2 text-sm text-gray-600">
-			Eine Bestätigung mit allen Details wurde an deine E-Mail-Adresse gesendet.
-		</p>
-		<p class="text-sm text-gray-500">
-			Fragen? Kontaktiere unseren
-			<a href="mailto:support@digitalpusher.de" class="font-medium text-blue-600 hover:underline">
-				Kundensupport
-			</a>
-		</p>
-	</div>
+	{#if showSupportInfo}
+		<div class="mb-6 text-center" in:fade={{ duration: 500 }}>
+			<p class="mb-2 text-sm text-gray-600">
+				Eine Bestätigung mit allen Details wurde an deine E-Mail-Adresse gesendet.
+			</p>
+			<p class="text-sm text-gray-500">
+				Fragen? Kontaktiere unseren
+				<a href="mailto:support@digitalpusher.de" class="font-medium text-blue-600 hover:underline">
+					Kundensupport
+				</a>
+			</p>
+		</div>
+	{/if}
 
 	<!-- Action Buttons -->
-	<div class="mt-8 flex flex-row justify-center gap-3 gap-4">
-		{#if redirectUrl}
+	{#if showActionButtons}
+		<div class="mt-8 flex flex-row justify-center gap-4" in:scale={{ duration: 400 }}>
+			{#if redirectUrl}
+				<button
+					class="btn btn-primary flex items-center justify-center gap-2"
+					on:click={redirectToDashboard}
+				>
+					<span>Zum Dashboard</span>
+					<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+						<path
+							fill-rule="evenodd"
+							d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</button>
+			{/if}
 			<button
-				class="btn btn-primary flex items-center justify-center gap-2"
-				on:click={redirectToDashboard}
+				class="hover:bg-secondary-900 btn btn-outline flex items-center justify-center gap-2"
+				on:click={() => trackEvent('share_clicked')}
 			>
-				<span>Zum Dashboard</span>
-				<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-					<path
-						fill-rule="evenodd"
-						d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-						clip-rule="evenodd"
-					/>
-				</svg>
+				<Icon name="share" size={20} />
+				Teilen
 			</button>
-		{/if}
-		<button
-			class="btn btn-outline flex items-center justify-center gap-2"
-			on:click={() => trackEvent('share_clicked')}
-		>
-			<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-				<path
-					d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
-				/>
-			</svg>
-			Teilen
-		</button>
-	</div>
+		</div>
+	{/if}
 </div>
 
 <style>

@@ -103,13 +103,17 @@
 
 	// Function to open the payment modal
 	function openPaymentModal() {
+		// Stellen wir sicher, dass totalPrice eine Zahl ist
+		const numericPrice =
+			typeof totalPrice === 'number' ? totalPrice : parseFloat(totalPrice.toString()) || 0;
+
 		modalStore.open('payment', {
 			selectedPlan,
 			paymentType,
-			totalPrice,
+			totalPrice: numericPrice, // Hier explizit als Zahl übergeben
 			form,
 			errors,
-			redirectUrl: '/dashboard' // Optional: Wohin nach erfolgreicher Zahlung
+			redirectUrl: '/dashboard'
 		});
 	}
 

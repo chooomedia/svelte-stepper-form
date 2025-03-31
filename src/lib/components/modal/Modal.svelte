@@ -175,7 +175,7 @@
 	>
 		<!-- Header -->
 		{#if title || showCloseButton}
-			<div class="sticky top-0 z-10 rounded-t-xl bg-base-100 px-4 py-4 lg:px-6 lg:pt-6">
+			<div class="sticky top-0 z-50 rounded-t-xl bg-base-100 px-4 py-4 lg:px-6 lg:pt-6">
 				<header class="flex items-center justify-between">
 					{#if title}
 						<h3 id="modal-title" class="text-xl font-bold lg:text-2xl">
@@ -187,12 +187,7 @@
 					{/if}
 
 					{#if showCloseButton}
-						<button
-							type="button"
-							class="btn btn-circle btn-sm"
-							on:click={handleClose}
-							aria-label="Schließen"
-						>
+						<button type="button" class="btn-close" on:click={handleClose} aria-label="Schließen">
 							✕
 						</button>
 					{/if}
@@ -221,6 +216,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		z-index: 1000; /* Niedrigerer z-index für das Modal */
+	}
+
+	.modal::backdrop {
+		z-index: 900; /* Noch niedrigerer z-index für den Backdrop */
 	}
 
 	.modal-center {
@@ -235,5 +235,10 @@
 	.modal-bottom {
 		align-items: flex-end;
 		padding-bottom: 2rem;
+	}
+
+	/* Sicherstellen, dass der Backdrop hinter den Confetti ist */
+	dialog::backdrop {
+		background-color: rgba(0, 0, 0, 0.4);
 	}
 </style>

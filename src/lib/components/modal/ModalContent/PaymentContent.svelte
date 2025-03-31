@@ -25,15 +25,11 @@
 	let showBetterplace = $state(false);
 	let paypalSDKLoaded = $state(false);
 	let timers: number[] = [];
-
-	// Computed values
-	const totalWithDonation = $derived(() => {
-		return includeDonation ? totalPrice + totalPrice * 0.03 : totalPrice;
-	});
+	let numericTotalPrice = $state(0);
+	let totalWithDonation = $state(0);
 
 	const currentTax = $derived(calculateTax(totalPrice, $taxInfo.rate));
 	const currentVatText = $derived($taxInfo.vatText);
-
 	const discountPercentage = $derived(() => {
 		switch (paymentType) {
 			case 'einmalig':
@@ -51,6 +47,18 @@
 		{ icon: 'shield', text: 'Käuferschutz' },
 		{ icon: 'clock', text: 'Sofortiger Zugang' }
 	];
+
+	$effect(() => {
+		numericTotalPrice =
+			typeof totalPrice === 'number' ? totalPrice : parseFloat(String(totalPrice)) || 0;
+	});
+
+	$effect(() => {
+		// Berechnung mit gesichertem numerischen Wert
+		totalWithDonation = includeDonation
+			? numericTotalPrice + numericTotalPrice * 0.03
+			: numericTotalPrice;
+	});
 
 	// Helper function for timer management
 	function addTimer(callback: () => void, delay: number): number {
@@ -92,8 +100,16 @@
 
 	// Configure PayPal parameters
 	function getPayPalConfig(): string {
+		const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+
+		// Verwende einen eindeutigen Client-ID-Wert für Log-Nachrichten
+		const logClientId = clientId ? clientId.substring(0, 8) + '...' : 'not set';
+		console.log(
+			`Using PayPal client ID: ${logClientId}, environment: ${import.meta.env.DEV ? 'sandbox' : 'production'}`
+		);
+
 		return new URLSearchParams({
-			'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID || 'test',
+			'client-id': clientId || 'test',
 			currency: 'EUR',
 			intent: 'capture',
 			locale: 'de_DE',
@@ -104,6 +120,8 @@
 	}
 
 	// Render PayPal Buttons
+	// In PaymentContent.svelte, im Bereich der renderPayPalButtons-Funktion
+
 	function renderPayPalButtons(): void {
 		if (!paypalSDKLoaded || typeof window === 'undefined' || typeof window.paypal === 'undefined') {
 			console.warn('PayPal SDK not loaded yet');
@@ -122,39 +140,85 @@
 		try {
 			window.paypal
 				.Buttons({
+					// Verbesserte createOrder-Funktion
 					createOrder: async (data: any, actions: any) => {
-						isProcessing = true;
+						try {
+							isProcessing = true;
+							console.log('Creating PayPal order...');
 
-						// Validate amount
-						const amount = totalWithDonation;
-						if (!amount || amount <= 0) {
+							// Validiere den Betrag
+							const amount = parseFloat(totalWithDonation.toFixed(2));
+							if (isNaN(amount) || amount <= 0) {
+								console.error('Invalid amount:', amount);
+								isProcessing = false;
+								modalStore.open('error', {
+									error: 'Ungültiger Zahlungsbetrag. Bitte versuche es erneut.'
+								});
+								return null;
+							}
+
+							console.log('Creating order with amount:', amount);
+
+							// Detailliertes Logging der Client-ID (versteckt im Produktionsmodus)
+							if (import.meta.env.DEV) {
+								console.log(
+									'Using PayPal client ID:',
+									import.meta.env.VITE_PAYPAL_CLIENT_ID || '(not set)'
+								);
+								console.log('Environment:', import.meta.env.MODE);
+							}
+
+							// Erstelle die Bestellung mit PayPal
+							const orderData = {
+								purchase_units: [
+									{
+										amount: {
+											value: amount.toString(),
+											currency_code: 'EUR'
+										},
+										description: selectedPlan
+									}
+								],
+								application_context: {
+									shipping_preference: 'NO_SHIPPING'
+								}
+							};
+
+							console.log('Order data:', orderData);
+							const result = await actions.order.create(orderData);
+							console.log('Order created successfully:', result);
+							return result;
+						} catch (error) {
+							console.error('Error in createOrder:', error);
 							isProcessing = false;
-							modalStore.open('error', {
-								error: 'Ungültiger Zahlungsbetrag. Bitte versuche es erneut.'
-							});
+
+							// Spezifische Fehlerbehandlung
+							let errorMessage = 'Fehler beim Erstellen der Bestellung. Bitte versuche es erneut.';
+
+							if (error instanceof Error) {
+								if (
+									error.message.includes('INTERNAL_SERVER_ERROR') ||
+									error.message.includes('500')
+								) {
+									errorMessage =
+										'Der PayPal-Service ist vorübergehend nicht verfügbar. Bitte versuche es später erneut.';
+								}
+							}
+
+							modalStore.open('error', { error: errorMessage });
 							return null;
 						}
-
-						return actions.order.create({
-							purchase_units: [
-								{
-									amount: {
-										value: amount.toFixed(2),
-										currency_code: 'EUR'
-									},
-									description: selectedPlan
-								}
-							],
-							application_context: {
-								shipping_preference: 'NO_SHIPPING'
-							}
-						});
 					},
 
+					// Verbesserte onApprove-Funktion
 					onApprove: async (data: any, actions: any) => {
 						try {
-							console.log('Payment approved:', data);
+							console.log('Payment approved, order ID:', data.orderID);
 							isProcessing = true;
+
+							if (!data.orderID) {
+								throw new Error('Keine Order-ID erhalten.');
+							}
 
 							// Capture the funds
 							const details = await actions.order.capture();
@@ -163,12 +227,14 @@
 							// Call success callback with details
 							onSuccess(details);
 						} catch (error) {
+							console.error('Error capturing order:', error);
 							handlePaymentError(error);
 						}
 					},
 
 					onCancel: () => {
 						isProcessing = false;
+						console.log('Payment was cancelled');
 						modalStore.open('error', {
 							error: 'Die Zahlung wurde abgebrochen.'
 						});
@@ -179,11 +245,18 @@
 
 						let errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
 
+						// Erkennen der verschiedenen Fehlertypen
 						if (err.message === 'VALIDATION_ERROR') {
 							errorMessage = 'Bitte überprüfe deine Zahlungsdaten';
 						} else if (err.message?.includes('popup')) {
 							errorMessage =
 								'Das PayPal-Fenster wurde blockiert. Bitte erlaube Popups für diese Seite.';
+						} else if (
+							err.message?.includes('500') ||
+							err.message?.includes('INTERNAL_SERVER_ERROR')
+						) {
+							errorMessage =
+								'Der PayPal-Service ist vorübergehend nicht verfügbar. Bitte versuche es später erneut oder wähle eine andere Zahlungsmethode.';
 						}
 
 						handlePaymentError({ message: errorMessage });
@@ -198,11 +271,17 @@
 						tagline: false
 					}
 				})
-				.render('#paypal-button-container');
+				.render('#paypal-button-container')
+				.catch((err: any) => {
+					console.error('Error rendering PayPal buttons:', err);
+					modalStore.open('error', {
+						error: 'Fehler beim Rendern der PayPal-Schaltflächen. Bitte versuche es später erneut.'
+					});
+				});
 		} catch (error) {
-			console.error('Error rendering PayPal buttons:', error);
+			console.error('Error setting up PayPal buttons:', error);
 			modalStore.open('error', {
-				error: 'Fehler beim Rendern der PayPal-Schaltflächen. Bitte versuche es später erneut.'
+				error: 'Fehler beim Einrichten der PayPal-Schaltflächen. Bitte versuche es später erneut.'
 			});
 		}
 	}
@@ -257,6 +336,43 @@
 	onDestroy(() => {
 		clearAllTimers();
 	});
+
+	function mockPaymentForTesting() {
+		isProcessing = true;
+
+		console.log('Simulating payment process for testing');
+
+		// Simuliere eine Verzögerung von 2 Sekunden
+		setTimeout(() => {
+			isProcessing = false;
+
+			// Simuliere eine erfolgreiche Zahlung
+			const mockPaymentDetails = {
+				id: 'DP-TEST-' + Math.random().toString(36).substring(2, 10),
+				status: 'COMPLETED',
+				payer: {
+					email_address: 'chooom@gmx.de',
+					name: {
+						given_name: 'Siegfried',
+						surname: 'Freud'
+					}
+				},
+				purchase_units: [
+					{
+						amount: {
+							value: totalWithDonation.toFixed(2),
+							currency_code: 'EUR'
+						},
+						description: selectedPlan
+					}
+				],
+				create_time: new Date().toISOString()
+			};
+
+			// Rufe den Erfolgs-Callback mit den simulierten Daten auf
+			onSuccess(mockPaymentDetails);
+		}, 2000);
+	}
 </script>
 
 <!-- Price Summary -->
@@ -436,3 +552,18 @@
 		</div>
 	</div>
 </div>
+
+{#if import.meta.env.DEV}
+	<div class="mt-4 border-t border-gray-200 pt-4">
+		<button
+			class="btn btn-secondary w-full"
+			onclick={mockPaymentForTesting}
+			disabled={isProcessing}
+		>
+			Test-Zahlung simulieren (nur für Entwicklung)
+		</button>
+		<p class="mt-2 text-xs text-gray-500">
+			Dies ist nur für Testzwecke und simuliert eine erfolgreiche Zahlung.
+		</p>
+	</div>
+{/if}

@@ -1,3 +1,4 @@
+<!-- src/lib/components/Icon.svelte -->
 <script lang="ts">
 	// Erweiterte Icon-Komponente mit Unterstützung für komplexe SVGs
 
@@ -6,6 +7,8 @@
 	export let color: string = 'currentColor'; // Icon color
 	export let secondaryColor: string = ''; // Optional secondary color for multi-color icons
 	export let className: string = ''; // Additional CSS classes
+	export let fill: string = ''; // Optional fill color
+	export let stroke: string = ''; // Optional stroke color
 
 	// Interface für komplexe SVG-Icons mit mehreren Pfaden oder Elementen
 	interface ComplexIcon {
@@ -32,7 +35,9 @@
 		clock: 'M16 7L12.5 11M8 12L13.25 17L22 7M2 12L7.25 17C7.25 17 8.66939 15.3778 9.875 14',
 		alertCircle:
 			'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z',
-		checkCircle: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M16 17l-5-5 1.41-1.41L16 14.17l6.59-6.59L24 9'
+		checkCircle: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M16 17l-5-5 1.41-1.41L16 14.17l6.59-6.59L24 9',
+		share:
+			'M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z'
 	};
 
 	// Komplexe Icons mit mehreren Elementen
@@ -129,49 +134,6 @@
 		}
 	};
 
-	// Hilfsfunktion zum Rendern von komplexen Icons
-	function renderComplexIcon(icon: ComplexIcon) {
-		if (typeof icon.content === 'string') {
-			// String-basiertes komplexes Icon (für vorab gerenderte SVGs)
-			return icon.content;
-		} else {
-			// Array von Elementen für komplexes Icon
-			return icon.content
-				.map((element, index) => {
-					const { type, attrs, children } = element;
-
-					// Für jedes Element den entsprechenden SVG-Tag generieren
-					const Tag = type;
-					const props = { ...attrs };
-
-					// Standardattribute hinzufügen, falls nicht definiert
-					if (type === 'path' && !props.stroke && !props.fill) {
-						props.stroke = color;
-					}
-
-					if (children && children.length > 0) {
-						return `<${Tag} ${Object.entries(props)
-							.map(([key, value]) => `${key}="${value}"`)
-							.join(' ')}>
-						${children
-							.map(
-								(child) =>
-									`<${child.type} ${Object.entries(child.attrs)
-										.map(([key, value]) => `${key}="${value}"`)
-										.join(' ')} />`
-							)
-							.join('')}
-					</${Tag}>`;
-					} else {
-						return `<${Tag} ${Object.entries(props)
-							.map(([key, value]) => `${key}="${value}"`)
-							.join(' ')} />`;
-					}
-				})
-				.join('');
-		}
-	}
-
 	// Bestimme das zu verwendende ViewBox
 	function getViewBox(iconName: string): string {
 		if (complexIcons[iconName]?.viewBox) {
@@ -179,6 +141,13 @@
 		}
 		return '0 0 24 24'; // Standard-ViewBox
 	}
+
+	// Bestimme, ob fill oder stroke verwendet werden soll
+	// Falls explizit angegeben, werden die übergebenen Werte verwendet,
+	// ansonsten wird geprüft, ob das Icon gefüllt sein sollte oder einen Stroke haben sollte
+	const shouldUseFill = fill !== '' || name === 'info' || name === 'lock';
+	const effectiveFill = fill || (shouldUseFill ? color : 'none');
+	const effectiveStroke = stroke || (shouldUseFill ? 'none' : color);
 </script>
 
 <svg
@@ -186,8 +155,8 @@
 	width={size}
 	height={size}
 	viewBox={getViewBox(name)}
-	fill="none"
-	stroke={color}
+	fill={effectiveFill}
+	stroke={effectiveStroke}
 	stroke-width="1.5"
 	stroke-linecap="round"
 	stroke-linejoin="round"
@@ -206,39 +175,55 @@
 				{#if element.type === 'path'}
 					<path
 						{...element.attrs}
-						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
+						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
 					/>
 				{:else if element.type === 'circle'}
 					<circle
 						{...element.attrs}
-						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
+						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
 					/>
 				{:else if element.type === 'rect'}
 					<rect
 						{...element.attrs}
-						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
+						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
 					/>
 				{:else if element.type === 'line'}
-					<line {...element.attrs} stroke={element.attrs.stroke || color} />
+					<line {...element.attrs} stroke={element.attrs.stroke || effectiveStroke} />
 				{:else if element.type === 'polyline'}
-					<polyline {...element.attrs} stroke={element.attrs.stroke || color} />
+					<polyline {...element.attrs} stroke={element.attrs.stroke || effectiveStroke} />
 				{:else if element.type === 'polygon'}
 					<polygon
 						{...element.attrs}
-						stroke={element.attrs.stroke || element.attrs.fill ? undefined : color}
+						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
+						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
 					/>
 				{:else if element.type === 'g'}
 					<g {...element.attrs}>
 						{#if element.children}
 							{#each element.children as child}
 								{#if child.type === 'path'}
-									<path {...child.attrs} />
+									<path
+										{...child.attrs}
+										stroke={child.attrs.stroke || (child.attrs.fill ? undefined : effectiveStroke)}
+										fill={child.attrs.fill || (child.attrs.stroke ? 'none' : effectiveFill)}
+									/>
 								{:else if child.type === 'circle'}
-									<circle {...child.attrs} />
+									<circle
+										{...child.attrs}
+										stroke={child.attrs.stroke || (child.attrs.fill ? undefined : effectiveStroke)}
+										fill={child.attrs.fill || (child.attrs.stroke ? 'none' : effectiveFill)}
+									/>
 								{:else if child.type === 'rect'}
-									<rect {...child.attrs} />
+									<rect
+										{...child.attrs}
+										stroke={child.attrs.stroke || (child.attrs.fill ? undefined : effectiveStroke)}
+										fill={child.attrs.fill || (child.attrs.stroke ? 'none' : effectiveFill)}
+									/>
 								{:else if child.type === 'line'}
-									<line {...child.attrs} />
+									<line {...child.attrs} stroke={child.attrs.stroke || effectiveStroke} />
 								{/if}
 							{/each}
 						{/if}

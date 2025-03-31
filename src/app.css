@@ -79,4 +79,8 @@ body {
     .modal-box {
         @apply p-[1.3rem] lg:p-6;
     }
+
+    .btn-close {
+        @apply btn btn-sm aspect-square w-[32px] rounded-full border-gray-300 bg-gray-200 hover:scale-110 hover:border-gray-300 hover:bg-gray-300;
+    }
 }

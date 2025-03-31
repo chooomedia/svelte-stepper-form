@@ -78,7 +78,7 @@
 			title="Zahlungsfehler"
 			subtitle={$modalStore.data?.error || 'Ein Fehler ist aufgetreten'}
 			type="error"
-			size="lg"
+			size="xl"
 		>
 			<ErrorContent
 				error={$modalStore.data?.error || 'Ein Fehler ist aufgetreten'}
@@ -96,8 +96,8 @@
 			isOpen={true}
 			onClose={() => modalStore.close()}
 			title="Bestätigung"
-			type="warning"
-			size="md"
+			type="error"
+			size="xl"
 		>
 			<ConfirmContent
 				message={$modalStore.data?.message || 'Möchtest du wirklich fortfahren?'}
