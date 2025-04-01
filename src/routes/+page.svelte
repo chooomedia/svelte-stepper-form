@@ -81,15 +81,15 @@
 
 	// Function to handle image option selection
 	function handleImageOptionSelect(fieldName: string, value: string | string[]) {
-		// Update form data with the value
+		// Formularwerte aktualisieren
 		updateFormField(fieldName, value);
 		$form[fieldName] = value;
 
-		// Log selection information for debugging
-		console.log(`Selection for ${fieldName}:`, value);
+		// Navigationslogik vereinfachen
 
-		// For single selection, advance immediately
+		// Für Einzelauswahl direkt weiter
 		if (!Array.isArray(value)) {
+			console.log(`Einfachauswahl für ${fieldName}: ${value} - navigiere weiter`);
 			setTimeout(() => {
 				stepperStore.markStepValid($stepperStore.current.index);
 				stepperStore.nextStep();
@@ -97,22 +97,21 @@
 			return;
 		}
 
-		// For multiple selection, check if the countdown is running
-		// @ts-ignore - Check for our custom property
-		if (Array.isArray(value) && value._isCountdownRunning) {
-			// This is just a selection update, don't navigate yet
-			console.log(`Selection update for ${fieldName} - countdown running`);
-			return;
-		}
+		// Für Mehrfachauswahl: Prüfen, ob es ein Navigationsbefehl ist
+		if (Array.isArray(value) && value.includes('__NAVIGATE__')) {
+			// Navigationsmarker entfernen und Werte aktualisieren
+			const cleanValues = value.filter((v) => v !== '__NAVIGATE__');
+			updateFormField(fieldName, cleanValues);
+			$form[fieldName] = cleanValues;
 
-		// If we get here with an array without the flag, it means
-		// the countdown has completed and we should navigate
-		if (Array.isArray(value)) {
-			console.log(`Countdown complete for ${fieldName} - advancing to next step`);
+			console.log(`Countdown abgelaufen für ${fieldName} - navigiere weiter`);
 			setTimeout(() => {
 				stepperStore.markStepValid($stepperStore.current.index);
 				stepperStore.nextStep();
 			}, 300);
+		} else {
+			// Nur Auswahl aktualisieren, nicht navigieren
+			console.log(`Auswahl aktualisiert für ${fieldName} - warte auf Countdown`);
 		}
 	}
 
@@ -201,7 +200,7 @@
 	<!-- Step Content -->
 	<div class="form-wrapper">
 		<!-- Dynamic step content based on current step -->
-		<h2 class="mb-3 text-center text-xl font-semibold text-secondary-700">
+		<h2 class="mb-1 text-center text-xl font-semibold text-secondary-700">
 			{#if $stepperStore.current.index === 12}
 				{$stepperStore.current.description}
 				{#if $formData?.company_url}

@@ -205,7 +205,7 @@
 	{/if}
 
 	<div
-		class="grid grid-cols-2 grid-rows-2 gap-4 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:grid-rows-1"
+		class="grid grid-cols-2 grid-rows-2 gap-4 pt-2 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:grid-rows-1"
 	>
 		{#each options as option}
 			<button
