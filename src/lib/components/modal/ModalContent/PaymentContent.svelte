@@ -434,7 +434,7 @@
 	<div class="mb-1 space-y-3">
 		<!-- PayPal Input -->
 		<label
-			class="form-input group cursor-pointer bg-blue-50 ring-2 ring-blue-500"
+			class="form-input group cursor-pointer bg-primary-50 ring-2 ring-primary"
 			for="payment-paypal"
 		>
 			<div class="flex items-center">
@@ -448,7 +448,7 @@
 						onchange={() => handlePaymentMethodChange('paypal')}
 					/>
 					<div
-						class="absolute inset-0 rounded-md border-2 border-blue-500 bg-blue-500 transition-all"
+						class="absolute inset-0 rounded-md border-2 border-primary bg-primary transition-all"
 					>
 						<svg
 							class="absolute inset-0 m-auto h-4 w-4 text-white"

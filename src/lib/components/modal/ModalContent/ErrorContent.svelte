@@ -39,7 +39,7 @@
 
 	<p class="mt-6 text-sm text-gray-500">
 		Bei weiteren Problemen wende Dich bitte an unseren
-		<a href="mailto:support@digitalpusher.de" class="text-blue-600 hover:underline">
+		<a href="mailto:support@digitalpusher.de" class="text-primary-600 hover:underline">
 			Kundensupport
 		</a>.
 	</p>

@@ -11,29 +11,59 @@ const imageOptionSchema = z.object({
 export type ImageOption = z.infer<typeof imageOptionSchema>;
 
 export const baseFormSchema = z.object({
-	// Required fields for image options
-	visibility: z.string({ required_error: 'Bitte wähle aus, wo Dein Unternehmen zu finden ist' }),
+	// Fields with multiple selection support
+	visibility: z
+		.union([
+			z.string({ required_error: 'Bitte wähle aus, wo Dein Unternehmen zu finden ist' }),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
+		])
+		.default(''),
 	advertising_frequency: z
-		.string({ required_error: 'Bitte wähle die Werbefrequenz aus' })
+		.union([
+			z.string({ required_error: 'Bitte wähle die Werbefrequenz aus' }),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Werbefrequenz aus')
+		])
 		.optional(),
-	goals: z.string({ required_error: 'Bitte wähle Dein Hauptziel aus' }).optional(),
+	goals: z
+		.union([
+			z.string({ required_error: 'Bitte wähle Dein Hauptziel aus' }),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens ein Ziel aus')
+		])
+		.optional(),
 	campaign_management: z
-		.string({ required_error: 'Bitte wähle aus, wer die Werbung betreuen soll' })
+		.union([
+			z.string({ required_error: 'Bitte wähle aus, wer die Werbung betreuen soll' }),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
+		])
 		.optional(),
 	online_reviews: z
-		.string({ required_error: 'Bitte angeben wie durchschnittlich Deine Online-Bewertungen sind' })
+		.union([
+			z.string({
+				required_error: 'Bitte angeben wie durchschnittlich Deine Online-Bewertungen sind'
+			}),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
+		])
 		.optional(),
 	previous_campaigns: z
-		.string({ required_error: 'Bitte angeben, ob bereits Onlinewerbung geschaltet wurde' })
+		.union([
+			z.string({ required_error: 'Bitte angeben, ob bereits Onlinewerbung geschaltet wurde' }),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
+		])
 		.optional(),
 	business_phase: z
-		.string({ required_error: 'Bitte wählen Deine Unternehmensphase aus' })
+		.union([
+			z.string({ required_error: 'Bitte wählen Deine Unternehmensphase aus' }),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Phase aus')
+		])
 		.optional(),
 	implementation_time: z
-		.string({ required_error: 'Bitte wähle den gewünschten Implementierungszeitraum' })
+		.union([
+			z.string({ required_error: 'Bitte wähle den gewünschten Implementierungszeitraum' }),
+			z.array(z.string()).min(1, 'Bitte wähle mindestens einen Zeitraum aus')
+		])
 		.optional(),
 
-	// Company and contact details
+	// Company and contact details (unchanged)
 	company_name: z
 		.string({ required_error: 'Unternehmensname wird benötigt' })
 		.min(2, 'Name muss mindestens 2 Zeichen lang sein'),
@@ -158,7 +188,7 @@ export const formOptions = {
 			value: 'social_media',
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-social-media-facebook-insta-linkedin-0.png',
-			description: 'Präsenz in sozialen Medien',
+			description: 'Präsenz Facebook & Co.',
 			weight: 10
 		},
 		{
@@ -184,7 +214,7 @@ export const formOptions = {
 			value: 'weekly',
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-lieferintervall-werbung-woechentlich-1.png',
-			description: 'Regelmäßige wöchentliche Updates',
+			description: 'Wöchentliche Updates',
 			weight: 7
 		},
 		{
@@ -270,7 +300,7 @@ export const formOptions = {
 			value: 'positive',
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-positive-kundenbewertungen-4.png',
-			description: 'Überwiegend gute Bewertungen',
+			description: 'Gute Bewertungen',
 			weight: 7
 		},
 		{
@@ -286,7 +316,7 @@ export const formOptions = {
 			value: 'none',
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-hat-noch-keine-werbung-online-geschaltet-5.png',
-			description: 'Keine Bewertungen vorhanden',
+			description: 'Keine Bewertungen',
 			weight: 1
 		}
 	],
@@ -346,8 +376,8 @@ export const formOptions = {
 			value: 'family_business',
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmensphase-mehrgenerationen-familienbetrieb-6.png',
-			description: 'Traditionelles Familienunternehmen',
-			weight: 10
+			description: 'Familienunternehmen',
+			weight: 8
 		}
 	],
 	implementation_time: [
@@ -356,7 +386,7 @@ export const formOptions = {
 			value: 'immediate',
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-sehr-kurzfristige-umsetzungszeit-7.png',
-			description: 'Schnellstmögliche Umsetzung',
+			description: 'Blitzschnelle Umsetzung',
 			weight: 3
 		},
 		{

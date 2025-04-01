@@ -301,19 +301,19 @@
 	<!-- Next Steps -->
 	{#if showNextSteps}
 		<div
-			class="mb-8 rounded-lg border border-blue-100 bg-blue-50 p-4"
+			class="mb-8 rounded-lg border border-primary-100 bg-blue-50 p-4"
 			in:fly={{ y: 20, duration: 500 }}
 		>
-			<h4 class="mb-3 font-medium text-blue-700">Deine nächsten Schritte:</h4>
+			<h4 class="mb-3 font-medium text-primary-700">Deine nächsten Schritte:</h4>
 			<ul class="space-y-3">
 				{#each nextSteps as step, i}
 					<li class="flex items-start" in:fly={{ x: -20, duration: 400, delay: 200 * i }}>
 						<div
-							class="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-200 text-xs font-bold text-blue-700"
+							class="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary-200 text-xs font-bold text-primary-700"
 						>
 							{i + 1}
 						</div>
-						<span class="text-sm text-blue-700">{step}</span>
+						<span class="text-sm text-primary-700">{step}</span>
 					</li>
 				{/each}
 			</ul>
@@ -377,7 +377,10 @@
 			</p>
 			<p class="text-sm text-gray-500">
 				Fragen? Kontaktiere unseren
-				<a href="mailto:support@digitalpusher.de" class="font-medium text-blue-600 hover:underline">
+				<a
+					href="mailto:support@digitalpusher.de"
+					class="font-medium text-primary-600 hover:underline"
+				>
 					Kundensupport
 				</a>
 			</p>
@@ -403,7 +406,7 @@
 				</button>
 			{/if}
 			<button
-				class="hover:bg-secondary-900 btn btn-outline flex items-center justify-center gap-2"
+				class="btn btn-outline flex items-center justify-center gap-2 hover:bg-secondary-900"
 				on:click={() => trackEvent('share_clicked')}
 			>
 				<Icon name="share" size={20} />

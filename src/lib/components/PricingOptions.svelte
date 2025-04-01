@@ -705,7 +705,7 @@
 
 	<!-- Discount Banner (animated) -->
 	<div
-		class="discount-banner mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-secondary-600 to-primary-600 shadow-xl transition-all duration-700"
+		class="discount-banner mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 shadow-xl transition-all duration-700"
 		class:opacity-0={!sectionsInView.discountBanner}
 		class:opacity-100={sectionsInView.discountBanner}
 		class:scale-95={!sectionsInView.discountBanner}

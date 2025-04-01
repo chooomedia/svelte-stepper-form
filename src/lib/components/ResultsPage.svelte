@@ -425,7 +425,7 @@
 		</div>
 
 		<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
-			<h3 class="mb-4 flex items-center text-xl font-bold">
+			<h3 class="mb-4 flex items-center text-xl font-bold text-primary-700">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					class="mr-2 h-6 w-6"
@@ -447,7 +447,7 @@
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="mr-2 h-5 w-5 flex-shrink-0 text-blue-500"
+							class="mr-2 h-5 w-5 flex-shrink-0 text-primary-700"
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"

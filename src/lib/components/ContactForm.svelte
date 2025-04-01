@@ -319,7 +319,7 @@
 			<div class="ml-3 text-sm">
 				<label for="privacy_agreement" class="form-label"> Datenschutzerklärung * </label>
 				<p class="text-gray-500">
-					Ich stimme der <a href="/datenschutz" class="text-blue-600 hover:underline"
+					Ich stimme der <a href="/datenschutz" class="text-primary-600 hover:underline"
 						>Datenschutzerklärung</a
 					> zu.
 				</p>
@@ -343,7 +343,7 @@
 				<label for="marketing_consent" class="form-label"> Newsletter (optional) </label>
 				<p class="text-gray-500">
 					Ich möchte den Newsletter erhalten und akzeptiere die
-					<a href="/datenschutz#newsletter" class="text-blue-600 hover:underline">
+					<a href="/datenschutz#newsletter" class="text-primary-600 hover:underline">
 						Newsletter-Bestimmungen
 					</a>.
 				</p>

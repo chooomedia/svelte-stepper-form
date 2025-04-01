@@ -80,15 +80,29 @@
 	}
 
 	// Function to handle image option selection
-	function handleImageOptionSelect(fieldName: string, value: string) {
+	function handleImageOptionSelect(fieldName: string, value: string | string[]) {
+		// Update form data with the value (could be string or string[])
 		updateFormField(fieldName, value);
 		$form[fieldName] = value;
 
-		// Automatically move to next step on selection
-		setTimeout(() => {
-			stepperStore.markStepValid($stepperStore.current.index);
-			stepperStore.nextStep();
-		}, 500);
+		// Log selection information for debugging
+		if (Array.isArray(value)) {
+			console.log(`Multiple selections for ${fieldName}:`, value);
+		} else {
+			console.log(`Single selection for ${fieldName}:`, value);
+		}
+
+		// Check if we should automatically advance
+		const shouldAdvance = Array.isArray(value)
+			? value.length > 0 // In multiple mode, advance if at least one option is selected
+			: value !== ''; // In single mode, advance if value is not empty
+
+		if (shouldAdvance) {
+			setTimeout(() => {
+				stepperStore.markStepValid($stepperStore.current.index);
+				stepperStore.nextStep();
+			}, 500);
+		}
 	}
 
 	// Restart assessment
@@ -199,6 +213,8 @@
 							options={formOptions.visibility}
 							error={$errors.visibility}
 							onSelect={(value) => handleImageOptionSelect('visibility', value)}
+							multiple={true}
+							maxSelections={4}
 						/>
 
 						<!-- Step 2: Website URL -->
@@ -222,6 +238,7 @@
 							options={formOptions.advertising_frequency}
 							error={$errors.advertising_frequency}
 							onSelect={(value) => handleImageOptionSelect('advertising_frequency', value)}
+							multiple={false}
 						/>
 
 						<!-- Step 4: Goals -->
@@ -231,6 +248,7 @@
 							options={formOptions.goals}
 							error={$errors.goals}
 							onSelect={(value) => handleImageOptionSelect('goals', value)}
+							multiple={false}
 						/>
 
 						<!-- Step 5: Campaign Management -->
@@ -240,6 +258,7 @@
 							options={formOptions.campaign_management}
 							error={$errors.campaign_management}
 							onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
+							multiple={false}
 						/>
 
 						<!-- Step 6: Online Reviews -->
@@ -249,6 +268,7 @@
 							options={formOptions.online_reviews}
 							error={$errors.online_reviews}
 							onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
+							multiple={false}
 						/>
 
 						<!-- Step 7: Previous Campaigns -->
@@ -258,6 +278,7 @@
 							options={formOptions.previous_campaigns}
 							error={$errors.previous_campaigns}
 							onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
+							multiple={false}
 						/>
 
 						<!-- Step 8: Business Phase -->
@@ -267,6 +288,7 @@
 							options={formOptions.business_phase}
 							error={$errors.business_phase}
 							onSelect={(value) => handleImageOptionSelect('business_phase', value)}
+							multiple={false}
 						/>
 
 						<!-- Step 9: Implementation Time -->
@@ -276,6 +298,7 @@
 							options={formOptions.implementation_time}
 							error={$errors.implementation_time}
 							onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
+							multiple={false}
 						/>
 
 						<!-- Step 10: Company Form -->
