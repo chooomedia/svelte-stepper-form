@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { onMount, tick, onDestroy } from 'svelte';
+	import { onMount, tick, onDestroy, createEventDispatcher } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import type { ImageOption as ImageOptionType } from '$lib/schema';
+
+	// Explicit event dispatcher for navigation events
+	const dispatch = createEventDispatcher<{
+		navigate: { fieldName: string; values: string[] };
+	}>();
 
 	const {
 		value = '',
@@ -10,7 +15,8 @@
 		onSelect = undefined,
 		multiple = false,
 		maxSelections = undefined,
-		countdownTime = 7 // Default countdown time in seconds
+		countdownTime = 3,
+		fieldName = ''
 	} = $props<{
 		value: string | string[];
 		options: ImageOptionType[];
@@ -19,6 +25,7 @@
 		multiple?: boolean;
 		maxSelections?: number;
 		countdownTime?: number;
+		fieldName?: string;
 	}>();
 
 	// Initialize the selected values as an array when in multiple mode
@@ -30,9 +37,9 @@
 	let showCountdown = $state(false);
 	let countdownSeconds = $state(countdownTime);
 	let countdownInterval: number | undefined;
-	let advanceTimeout: number | undefined;
 	let selectionCount = $state(0);
 	let userInteracted = $state(false);
+	let navigationTriggered = $state(false);
 
 	// Handle selection for both single and multiple modes
 	function handleOptionSelect(optionValue: string): void {
@@ -41,8 +48,6 @@
 
 		// Clear any existing timeout and interval
 		resetTimers();
-
-		let newValue: string | string[];
 
 		if (multiple) {
 			// If this option is already selected, remove it
@@ -62,14 +67,8 @@
 			selectionCount = selectedValues.length;
 
 			// Call the onSelect callback with array value
-			newValue = [...selectedValues];
 			if (onSelect) {
-				// For multiple selection, we add a special flag to the array
-				// to indicate this is just a selection update, not a navigation trigger
-				const valueWithFlag = [...newValue];
-				// @ts-ignore - Adding custom property to array
-				valueWithFlag._isCountdownRunning = true;
-				onSelect(valueWithFlag);
+				onSelect([...selectedValues]);
 			}
 
 			// Only start countdown if there's at least one selection
@@ -80,10 +79,28 @@
 				showCountdown = false;
 			}
 		} else {
-			// Single selection mode - immediately select
-			newValue = optionValue;
+			// Single selection mode - immediately select and emit navigation event
 			if (onSelect) {
-				onSelect(newValue);
+				onSelect(optionValue);
+			}
+
+			// For single selection, we immediately dispatch a navigation event
+			if (fieldName && !navigationTriggered) {
+				navigationTriggered = true;
+				console.log(
+					`Single selection: Dispatching navigate event for ${fieldName} with value:`,
+					optionValue
+				);
+				setTimeout(() => {
+					dispatch('navigate', { fieldName, values: [optionValue] });
+
+					// Debug event for global monitoring
+					window.dispatchEvent(
+						new CustomEvent('debugNavigation', {
+							detail: { fieldName, values: [optionValue] }
+						})
+					);
+				}, 100);
 			}
 		}
 	}
@@ -93,34 +110,36 @@
 		// Reset countdown
 		countdownSeconds = countdownTime;
 		showCountdown = true;
+		navigationTriggered = false;
 
 		// Clear existing timer if it exists
 		resetTimers();
 
-		// Start interval to update countdown display
+		// Start interval to update countdown display and handle navigation
 		countdownInterval = setInterval(() => {
 			countdownSeconds--;
 
+			// When countdown reaches 0, trigger navigation
 			if (countdownSeconds <= 0) {
 				resetTimers();
+
+				// Trigger navigation if we have selections
+				if (selectedValues.length > 0 && fieldName && !navigationTriggered) {
+					navigationTriggered = true;
+					console.log(`Countdown reached 0 for ${fieldName}, dispatching navigate event`);
+
+					// Dispatch the event
+					dispatch('navigate', { fieldName, values: [...selectedValues] });
+
+					// Debug event for global monitoring
+					window.dispatchEvent(
+						new CustomEvent('debugNavigation', {
+							detail: { fieldName, values: selectedValues }
+						})
+					);
+				}
 			}
 		}, 1000);
-
-		// Start timeout to advance after countdownTime seconds
-		advanceTimeout = setTimeout(() => {
-			// Hide countdown notification
-			showCountdown = false;
-
-			// After countdown ends, trigger the parent's onSelect to navigate
-			// but without the custom flag
-			if (onSelect && selectedValues.length > 0) {
-				setTimeout(() => {
-					// Here's the key: we don't include the flag, so the parent
-					// component knows to trigger navigation
-					onSelect([...selectedValues]);
-				}, 300); // Short delay after hiding the toast
-			}
-		}, countdownTime * 1000);
 	}
 
 	// Reset all timers
@@ -128,10 +147,6 @@
 		if (countdownInterval) {
 			clearInterval(countdownInterval);
 			countdownInterval = undefined;
-		}
-		if (advanceTimeout) {
-			clearTimeout(advanceTimeout);
-			advanceTimeout = undefined;
 		}
 	}
 
@@ -173,7 +188,17 @@
 			startCountdown();
 		}
 
+		// Add a global debug listener
+		const debugHandler = (e: CustomEvent) => {
+			console.log('Global debug navigation event detected:', e.detail);
+		};
+		window.addEventListener('debugNavigation', debugHandler);
+
 		await tick();
+
+		return () => {
+			window.removeEventListener('debugNavigation', debugHandler);
+		};
 	});
 
 	// Cleanup

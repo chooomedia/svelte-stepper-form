@@ -79,39 +79,46 @@
 		}
 	}
 
+	// Aktualisierter Event-Handler für ImageOption navigation events
+	function handleImageOptionNavigation(
+		event: CustomEvent<{ fieldName: string; values: string[] }>
+	) {
+		const { fieldName, values } = event.detail;
+		console.log(`RECEIVED Navigation event for ${fieldName} with values:`, values);
+
+		// Aktualisiere das Formular
+		updateFormField(fieldName, values);
+		$form[fieldName] = values;
+
+		// Navigiere zum nächsten Schritt - direkt ohne setTimeout
+		console.log(`Navigating to next step from ${fieldName}`);
+		stepperStore.markStepValid($stepperStore.current.index);
+
+		// Explizit die Schrittnummer für die Konsole ausgeben
+		console.log(`Current step before navigation: ${$stepperStore.current.index}`);
+
+		// Zum nächsten Schritt gehen
+		stepperStore.nextStep();
+
+		// Nach der Navigation die neue Schrittnummer ausgeben
+		setTimeout(() => {
+			console.log(`Current step after navigation: ${$stepperStore.current.index}`);
+		}, 0);
+	}
+
 	// Function to handle image option selection
 	function handleImageOptionSelect(fieldName: string, value: string | string[]) {
 		// Formularwerte aktualisieren
 		updateFormField(fieldName, value);
 		$form[fieldName] = value;
 
-		// Navigationslogik vereinfachen
-
-		// Für Einzelauswahl direkt weiter
+		// Bei Einzelauswahl direkt weiterleiten
 		if (!Array.isArray(value)) {
 			console.log(`Einfachauswahl für ${fieldName}: ${value} - navigiere weiter`);
 			setTimeout(() => {
 				stepperStore.markStepValid($stepperStore.current.index);
 				stepperStore.nextStep();
 			}, 500);
-			return;
-		}
-
-		// Für Mehrfachauswahl: Prüfen, ob es ein Navigationsbefehl ist
-		if (Array.isArray(value) && value.includes('__NAVIGATE__')) {
-			// Navigationsmarker entfernen und Werte aktualisieren
-			const cleanValues = value.filter((v) => v !== '__NAVIGATE__');
-			updateFormField(fieldName, cleanValues);
-			$form[fieldName] = cleanValues;
-
-			console.log(`Countdown abgelaufen für ${fieldName} - navigiere weiter`);
-			setTimeout(() => {
-				stepperStore.markStepValid($stepperStore.current.index);
-				stepperStore.nextStep();
-			}, 300);
-		} else {
-			// Nur Auswahl aktualisieren, nicht navigieren
-			console.log(`Auswahl aktualisiert für ${fieldName} - warte auf Countdown`);
 		}
 	}
 
@@ -223,6 +230,8 @@
 							options={formOptions.visibility}
 							error={$errors.visibility}
 							onSelect={(value) => handleImageOptionSelect('visibility', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="visibility"
 							multiple={true}
 							maxSelections={4}
 						/>
@@ -248,6 +257,8 @@
 							options={formOptions.advertising_frequency}
 							error={$errors.advertising_frequency}
 							onSelect={(value) => handleImageOptionSelect('advertising_frequency', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="advertising_frequency"
 							multiple={false}
 						/>
 
@@ -258,6 +269,8 @@
 							options={formOptions.goals}
 							error={$errors.goals}
 							onSelect={(value) => handleImageOptionSelect('goals', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="goals"
 							multiple={false}
 						/>
 
@@ -268,6 +281,8 @@
 							options={formOptions.campaign_management}
 							error={$errors.campaign_management}
 							onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="campaign_management"
 							multiple={false}
 						/>
 
@@ -278,6 +293,8 @@
 							options={formOptions.online_reviews}
 							error={$errors.online_reviews}
 							onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="online_reviews"
 							multiple={false}
 						/>
 
@@ -288,6 +305,8 @@
 							options={formOptions.previous_campaigns}
 							error={$errors.previous_campaigns}
 							onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="previous_campaigns"
 							multiple={false}
 						/>
 
@@ -298,6 +317,8 @@
 							options={formOptions.business_phase}
 							error={$errors.business_phase}
 							onSelect={(value) => handleImageOptionSelect('business_phase', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="business_phase"
 							multiple={false}
 						/>
 
@@ -308,6 +329,8 @@
 							options={formOptions.implementation_time}
 							error={$errors.implementation_time}
 							onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
+							on:navigate={handleImageOptionNavigation}
+							fieldName="implementation_time"
 							multiple={false}
 						/>
 
