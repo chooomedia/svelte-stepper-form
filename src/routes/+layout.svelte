@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import Stepper from '$lib/components/Stepper.svelte';
 	import { stepperStore } from '$lib/stores/stepperStore';
+	import { initLocale, i18n, currentLocale } from '$lib/i18n';
 	import { FORM_STEPS } from '$lib/schema';
 
 	const logoMain =
@@ -28,6 +29,7 @@
 	let parentFontFamily = 'Baron Neue';
 
 	onMount(() => {
+		initLocale();
 		isIframe = window.self !== window.top;
 		isEmbedded = isIframe;
 
@@ -141,27 +143,25 @@
 	function navigateHome() {
 		stepperStore.goToStep(1);
 	}
+
+	function changeLanguage(locale: string) {
+		currentLocale.set(locale as any);
+	}
 </script>
 
 <svelte:head>
-	<title>Digital Marketing Assessment | Digital Pusher</title>
-	<meta
-		name="description"
-		content="Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher."
-	/>
-	<meta property="og:title" content="Digital Marketing Assessment | Digital Pusher" />
-	<meta
-		property="og:description"
-		content="Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher."
-	/>
+	<title>{$i18n.meta.title} | Digital Pusher</title>
+	<meta name="description" content={$i18n.meta.description} />
+	<meta property="og:title" content={$i18n.meta.title} />
+	<meta property="og:description" content={$i18n.meta.description} />
 	<meta property="og:image" content="https://digitalpusher.de/og-image.jpg" />
 	<meta property="og:url" content={$page.url.href} />
 	<meta property="og:type" content="website" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<link rel="canonical" href={$page.url.href} />
 	<meta name="robots" content="index, follow" />
-	<meta name="language" content="de" />
-	<link rel="alternate" hreflang="de" href={$page.url.href} />
+	<meta name="language" content={$currentLocale} />
+	<link rel="alternate" hreflang={$currentLocale} href={$page.url.href} />
 </svelte:head>
 
 <!-- Layout HTML remains largely unchanged, but with improved Stepper integration -->
@@ -183,9 +183,28 @@
 					>
 						<span itemprop="logo">{@html logoMain}</span>
 						<span class="sr-only text-xl font-semibold text-gray-900" itemprop="name">
-							Digital Pusher - Digitales Marketing Assessment
+							Digital Pusher - {$i18n.meta.title}
 						</span>
 					</a>
+				</div>
+
+				<div class="flex items-center space-x-2">
+					<button
+						class="rounded-md px-2 py-1 text-sm {$currentLocale === 'de'
+							? 'bg-primary-100 text-primary-800'
+							: 'text-gray-600 hover:bg-gray-100'}"
+						on:click={() => changeLanguage('de')}
+					>
+						DE
+					</button>
+					<button
+						class="rounded-md px-2 py-1 text-sm {$currentLocale === 'en'
+							? 'bg-primary-100 text-primary-800'
+							: 'text-gray-600 hover:bg-gray-100'}"
+						on:click={() => changeLanguage('en')}
+					>
+						EN
+					</button>
 				</div>
 			</nav>
 

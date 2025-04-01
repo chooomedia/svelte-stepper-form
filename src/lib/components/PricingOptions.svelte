@@ -5,6 +5,7 @@
 	import { browser } from '$app/environment';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import { ModalController, modalStore } from '$lib/components/modal';
+	import { currencyStore } from '$lib/stores/currencyStore';
 
 	interface Props {
 		score: number;
@@ -475,17 +476,13 @@
 						{/if}
 
 						<span class="ml-1 text-3xl font-bold text-gray-900">
-							{paymentType === 'monatlich'
-								? plan.price.toFixed(2)
-								: paymentType === 'einmalig'
-									? (plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92).toFixed(2)
-									: (
-											plan.price *
-											30 *
-											parseInt(plan.name.split('-')[0]) *
-											longtimeYears *
-											0.8
-										).toFixed(2)}€
+							{currencyStore.formatPrice(
+								paymentType === 'monatlich'
+									? plan.price
+									: paymentType === 'einmalig'
+										? plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92
+										: plan.price * 30 * parseInt(plan.name.split('-')[0]) * longtimeYears * 0.8
+							)}
 						</span>
 						<span class="text-sm text-gray-500">
 							{paymentType === 'monatlich'

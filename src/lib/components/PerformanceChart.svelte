@@ -4,10 +4,12 @@
 	import { cubicOut } from 'svelte/easing';
 	import Chart from 'chart.js/auto';
 	import { scoreStore } from '$lib/utils/scoring';
+	import { i18n } from '$lib/i18n';
 
 	type Metric = {
 		label: string;
 		value: number;
+		improvedValue: number;
 		color: string;
 		category: string;
 	};
@@ -18,19 +20,44 @@
 		auditData?: any;
 		animateOnResultLoad?: boolean;
 		chartHeight?: string;
+		showImprovement?: boolean;
 	}
 
 	let {
 		score = 50,
 		auditData = null,
 		animateOnResultLoad = false,
-		chartHeight = '456px'
+		chartHeight = '456px',
+		showImprovement = false
 	} = $props<Props>();
 
 	// DOM references
 	let chartContainer: HTMLElement;
 	let chartCanvas: HTMLCanvasElement;
 	let chart: Chart;
+
+	const seoLabel = $derived($i18n.schema.metrics?.seo?.label || 'SEO');
+	const performanceLabel = $derived($i18n.schema.metrics?.performance?.label || 'Performance');
+	const accessibilityLabel = $derived(
+		$i18n.schema.metrics?.accessibility?.label || 'Zugänglichkeit'
+	);
+	const bestPracticesLabel = $derived(
+		$i18n.schema.metrics?.bestPractices?.label || 'Best Practices'
+	);
+	const contentLabel = $derived($i18n.schema.metrics?.content?.label || 'Content');
+	const securityLabel = $derived($i18n.schema.metrics?.security?.label || 'Sicherheit');
+
+	// Labels für die Legende
+	const currentValueLabel = $derived($i18n.schema.metrics?.currentValue || 'Aktueller Wert');
+	const improvedValueLabel = $derived($i18n.schema.metrics?.improvedValue || 'Verbesserter Wert');
+	const averageLabel = $derived($i18n.schema.metrics?.average || 'Durchschnitt');
+	const optimalLabel = $derived($i18n.schema.metrics?.optimal || 'Optimalwert');
+	const hideImprovementLabel = $derived(
+		$i18n.schema.metrics?.hideImprovement || 'Verbesserungen ausblenden'
+	);
+	const showImprovementLabel = $derived(
+		$i18n.schema.metrics?.showImprovement || 'Verbesserungen anzeigen'
+	);
 
 	// State variables
 	let isAnimating = $state(true);
@@ -40,14 +67,16 @@
 	let effectiveScore = $state(score);
 	let metrics = $state<Metric[]>([]);
 	let averageValue = $state(0);
-	let needsRecalculation = $state(false); // Flag to control recalculations
+	let improvedAverageValue = $state(0);
+	let needsRecalculation = $state(false);
+	let showingImprovement = $state(showImprovement);
 
 	// Animation control
 	const animationTween = tweened(1, { duration: 1500, easing: cubicOut });
 
 	// Subscribe to the score store for consistent data
 	onMount(() => {
-		console.log('PerformanceChart mounted with props:', { score, auditData });
+		console.log('PerformanceChart mounted with props:', { score, auditData, showImprovement });
 
 		const unsubscribe = scoreStore.subscribe((state) => {
 			console.log('ScoreStore updated:', state);
@@ -97,40 +126,47 @@
 		const clampedScore = Math.min(Math.max(effectiveScore || 50, 0), 100);
 
 		// Create base metrics with dynamic values based on score
+		// Now including improvedValue for each metric
 		const baseMetrics: Metric[] = [
 			{
-				label: 'SEO',
+				label: seoLabel,
 				value: Math.round(clampedScore * 0.9),
+				improvedValue: Math.min(95, Math.round(clampedScore * 0.9 * 1.5)), // Improved value capped at 95
 				color: '#4CAF50',
 				category: 'lighthouse'
 			},
 			{
-				label: 'Performance',
+				label: performanceLabel,
 				value: Math.round(clampedScore * 0.8),
+				improvedValue: Math.min(95, Math.round(clampedScore * 0.8 * 1.6)),
 				color: '#2196F3',
 				category: 'lighthouse'
 			},
 			{
-				label: 'Zugänglichkeit',
+				label: accessibilityLabel,
 				value: Math.round(clampedScore * 0.7),
+				improvedValue: Math.min(95, Math.round(clampedScore * 0.7 * 1.7)),
 				color: '#FF9800',
 				category: 'lighthouse'
 			},
 			{
-				label: 'Best Practices',
+				label: bestPracticesLabel,
 				value: Math.round(clampedScore * 0.85),
+				improvedValue: Math.min(95, Math.round(clampedScore * 0.85 * 1.5)),
 				color: '#F44336',
 				category: 'lighthouse'
 			},
 			{
-				label: 'Content',
+				label: contentLabel,
 				value: Math.round(clampedScore * 0.75),
+				improvedValue: Math.min(95, Math.round(clampedScore * 0.75 * 1.6)),
 				color: '#9C27B0',
 				category: 'content'
 			},
 			{
-				label: 'Sicherheit',
+				label: securityLabel,
 				value: Math.round(clampedScore * 0.95),
+				improvedValue: Math.min(98, Math.round(clampedScore * 0.95 * 1.2)),
 				color: '#00BCD4',
 				category: 'security'
 			}
@@ -149,37 +185,21 @@
 
 					// Map metrics back to our baseMetrics array
 					baseMetrics.forEach((metric) => {
-						switch (metric.label) {
-							case 'SEO':
-								if (dataToUse.metrics.seo !== undefined) {
-									metric.value = dataToUse.metrics.seo;
-								}
-								break;
-							case 'Performance':
-								if (dataToUse.metrics.performance !== undefined) {
-									metric.value = dataToUse.metrics.performance;
-								}
-								break;
-							case 'Zugänglichkeit':
-								if (dataToUse.metrics.accessibility !== undefined) {
-									metric.value = dataToUse.metrics.accessibility;
-								}
-								break;
-							case 'Best Practices':
-								if (dataToUse.metrics.bestPractices !== undefined) {
-									metric.value = dataToUse.metrics.bestPractices;
-								}
-								break;
-							case 'Content':
-								if (dataToUse.metrics.content !== undefined) {
-									metric.value = dataToUse.metrics.content;
-								}
-								break;
-							case 'Sicherheit':
-								if (dataToUse.metrics.security !== undefined) {
-									metric.value = dataToUse.metrics.security;
-								}
-								break;
+						// Wir vereinfachen die Zuordnung durch Verwendung von Lowercase
+						const metricKey = metric.label
+							.toLowerCase()
+							.replace(/ä/g, 'a')
+							.replace(/ü/g, 'u')
+							.replace(/ö/g, 'o')
+							.replace(/\s+/g, '');
+
+						if (dataToUse.metrics[metricKey] !== undefined) {
+							metric.value = dataToUse.metrics[metricKey];
+							// Auch die verbesserten Werte anpassen - min. 20% besser, max. 95 Punkte
+							metric.improvedValue = Math.min(
+								95,
+								Math.round(metric.value * (1 + Math.random() * 0.3 + 0.2))
+							);
 						}
 					});
 				}
@@ -192,11 +212,22 @@
 					// Update metrics from lighthouse data
 					baseMetrics.forEach((metric) => {
 						if (metric.category === 'lighthouse') {
-							const categoryKey = metric.label.toLowerCase().replace(/ä/g, 'a').replace(/ü/g, 'u');
+							const categoryKey = metric.label
+								.toLowerCase()
+								.replace(/ä/g, 'a')
+								.replace(/ü/g, 'u')
+								.replace(/ö/g, 'o')
+								.replace(/\s+/g, '');
+
 							const score = categories[categoryKey]?.score;
 
 							if (typeof score === 'number') {
-								metric.value = Math.round(score * 100);
+								const metricValue = Math.round(score * 100);
+								metric.value = metricValue;
+								metric.improvedValue = Math.min(
+									95,
+									Math.round(metricValue * (1 + Math.random() * 0.3 + 0.2))
+								);
 								console.log(`Updated ${metric.label} to ${metric.value} from lighthouse data`);
 							}
 						}
@@ -209,23 +240,33 @@
 
 					// Map relevant detailed scores to our metrics
 					if (dataToUse.detailed_scores.title) {
-						const seoMetric = baseMetrics.find((m) => m.label === 'SEO');
+						const seoMetric = baseMetrics.find((m) => m.label === $i18n.schema.metrics.seo.label);
 						if (seoMetric) {
 							seoMetric.value = dataToUse.detailed_scores.title;
+							seoMetric.improvedValue = Math.min(95, Math.round(seoMetric.value * 1.4));
 						}
 					}
 
 					if (dataToUse.detailed_scores.meta_description) {
-						const contentMetric = baseMetrics.find((m) => m.label === 'Content');
+						const contentMetric = baseMetrics.find(
+							(m) => m.label === $i18n.schema.metrics.content.label
+						);
 						if (contentMetric) {
 							contentMetric.value = dataToUse.detailed_scores.meta_description;
+							contentMetric.improvedValue = Math.min(95, Math.round(contentMetric.value * 1.5));
 						}
 					}
 
 					if (dataToUse.detailed_scores.alt_attributes) {
-						const accessibilityMetric = baseMetrics.find((m) => m.label === 'Zugänglichkeit');
+						const accessibilityMetric = baseMetrics.find(
+							(m) => m.label === $i18n.schema.metrics.accessibility.label
+						);
 						if (accessibilityMetric) {
 							accessibilityMetric.value = dataToUse.detailed_scores.alt_attributes;
+							accessibilityMetric.improvedValue = Math.min(
+								95,
+								Math.round(accessibilityMetric.value * 1.6)
+							);
 						}
 					}
 				}
@@ -239,14 +280,17 @@
 		// Normalize all metric values to ensure they're in the valid range 0-100
 		metrics = baseMetrics.map((metric) => ({
 			...metric,
-			value: Math.min(Math.max(metric.value, 0), 100)
+			value: Math.min(Math.max(metric.value, 0), 100),
+			improvedValue: Math.min(Math.max(metric.improvedValue, 0), 100)
 		}));
 
-		// Calculate average
+		// Calculate averages
 		averageValue = metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length || 0;
+		improvedAverageValue =
+			metrics.reduce((acc, m) => acc + m.improvedValue, 0) / metrics.length || 0;
 
 		console.log('Final metrics:', metrics);
-		console.log('Average value:', averageValue);
+		console.log('Average values - Current:', averageValue, 'Improved:', improvedAverageValue);
 
 		// Update the chart if it exists
 		updateChartData();
@@ -276,10 +320,43 @@
 		const chartConfig = {
 			type: 'line',
 			data: {
-				labels: metrics.map((m) => m.label),
+				type: 'line',
+				data: {
+					labels: metrics.map((m) => m.label),
+					datasets: [
+						{
+							label: currentValueLabel,
+							data: metrics.map((m) => m.value * $animationTween),
+							borderColor: '#3B82F6',
+							backgroundColor: 'rgba(59, 130, 246, 0.1)',
+							tension: 0.3,
+							fill: true,
+							pointBackgroundColor: metrics.map((m) => m.color),
+							pointBorderColor: '#fff',
+							pointRadius: 5,
+							pointHoverRadius: 8
+						},
+						{
+							label: averageLabel,
+							data: metrics.map(() => averageValue),
+							borderColor: '#F59E0B',
+							borderDash: [5, 5],
+							borderWidth: 1.5,
+							pointRadius: 0
+						},
+						{
+							label: optimalLabel,
+							data: metrics.map(() => 95),
+							borderColor: '#10B981',
+							borderDash: [3, 3],
+							borderWidth: 1.5,
+							pointRadius: 0
+						}
+					]
+				},
 				datasets: [
 					{
-						label: 'Aktueller Wert',
+						label: $i18n.schema.metrics.currentValue,
 						data: metrics.map((m) => m.value * $animationTween),
 						borderColor: '#3B82F6',
 						backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -291,7 +368,7 @@
 						pointHoverRadius: 8
 					},
 					{
-						label: 'Durchschnitt',
+						label: $i18n.schema.metrics.average,
 						data: metrics.map(() => averageValue),
 						borderColor: '#F59E0B',
 						borderDash: [5, 5],
@@ -299,7 +376,7 @@
 						pointRadius: 0
 					},
 					{
-						label: 'Optimalwert',
+						label: $i18n.schema.metrics.optimal,
 						data: metrics.map(() => 95),
 						borderColor: '#10B981',
 						borderDash: [3, 3],
@@ -346,6 +423,22 @@
 			}
 		};
 
+		// Add improved values dataset if showImprovement is true
+		if (showingImprovement) {
+			chartConfig.data.datasets.splice(1, 0, {
+				label: improvedValueLabel,
+				data: metrics.map((m) => m.improvedValue * $animationTween),
+				borderColor: '#8B5CF6', // Purple color for improvement
+				backgroundColor: 'rgba(139, 92, 246, 0.1)',
+				tension: 0.3,
+				fill: true,
+				pointBackgroundColor: '#8B5CF6',
+				pointBorderColor: '#fff',
+				pointRadius: 4,
+				pointHoverRadius: 6
+			});
+		}
+
 		// Create the chart
 		chart = new Chart(ctx, chartConfig);
 		chartLoaded = true;
@@ -357,12 +450,12 @@
 	// Get benchmark value for a metric
 	function getBenchmarkValue(label: string): number {
 		const benchmarks = {
-			SEO: 75,
-			Performance: 82,
-			Zugänglichkeit: 70,
-			'Best Practices': 85,
-			Content: 78,
-			Sicherheit: 90
+			[$i18n.schema.metrics.seo.label]: 75,
+			[$i18n.schema.metrics.performance.label]: 82,
+			[$i18n.schema.metrics.accessibility.label]: 70,
+			[$i18n.schema.metrics.bestPractices.label]: 85,
+			[$i18n.schema.metrics.content.label]: 78,
+			[$i18n.schema.metrics.security.label]: 90
 		};
 
 		return benchmarks[label as keyof typeof benchmarks] || 75;
@@ -377,9 +470,53 @@
 		chart.data.labels = metrics.map((m) => m.label);
 		chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
 		chart.data.datasets[0].pointBackgroundColor = metrics.map((m) => m.color);
-		chart.data.datasets[1].data = metrics.map(() => averageValue);
+
+		// Update improved values if showing improvement
+		if (showingImprovement && chart.data.datasets.length > 1) {
+			// Check if the second dataset is the improvement dataset
+			if (chart.data.datasets[1].label === $i18n.schema.metrics.improvedValue) {
+				chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
+			}
+		}
+
+		// Update average line (will be at index 1 or 2 depending on improvement visibility)
+		const avgDatasetIndex = showingImprovement ? 2 : 1;
+		if (chart.data.datasets[avgDatasetIndex]) {
+			chart.data.datasets[avgDatasetIndex].data = metrics.map(() => averageValue);
+		}
 
 		chart.update('none');
+	}
+
+	export function toggleImprovementView(show: boolean): void {
+		if (showingImprovement === show) return;
+
+		showingImprovement = show;
+
+		if (!chart) return;
+
+		if (showingImprovement) {
+			// Add improvement dataset
+			chart.data.datasets.splice(1, 0, {
+				label: $i18n.schema.metrics.improvedValue,
+				data: metrics.map((m) => m.improvedValue * $animationTween),
+				borderColor: '#8B5CF6',
+				backgroundColor: 'rgba(139, 92, 246, 0.1)',
+				tension: 0.3,
+				fill: true,
+				pointBackgroundColor: '#8B5CF6',
+				pointBorderColor: '#fff',
+				pointRadius: 4,
+				pointHoverRadius: 6
+			});
+		} else {
+			// Remove improvement dataset
+			chart.data.datasets = chart.data.datasets.filter(
+				(dataset) => dataset.label !== $i18n.schema.metrics.improvedValue
+			);
+		}
+
+		chart.update();
 	}
 
 	// Animation sequence
@@ -400,6 +537,14 @@
 	$effect(() => {
 		if (chart && metrics.length) {
 			chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
+
+			// Update improved values if showing
+			if (showingImprovement && chart.data.datasets.length > 1) {
+				if (chart.data.datasets[1].label === $i18n.schema.metrics.improvedValue) {
+					chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
+				}
+			}
+
 			chart.update('none');
 		}
 	});
@@ -417,15 +562,23 @@
 		// Create a local copy to avoid reactivity issues
 		const currentScore = score;
 		const currentAuditData = auditData;
+		const currentShowImprovement = showImprovement;
 
-		console.log('Score or auditData changed, recalculating', { currentScore, currentAuditData });
+		console.log('Props changed, recalculating', {
+			currentScore,
+			currentAuditData,
+			currentShowImprovement
+		});
 
 		// Only update if we have meaningful changes
 		if (
 			effectiveScore !== currentScore ||
-			JSON.stringify(currentAuditData) !== JSON.stringify(storeData)
+			JSON.stringify(currentAuditData) !== JSON.stringify(storeData) ||
+			showingImprovement !== currentShowImprovement
 		) {
 			effectiveScore = currentScore;
+			showingImprovement = currentShowImprovement;
+
 			// Don't call calculateMetrics() here as it may trigger another effect
 			// Just set a flag and handle the calculation in a separate effect
 			needsRecalculation = true;
@@ -471,14 +624,14 @@
 <div class="performance-chart relative p-6">
 	<!-- Custom legend above the chart -->
 	<div class="mb-4 flex flex-wrap items-center justify-center gap-6">
-		{#each ['Aktueller Wert', 'Durchschnitt', 'Optimalwert'] as legendItem, i}
+		{#each showingImprovement ? [currentValueLabel, improvedValueLabel, averageLabel, optimalLabel] : [currentValueLabel, averageLabel, optimalLabel] as legendItem, i}
 			<div
 				class="flex cursor-pointer items-center transition-opacity hover:opacity-75"
 				on:mouseenter={() => {
 					if (chart) {
 						// Verstecke alle Linien außer der entsprechenden Linie
 						chart.data.datasets.forEach((dataset, index) => {
-							// Setze die Sichtbarkeit nach Index - 0 für "Aktueller Wert", 1 für "Durchschnitt", 2 für "Optimalwert"
+							// Setze die Sichtbarkeit nach Index
 							const isVisible = index === i;
 							chart.setDatasetVisibility(index, isVisible);
 						});
@@ -497,23 +650,75 @@
 			>
 				{#if i === 0}
 					<div class="mr-2 h-3 w-8 rounded-sm bg-blue-500 opacity-50"></div>
-					<span class="text-sm text-gray-600">Aktueller Wert</span>
-				{:else if i === 1}
+					<span class="text-sm text-gray-600">{currentValueLabel}</span>
+				{:else if i === 1 && showingImprovement}
+					<div class="mr-2 h-3 w-8 rounded-sm bg-purple-500 opacity-50"></div>
+					<span class="text-sm text-gray-600">{improvedValueLabel}</span>
+				{:else if (i === 1 && !showingImprovement) || (i === 2 && showingImprovement)}
 					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-yellow-500"></div>
-					<span class="text-sm text-gray-600">Durchschnitt ({Math.round(averageValue)})</span>
+					<span class="text-sm text-gray-600">{averageLabel} ({Math.round(averageValue)})</span>
 				{:else}
 					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-green-500"></div>
-					<span class="text-sm text-gray-600">Optimalwert (95)</span>
+					<span class="text-sm text-gray-600">{optimalLabel} (95)</span>
 				{/if}
 			</div>
 		{/each}
+	</div>
+
+	<!-- Toggle improvement view button -->
+	<div class="mb-4 flex justify-center">
+		<button
+			class="flex items-center rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800 transition-colors hover:bg-primary-200 {showingImprovement
+				? 'bg-primary-200'
+				: ''}"
+			on:click={() => toggleImprovementView(!showingImprovement)}
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				class="mr-2 h-4 w-4"
+				viewBox="0 0 20 20"
+				fill="currentColor"
+			>
+				<path
+					fill-rule="evenodd"
+					d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
+					clip-rule="evenodd"
+				/>
+			</svg>
+			{showingImprovement ? hideImprovementLabel : showImprovementLabel}
+		</button>
+	</div>
+
+	<!-- Toggle improvement view button -->
+	<div class="mb-4 flex justify-center">
+		<button
+			class="flex items-center rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800 transition-colors hover:bg-primary-200 {showingImprovement
+				? 'bg-primary-200'
+				: ''}"
+			on:click={() => toggleImprovementView(!showingImprovement)}
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				class="mr-2 h-4 w-4"
+				viewBox="0 0 20 20"
+				fill="currentColor"
+			>
+				<path
+					fill-rule="evenodd"
+					d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
+					clip-rule="evenodd"
+				/>
+			</svg>
+			{showingImprovement
+				? $i18n.schema.metrics.hideImprovement
+				: $i18n.schema.metrics.showImprovement}
+		</button>
 	</div>
 
 	<div class="chart-container w-full" style="height: {chartHeight};" bind:this={chartContainer}>
 		<canvas bind:this={chartCanvas} />
 	</div>
 
-	<!-- Metric Indicators -->
 	<!-- Metric Indicators -->
 	<div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 		{#each metrics as metric, i}
@@ -547,17 +752,53 @@
 					}
 				}}
 			>
-				<div class="flex items-baseline">
+				<div class="flex items-baseline justify-between">
 					<span class="text-xl font-bold text-gray-900">
 						{Math.round(metric.value * $animationTween)}
 					</span>
-					<span class="ml-1 text-sm text-gray-500"> / 100</span>
+					<span class="ml-1 text-sm text-gray-500">/ 100</span>
+
+					{#if showingImprovement}
+						<span class="ml-1 flex items-center text-sm font-medium text-purple-600">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="mr-1 h-3 w-3"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path
+									fill-rule="evenodd"
+									d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
+									clip-rule="evenodd"
+								/>
+							</svg>
+							{Math.round(metric.improvedValue * $animationTween)}
+						</span>
+					{/if}
 				</div>
-				<div class="mt-2 h-2 rounded-full bg-gray-100">
-					<div
-						class="h-2 rounded-full transition-all duration-500"
-						style="width: {metric.value * $animationTween}%; background-color: {metric.color}"
-					/>
+
+				<div class="mt-2">
+					<!-- Current Value Progress -->
+					<div class="h-2 rounded-full bg-gray-100">
+						<div
+							class="h-2 rounded-full transition-all duration-500"
+							style="width: {metric.value * $animationTween}%; background-color: {metric.color}"
+						/>
+					</div>
+
+					<!-- Improved Value Progress (if showing) -->
+					{#if showingImprovement}
+						<div class="mt-1 h-2 rounded-full bg-gray-100">
+							<div
+								class="h-2 rounded-full bg-purple-500 transition-all duration-500"
+								style="width: {metric.improvedValue * $animationTween}%;"
+							/>
+						</div>
+					{/if}
+				</div>
+
+				<div class="mt-1 text-xs font-medium">
+					{metric.label}
 				</div>
 			</div>
 		{/each}
@@ -583,5 +824,20 @@
 
 	:global(.chartjs-tooltip-body) {
 		padding: 4px 8px;
+	}
+
+	/* Animation for improved value indicator */
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 0.7;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+
+	.improvement-indicator {
+		animation: pulse 2s infinite;
 	}
 </style>
