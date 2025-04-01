@@ -181,7 +181,7 @@ export const formOptions = {
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-online-suchmaschine-google-0.png',
 			description: 'Präsenz in Google & Co.',
-			weight: 5
+			weight: 3
 		},
 		{
 			label: 'Social Media',
@@ -189,7 +189,7 @@ export const formOptions = {
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-social-media-facebook-insta-linkedin-0.png',
 			description: 'Präsenz Facebook & Co.',
-			weight: 10
+			weight: 5
 		},
 		{
 			label: 'Print',
@@ -197,7 +197,7 @@ export const formOptions = {
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-flyer-zeitung-print-0.png',
 			description: 'Klassische Printwerbung',
-			weight: 3
+			weight: 2
 		},
 		{
 			label: 'Ladengeschäft',
@@ -205,7 +205,7 @@ export const formOptions = {
 			imgSrc:
 				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-ladengeschaeft-0.png',
 			description: 'Physische Präsenz',
-			weight: 3
+			weight: 2
 		}
 	],
 	advertising_frequency: [

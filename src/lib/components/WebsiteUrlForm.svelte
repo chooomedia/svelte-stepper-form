@@ -649,7 +649,7 @@
 						{#if analysisComplete}
 							<svg class="absolute inset-0" viewBox="0 0 100 100">
 								<circle
-									class="text-blue-100"
+									class="text-primary-100"
 									stroke-width="4"
 									stroke="currentColor"
 									fill="transparent"
@@ -658,7 +658,7 @@
 									cy="50"
 								/>
 								<circle
-									class="text-blue-500"
+									class="text-primary-500"
 									stroke-width="4"
 									stroke-dasharray="264"
 									stroke-dashoffset="0"
@@ -674,7 +674,7 @@
 							<!-- Animated circle during loading -->
 							<svg class="absolute inset-0" viewBox="0 0 100 100">
 								<circle
-									class="text-blue-100"
+									class="text-primary-100"
 									stroke-width="4"
 									stroke="currentColor"
 									fill="transparent"
@@ -683,7 +683,7 @@
 									cy="50"
 								/>
 								<circle
-									class="text-blue-500 transition-all duration-300 ease-in-out"
+									class="text-primary-500 transition-all duration-300 ease-in-out"
 									stroke-width="4"
 									stroke-dasharray="264"
 									stroke-dashoffset={264 - (currentProgress * 264) / 100}
@@ -700,14 +700,14 @@
 						<!-- Pulse effect in center - only while loading -->
 						{#if !analysisComplete}
 							<div class="absolute inset-0 flex items-center justify-center">
-								<div class="h-16 w-16 animate-ping rounded-full bg-blue-400 opacity-30"></div>
+								<div class="h-16 w-16 animate-ping rounded-full bg-primary-400 opacity-30"></div>
 							</div>
 						{/if}
 
 						<!-- Icon in center -->
 						<div class="absolute inset-0 flex items-center justify-center">
 							{#if analysisComplete}
-								<svg class="h-12 w-12 text-blue-600" viewBox="0 0 24 24" fill="none">
+								<svg class="h-12 w-12 text-primary-600" viewBox="0 0 24 24" fill="none">
 									<path
 										d="M5 13l4 4L19 7"
 										stroke="currentColor"
@@ -717,7 +717,7 @@
 									/>
 								</svg>
 							{:else}
-								<svg class="h-12 w-12 text-blue-600" viewBox="0 0 24 24" fill="none">
+								<svg class="h-12 w-12 text-primary-600" viewBox="0 0 24 24" fill="none">
 									<path
 										d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 										stroke="currentColor"
@@ -736,11 +736,11 @@
 
 					<h3 class="mb-2 text-center text-xl font-bold text-gray-800">
 						{#if analysisComplete}
-							Analyse der Website <span class="text-blue-600"
+							Analyse der Website <span class="text-primary-600"
 								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
 							> abgeschlossen
 						{:else}
-							Analyse Deiner Website <span class="text-blue-600"
+							Analyse Deiner Website <span class="text-primary-600"
 								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
 							>
 						{/if}
