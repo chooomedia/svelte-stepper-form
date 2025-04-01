@@ -573,8 +573,8 @@
 								class="input-field flex-grow shadow-custom {shouldShowError('company_url')
 									? 'error'
 									: ''}"
-								on:blur={() => handleBlur('company_url')}
-								on:keydown={(e) => {
+								onblur={() => handleBlur('company_url')}
+								onkeydown={(e) => {
 									if (e.key === 'Enter' && !isLoading && $form?.company_url && isUrlValid) {
 										e.preventDefault();
 										analyzeWebsite();
@@ -590,7 +590,7 @@
 								type="button"
 								class="btn btn-primary mt-2 lg:ml-2 lg:mt-0"
 								disabled={isLoading || !$form?.company_url || !isUrlValid}
-								on:click={analyzeWebsite}
+								onclick={analyzeWebsite}
 							>
 								{#if isLoading}
 									<span class="loading loading-spinner loading-sm"></span>
