@@ -305,7 +305,7 @@
 
 	<!-- Bonus-Box für Aktionsangebot -->
 	<div
-		class="bonus-box mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-xl"
+		class="bonus-box mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-secondary-200 to-secondary-700 shadow-xl"
 		class:opacity-0={!sectionsInView.bonusBox}
 		class:opacity-100={sectionsInView.bonusBox}
 		class:translate-y-0={sectionsInView.bonusBox}
@@ -327,7 +327,7 @@
 				</p>
 				<div class="mt-4 flex items-center">
 					<div
-						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
+						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-lg font-bold text-secondary"
 					>
 						✓
 					</div>
@@ -335,7 +335,7 @@
 				</div>
 				<div class="mt-2 flex items-center">
 					<div
-						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
+						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-lg font-bold text-secondary"
 					>
 						✓
 					</div>
@@ -343,19 +343,24 @@
 				</div>
 				<div class="mt-2 flex items-center">
 					<div
-						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-lg font-bold text-white"
+						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-lg font-bold text-secondary"
 					>
 						✓
 					</div>
 					<p class="ml-3 text-sm text-blue-100">Sofortige Steigerung Deiner Online-Präsenz</p>
 				</div>
 			</div>
-			<div class="flex items-center justify-center bg-blue-700 p-6 md:w-1/3">
+			<div class="flex items-center justify-center bg-secondary-500 p-6 md:w-1/3">
 				<div class="text-center">
 					<div
-						class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-blue-600"
+						class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary-600"
 					>
-						<svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg
+							class="h-12 w-12 text-secondary"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -364,8 +369,8 @@
 							></path>
 						</svg>
 					</div>
-					<p class="text-lg font-semibold text-white">Wert: 89€</p>
-					<p class="text-xs text-blue-300">Nur für begrenzte Zeit</p>
+					<p class="text-lg font-semibold text-white">Wert: 99€</p>
+					<p class="text-xs text-primary-300">Nur für begrenzte Zeit</p>
 				</div>
 			</div>
 		</div>
@@ -421,14 +426,14 @@
 			<div
 				class="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg {selectedPlan ===
 				plan.name
-					? 'ring-2 ring-blue-500'
+					? 'ring-2 ring-primary-500'
 					: ''}"
 				onclick={() => handlePlanChange(plan.name)}
 				aria-label="Plan {plan.name} auswählen"
 			>
 				{#if plan.popular}
 					<div
-						class="absolute left-0 right-0 top-0 bg-blue-500 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white"
+						class="absolute left-0 right-0 top-0 bg-primary-600 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white"
 					>
 						★ AM BELIEBTESTEN
 					</div>
@@ -442,7 +447,7 @@
 							name="pricing-plan"
 							value={plan.name}
 							checked={selectedPlan === plan.name}
-							class="h-4 w-4 text-blue-600"
+							class="h-4 w-4 appearance-none rounded-full border-2 border-gray-300 checked:border-white checked:bg-primary-600 checked:ring-2 checked:ring-primary-600"
 							onchange={() => handlePlanChange(plan.name)}
 						/>
 						<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
@@ -580,7 +585,7 @@
 										clip-rule="evenodd"
 									></path>
 								</svg>
-								<span class="text-sm font-semibold text-indigo-600">Alle zukünftigen Updates</span>
+								<span class="text-sm font-semibold text-primary-600">Alle zukünftigen Updates</span>
 							</li>
 						{/if}
 					</ul>
@@ -632,7 +637,7 @@
 	<div class="mt-8 text-center" in:fade={{ duration: 300, delay: 500 }}>
 		<div class="relative">
 			<button
-				class="order-button relative inline-flex cursor-pointer flex-col items-center justify-center rounded-lg bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
+				class="order-button relative inline-flex cursor-pointer flex-col items-center justify-center rounded-lg bg-primary-600 px-8 py-4 text-lg font-bold text-secondary shadow-lg transition-all duration-300 hover:bg-primary-700 hover:shadow-xl"
 				onclick={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -667,7 +672,7 @@
 		in:fade={{ duration: 300, delay: 600 }}
 	>
 		<div class="flex items-center">
-			<svg class="mr-2 h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+			<svg class="mr-2 h-5 w-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
 				<path
 					fill-rule="evenodd"
 					d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -677,7 +682,7 @@
 			Sicher & geschützt bezahlen
 		</div>
 		<div class="flex items-center">
-			<svg class="mr-2 h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+			<svg class="mr-2 h-5 w-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
 				<path
 					fill-rule="evenodd"
 					d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
@@ -700,7 +705,7 @@
 
 	<!-- Discount Banner (animated) -->
 	<div
-		class="discount-banner mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 shadow-xl transition-all duration-700"
+		class="discount-banner mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-secondary-600 to-primary-600 shadow-xl transition-all duration-700"
 		class:opacity-0={!sectionsInView.discountBanner}
 		class:opacity-100={sectionsInView.discountBanner}
 		class:scale-95={!sectionsInView.discountBanner}
@@ -712,7 +717,7 @@
 				class="sm-top-4 absolute -right-2 -top-4 flex h-24 w-24 rotate-12 transform items-center justify-center rounded-full bg-yellow-400 transition-transform duration-700 hover:scale-110"
 			>
 				<div class="-rotate-12 text-center">
-					<span class="relative top-1 block text-2xl font-bold text-red-400">-20%</span>
+					<span class="relative top-1 block text-2xl font-bold text-red-500">-20%</span>
 					<span class="relative -top-1 text-xs font-bold text-red-900">LONGTIME</span>
 				</div>
 			</div>

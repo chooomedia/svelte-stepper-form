@@ -19,9 +19,17 @@
 		form: SuperValidated<FormData>;
 		errors: Record<string, string>;
 		onAnalysisComplete: (healthData: any, score: number) => void;
+		onAnalysisStart?: () => void;
+		onAnalysisEnd?: () => void;
 	}
 
-	let { form, errors = {}, onAnalysisComplete } = $props<Props>();
+	let {
+		form,
+		errors = {},
+		onAnalysisComplete,
+		onAnalysisStart = () => {},
+		onAnalysisEnd = () => {}
+	} = $props<Props>();
 
 	// State variables
 	let isLoading = $state(false);
@@ -368,6 +376,8 @@
 		analysisComplete = false;
 		analysisError = '';
 
+		onAnalysisStart();
+
 		// Clear any existing timeout
 		if (autoAdvanceTimeout) {
 			clearTimeout(autoAdvanceTimeout);
@@ -413,6 +423,11 @@
 			const data = await response.json();
 			console.log('Webhook response data:', data);
 
+			// On success
+			analysisData = processAnalysisData(data);
+			scoreStore.setWebsiteAnalysis(analysisData, $form);
+			analysisComplete = true;
+
 			analyzeResponseStructure(data);
 
 			// Check if we have usable data
@@ -437,26 +452,21 @@
 			console.warn('Error fetching from webhook, using mock data:', error);
 			analysisError = `Fehler bei der API-Anfrage: ${error.message}. Fallback-Daten werden verwendet.`;
 
-			// Generate mock data for fallback
 			analysisData = generateMockData(formattedUrl);
 
-			// Update the score store with fallback data
 			scoreStore.setWebsiteAnalysis(analysisData, $form);
 
-			// Mark analysis as complete even with error (using fallback data)
 			analysisComplete = true;
 		} finally {
-			// Generate custom SEO tips based on analysis data
 			const generatedTips = generateCustomSeoTips(analysisData);
 			if (generatedTips.length > 0) {
 				customTips = generatedTips;
 			}
 
-			// Set remaining time to shorter value if analysis is complete
+			onAnalysisEnd();
+
 			remainingSeconds = Math.min(remainingSeconds, 7);
 			$websiteLoading = false;
-			// We keep isLoading true to show the results UI
-			// but stop the loading animation by setting analysisComplete to true
 		}
 
 		// Calculate final score
@@ -555,7 +565,7 @@
 							Bericht zu erhalten.
 						</label>
 
-						<div class="flex">
+						<div class="flex flex-col lg:flex-row">
 							<input
 								type="url"
 								id="company_url"
@@ -570,7 +580,7 @@
 										analyzeWebsite();
 									}
 								}}
-								placeholder="https://www.example.com"
+								placeholder="https://www.meinewebsite.com"
 								disabled={isLoading}
 								aria-invalid={shouldShowError('company_url') ? 'true' : 'false'}
 								aria-describedby={shouldShowError('company_url') ? 'company_url-error' : undefined}
@@ -578,7 +588,7 @@
 							/>
 							<button
 								type="button"
-								class="btn btn-primary ml-2"
+								class="btn btn-primary mt-2 lg:ml-2 lg:mt-0"
 								disabled={isLoading || !$form?.company_url || !isUrlValid}
 								on:click={analyzeWebsite}
 							>
@@ -609,8 +619,8 @@
 					</div>
 
 					<!-- Feature List -->
-					<div class="my-2 flex flex-wrap gap-4">
-						{#each ['Performance-Check', 'SEO-Analyse', 'Zugänglichkeitstest', 'Sicherheitsprüfung'] as feature, i}
+					<div class="mt-5 flex flex-wrap gap-4 lg:my-2">
+						{#each ['Performance-Check', 'SEO-Analyse', 'Zugänglichkeitstest', 'Sicherheitscheck'] as feature, i}
 							<div class="flex items-start">
 								<svg class="mr-2 h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
 									<path
@@ -724,7 +734,7 @@
 						</div>
 					</div>
 
-					<h3 class="mb-2 text-xl font-bold text-gray-800">
+					<h3 class="mb-2 text-center text-xl font-bold text-gray-800">
 						{#if analysisComplete}
 							Analyse der Website <span class="text-blue-600"
 								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span

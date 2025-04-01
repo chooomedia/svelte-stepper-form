@@ -21,17 +21,17 @@
 
 		// Spezieller Zustand für Schritt 2 während der Website-Analyse
 		if (stepStatus.index === 2 && get(websiteLoading)) {
-			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300`;
+			return `${baseClasses} !h-4 !w-4 border-2 border-primary-300 bg-primary-300`;
 		}
 
 		// Spezieller Zustand für Schritt 10 während der Formularübermittlung
 		if (stepStatus.index === 10 && get(formSubmitting)) {
-			return `${baseClasses} !h-4 !w-4 border-2 border-blue-300 bg-blue-300`;
+			return `${baseClasses} !h-4 !w-4 border-2 border-primary-300 bg-primary-300`;
 		}
 
 		// Nach der Analyse oder wenn der Schritt gültig ist -> grün markieren
 		if (stepStatus.isValid) {
-			return `${baseClasses} !h-4 !w-4 scale-110 !border-green-500 !bg-green-500`;
+			return `${baseClasses} !h-4 !w-4 scale-110 !border-primary-500 !bg-primary-500`;
 		}
 
 		if (stepStatus.isInvalid) {
@@ -43,7 +43,7 @@
 		}
 
 		if (stepStatus.isCurrent) {
-			return `${baseClasses} border-2 border-blue-500 bg-blue-500`;
+			return `${baseClasses} border-2 border-secondary bg-secondary`;
 		}
 
 		return `${baseClasses} border-2 border-gray-200 bg-gray-200`;
@@ -62,11 +62,11 @@
 <div class="relative flex w-full flex-col items-center">
 	<div class="flex h-[18px] w-full items-center justify-between">
 		<!-- Background track -->
-		<div class="absolute top-1/2 h-0.5 w-full -translate-y-1/2 bg-gray-200"></div>
+		<div class="absolute top-1/2 h-0.5 w-full -translate-y-1/2 bg-primary-400"></div>
 
 		<!-- Progress indicator -->
 		<div
-			class="absolute top-1/2 h-0.5 origin-left bg-green-500 transition-transform duration-300 ease-in-out"
+			class="bg-primray-500 absolute top-1/2 h-0.5 origin-left transition-transform duration-300 ease-in-out"
 			style="width: {$progressValue}%;"
 		></div>
 
@@ -92,13 +92,13 @@
 										: 'Noch nicht bearbeitet'}
 			>
 				{#if stepStatus.isValid}
-					<span class="text-[10px] text-white">✓</span>
+					<span class="text-[10px] text-secondary">✓</span>
 				{:else if stepStatus.isInvalid}
-					<span class="text-[10px] text-white">!</span>
+					<span class="text-[10px] text-secondary">!</span>
 				{:else if stepStatus.isIncomplete}
-					<span class="text-[10px] text-white">⋯</span>
+					<span class="text-[10px] text-secondary">⋯</span>
 				{:else if (stepStatus.index === 2 && get(websiteLoading)) || (stepStatus.index === 10 && get(formSubmitting))}
-					<span class="text-[8px] text-white">
+					<span class="text-[8px] text-secondary">
 						<svg class="h-2 w-2 animate-spin" viewBox="0 0 24 24">
 							<circle
 								class="opacity-25"

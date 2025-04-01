@@ -383,7 +383,7 @@
 
 	<!-- Benefits and Recommendations -->
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2" in:fade={{ duration: 500, delay: 900 }}>
-		<div class="rounded-lg bg-white p-6 shadow-lg">
+		<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -424,8 +424,8 @@
 			</ul>
 		</div>
 
-		<div class="rounded-lg bg-white p-6 shadow-lg">
-			<h3 class="mb-4 flex items-center text-xl font-bold text-blue-600">
+		<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
+			<h3 class="mb-4 flex items-center text-xl font-bold">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					class="mr-2 h-6 w-6"
@@ -481,7 +481,7 @@
 	>
 		<div class="mx-auto max-w-7xl">
 			<h2 class="text-center text-3xl font-bold tracking-tight text-gray-900">
-				<span class="text-blue-600">Inklusive</span> in all unseren Paketen
+				<span class="text-primary-600">Inklusive</span> in all unseren Paketen
 			</h2>
 
 			<div class="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
@@ -489,7 +489,7 @@
 					<div class="flex items-start" in:fly={{ y: 20, delay: 1300 + i * 100, duration: 400 }}>
 						<div class="flex-shrink-0">
 							<div
-								class="flex h-12 w-12 items-center justify-center rounded-md bg-blue-500 text-white"
+								class="flex h-12 w-12 items-center justify-center rounded-md bg-primary-500 text-white"
 							>
 								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 									<path
@@ -541,7 +541,7 @@
 			<div class="mt-16 text-center">
 				<div class="inline-flex rounded-md shadow">
 					<button
-						class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-5 py-3 text-base font-medium text-white hover:bg-blue-700"
+						class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-5 py-3 text-base font-medium text-secondary hover:bg-primary-700"
 						onclick={() =>
 							window.scrollTo({
 								top: document.querySelector('.pricing-cards')?.offsetTop || 0,
@@ -564,9 +564,9 @@
 
 	<!-- Before/After Comparison with Real Results -->
 	<div class="mt-12" in:fade={{ duration: 500, delay: 1600 }}>
-		<h3 class="relative mb-8 text-center text-3xl font-bold text-gray-900">
+		<h3 class="relative mb-8 text-center text-3xl font-bold text-secondary">
 			<span
-				class="absolute -top-6 left-1/2 -translate-x-1/2 transform text-lg font-normal text-blue-500"
+				class="absolute -top-6 left-1/2 -translate-x-1/2 transform text-lg font-normal text-primary-500"
 				>INSPIRATIONEN</span
 			>
 			Erfolgsgeschichten, die Dich motivieren werden
@@ -575,7 +575,7 @@
 		<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 			<!-- Testimonial/Case Study 1 -->
 			<div
-				class="flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-4 shadow-md transition-all duration-300 hover:shadow-lg"
+				class="flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 p-4 shadow-md transition-all duration-300 hover:shadow-lg"
 			>
 				<div class="flex-1">
 					<div class="mb-4 overflow-hidden rounded-lg">
@@ -585,7 +585,7 @@
 							class="object- h-96 w-full rounded-lg object-cover object-top transition-transform duration-500 hover:scale-105"
 						/>
 					</div>
-					<h4 class="text-xl font-bold text-blue-600">
+					<h4 class="text-xl font-bold text-secondary-600">
 						{processedScore < 50
 							? 'Von 0 auf 100: Mindestens 3 Abschlüsse täglich durch maximierte Online-Präsenz'
 							: 'Durchbruch: mehr als 43% mehr Anfragen dank durchdachter Marketing-Strategie'}
@@ -608,7 +608,7 @@
 
 			<!-- Testimonial/Case Study 2 -->
 			<div
-				class="flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-4 shadow-md transition-all duration-300 hover:shadow-lg"
+				class="flex flex-col overflow-hidden rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 p-4 shadow-md transition-all duration-300 hover:shadow-lg"
 			>
 				<div class="flex-1">
 					<div class="mb-4 overflow-hidden rounded-lg">
@@ -618,7 +618,7 @@
 							class="h-96 w-full rounded-lg object-cover object-top transition-transform duration-500 hover:scale-105"
 						/>
 					</div>
-					<h4 class="text-xl font-bold text-blue-600">
+					<h4 class="text-xl font-bold text-secondary-600">
 						Effiziente Umsetzung: Landingpage, SEO und full Channel Ads Kampagne
 					</h4>
 					<div class="mt-3">
@@ -640,7 +640,7 @@
 
 	<!-- Call to Action -->
 	<div
-		class="mt-10 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 p-8 text-center shadow-lg"
+		class="mt-10 rounded-lg bg-gradient-to-r from-primary-600 to-primary-800 p-8 text-center shadow-lg"
 		in:fade={{ duration: 500, delay: 1800 }}
 	>
 		<h3 class="text-2xl font-bold text-white">
@@ -651,7 +651,7 @@
 		</p>
 		<div class="mt-6">
 			<button
-				class="rounded-lg bg-white px-8 py-3 font-semibold text-blue-600 shadow-lg transition hover:bg-blue-50"
+				class="rounded-lg bg-white px-8 py-3 font-semibold text-secondary-600 shadow-lg transition hover:bg-blue-50"
 				onclick={() =>
 					window.scrollTo({
 						top: document.querySelector('.pricing-cards')?.offsetTop || 0,
@@ -675,7 +675,7 @@
 		</button>
 
 		<button
-			class="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 sm:w-auto"
+			class="w-full rounded-lg bg-primary-600 px-6 py-3 font-semibold text-secondary shadow-sm transition-colors hover:bg-primary-700 sm:w-auto"
 			onclick={nextStep}
 		>
 			Analysebericht per E-Mail erhalten

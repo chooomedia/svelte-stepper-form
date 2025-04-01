@@ -7,16 +7,15 @@
 	export let disabled: boolean = false;
 
 	interface ButtonProps {
-		// ... existing props
 		'aria-label'?: string;
 	}
 </script>
 
 <button
 	{type}
-	class="btn btn-{variant} {`mt-4 rounded-lg px-4 py-2 font-semibold text-white transition-all
-        ${isSuccess ? 'bg-green-500' : 'bg-blue-500'}
-        ${isLoading ? 'cursor-not-allowed opacity-50' : 'hover:bg-blue-600'}
+	class="btn btn-{variant} {`mt-4 rounded-lg px-4 py-2 font-semibold text-secondary transition-all
+        ${isSuccess ? 'bg-green-500' : ''}
+        ${isLoading ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary-600'}
     `}"
 	disabled={disabled || isLoading}
 	on:click

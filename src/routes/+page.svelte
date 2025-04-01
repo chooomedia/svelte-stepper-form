@@ -43,6 +43,7 @@
 	let scoreStoreData = $state(null);
 	let contactFormValid = $state(false);
 	let showDebugSidebar = $state(false);
+	let isWebsiteAnalysisInProgress = $state(false);
 
 	$effect(() => {
 		$formData = { ...$form };
@@ -53,6 +54,16 @@
 
 		return unsubscribe;
 	});
+
+	function handleAnalysisStart() {
+		isWebsiteAnalysisInProgress = true;
+		console.log('Website analysis started');
+	}
+
+	function handleAnalysisEnd() {
+		isWebsiteAnalysisInProgress = false;
+		console.log('Website analysis completed');
+	}
 
 	// Website analysis function
 	async function handleAnalysisComplete(data: any, score: number) {
@@ -144,12 +155,12 @@
 			class={$stepperStore.current.index > 1 ? 'sr-only' : 'text-center'}
 			aria-hidden={$stepperStore.current.index > 1}
 		>
-			<h1 class="mb-6 text-5xl font-bold text-gray-900" itemprop="name" id="assessment-title">
+			<h1 class="mb-6 text-5xl font-bold text-secondary-900" itemprop="name" id="assessment-title">
 				Marketing Check Quiz
 			</h1>
 
 			<p
-				class="mx-auto max-w-[33rem] text-base text-gray-600"
+				class="mx-auto max-w-[33rem] text-base text-secondary-300"
 				itemprop="description"
 				id="assessment-description"
 			>
@@ -165,12 +176,12 @@
 	<!-- Step Content -->
 	<div class="form-wrapper">
 		<!-- Dynamic step content based on current step -->
-		<h2 class="mb-6 text-center text-xl font-semibold text-gray-700">
+		<h2 class="mb-6 text-center text-xl font-semibold text-secondary-700">
 			{#if $stepperStore.current.index === 12}
 				{$stepperStore.current.description}
 				{#if $formData?.company_url}
 					von
-					<span class="text-blue-600">
+					<span class="text-primary-600">
 						{$formData.company_url.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
 					</span>
 				{/if}
@@ -196,6 +207,8 @@
 							{form}
 							error={$errors}
 							onAnalysisComplete={handleAnalysisComplete}
+							onAnalysisStart={handleAnalysisStart}
+							onAnalysisEnd={handleAnalysisEnd}
 							onclick={() => {
 								stepperStore.markStepValid($stepperStore.current.index);
 								stepperStore.nextStep();
@@ -310,7 +323,7 @@
 							<Button
 								label="Zurück"
 								type="button"
-								variant="secondary"
+								variant="primary"
 								disabled={$stepperStore.current.index === 1}
 								on:click={() => stepperStore.prevStep()}
 							/>
@@ -318,8 +331,9 @@
 							<Button
 								label={$stepperStore.current.index === 2 ? 'Überspringen' : 'Weiter'}
 								type="button"
-								variant={$stepperStore.current.index === 2 ? 'secondary' : 'primary'}
-								disabled={$stepperStore.current.index === 10 && !contactFormValid}
+								variant="primary"
+								disabled={($stepperStore.current.index === 10 && !contactFormValid) ||
+									($stepperStore.current.index === 2 && isWebsiteAnalysisInProgress)}
 								on:click={() => {
 									// Für Schritt 10: Prüfen ob das Kontaktformular gültig ist
 									if ($stepperStore.current.index === 10) {
