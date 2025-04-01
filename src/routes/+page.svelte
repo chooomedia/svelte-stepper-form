@@ -81,23 +81,20 @@
 
 	// Function to handle image option selection
 	function handleImageOptionSelect(fieldName: string, value: string | string[]) {
-		// Update form data with the value (could be string or string[])
+		// Update form data with the value
 		updateFormField(fieldName, value);
 		$form[fieldName] = value;
 
 		// Log selection information for debugging
 		if (Array.isArray(value)) {
 			console.log(`Multiple selections for ${fieldName}:`, value);
+
+			// For multiple selections, only advance if this is called after the countdown
+			// This happens automatically because of the timeout in the ImageOption component
 		} else {
 			console.log(`Single selection for ${fieldName}:`, value);
-		}
 
-		// Check if we should automatically advance
-		const shouldAdvance = Array.isArray(value)
-			? value.length > 0 // In multiple mode, advance if at least one option is selected
-			: value !== ''; // In single mode, advance if value is not empty
-
-		if (shouldAdvance) {
+			// For single selection, advance immediately with a small delay for visual feedback
 			setTimeout(() => {
 				stepperStore.markStepValid($stepperStore.current.index);
 				stepperStore.nextStep();
@@ -190,7 +187,7 @@
 	<!-- Step Content -->
 	<div class="form-wrapper">
 		<!-- Dynamic step content based on current step -->
-		<h2 class="mb-6 text-center text-xl font-semibold text-secondary-700">
+		<h2 class="mb-3 text-center text-xl font-semibold text-secondary-700">
 			{#if $stepperStore.current.index === 12}
 				{$stepperStore.current.description}
 				{#if $formData?.company_url}
