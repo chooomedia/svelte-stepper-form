@@ -64,7 +64,12 @@
 			// Call the onSelect callback with array value
 			newValue = [...selectedValues];
 			if (onSelect) {
-				onSelect(newValue);
+				// For multiple selection, we add a special flag to the array
+				// to indicate this is just a selection update, not a navigation trigger
+				const valueWithFlag = [...newValue];
+				// @ts-ignore - Adding custom property to array
+				valueWithFlag._isCountdownRunning = true;
+				onSelect(valueWithFlag);
 			}
 
 			// Only start countdown if there's at least one selection
@@ -103,11 +108,18 @@
 
 		// Start timeout to advance after countdownTime seconds
 		advanceTimeout = setTimeout(() => {
-			if (onSelect && selectedValues.length > 0) {
-				// Trigger the parent component to advance
-				onSelect([...selectedValues]);
-			}
+			// Hide countdown notification
 			showCountdown = false;
+
+			// After countdown ends, trigger the parent's onSelect to navigate
+			// but without the custom flag
+			if (onSelect && selectedValues.length > 0) {
+				setTimeout(() => {
+					// Here's the key: we don't include the flag, so the parent
+					// component knows to trigger navigation
+					onSelect([...selectedValues]);
+				}, 300); // Short delay after hiding the toast
+			}
 		}, countdownTime * 1000);
 	}
 
@@ -171,13 +183,23 @@
 </script>
 
 <div class="relative">
-	<!-- Information about max selections -->
+	<!-- Information about max selections with countdown status -->
 	{#if multiple}
-		<div class="mb-4 text-center text-xs text-gray-500">
-			{#if maxSelections}
-				Du kannst bis zu {maxSelections} Optionen auswählen
+		<div class="mb-4 text-center text-xs text-gray-600">
+			{#if showCountdown && selectedValues.length > 0}
+				<!-- Show countdown info -->
+				<div class="font-medium text-primary-700">
+					{selectionCount === 1 ? '1 Option' : `${selectionCount} Optionen`} ausgewählt · Weiterleitung
+					in <span class="font-bold">{countdownSeconds}</span>
+					{countdownSeconds === 1 ? 'Sekunde' : 'Sekunden'}
+				</div>
 			{:else}
-				Wähle alle passenden Optionen
+				<!-- Default info -->
+				{#if maxSelections}
+					Du kannst bis zu {maxSelections} Optionen auswählen
+				{:else}
+					Wähle alle passenden Optionen
+				{/if}
 			{/if}
 		</div>
 	{/if}
@@ -244,27 +266,3 @@
 		<p class="mt-2 text-sm text-red-600">{error}</p>
 	{/if}
 </div>
-
-<!-- Fixed bottom countdown notification -->
-{#if multiple && showCountdown && selectedValues.length > 0}
-	<div
-		class="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 transform rounded-full bg-primary-700 px-4 py-2 text-center text-white shadow-lg"
-		in:fly={{ y: 20, duration: 300 }}
-		out:fade={{ duration: 200 }}
-	>
-		<div class="flex items-center space-x-2">
-			<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-				<path
-					fill-rule="evenodd"
-					d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 9.586V6z"
-					clip-rule="evenodd"
-				></path>
-			</svg>
-			<p class="whitespace-nowrap text-sm">
-				{selectionCount === 1 ? '1 Option' : `${selectionCount} Optionen`} ausgewählt · weiter in
-				<span class="font-bold">{countdownSeconds}</span>
-				{countdownSeconds === 1 ? 'Sekunde' : 'Sekunden'}
-			</p>
-		</div>
-	</div>
-{/if}

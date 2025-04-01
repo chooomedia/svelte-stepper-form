@@ -86,19 +86,33 @@
 		$form[fieldName] = value;
 
 		// Log selection information for debugging
-		if (Array.isArray(value)) {
-			console.log(`Multiple selections for ${fieldName}:`, value);
+		console.log(`Selection for ${fieldName}:`, value);
 
-			// For multiple selections, only advance if this is called after the countdown
-			// This happens automatically because of the timeout in the ImageOption component
-		} else {
-			console.log(`Single selection for ${fieldName}:`, value);
-
-			// For single selection, advance immediately with a small delay for visual feedback
+		// For single selection, advance immediately
+		if (!Array.isArray(value)) {
 			setTimeout(() => {
 				stepperStore.markStepValid($stepperStore.current.index);
 				stepperStore.nextStep();
 			}, 500);
+			return;
+		}
+
+		// For multiple selection, check if the countdown is running
+		// @ts-ignore - Check for our custom property
+		if (Array.isArray(value) && value._isCountdownRunning) {
+			// This is just a selection update, don't navigate yet
+			console.log(`Selection update for ${fieldName} - countdown running`);
+			return;
+		}
+
+		// If we get here with an array without the flag, it means
+		// the countdown has completed and we should navigate
+		if (Array.isArray(value)) {
+			console.log(`Countdown complete for ${fieldName} - advancing to next step`);
+			setTimeout(() => {
+				stepperStore.markStepValid($stepperStore.current.index);
+				stepperStore.nextStep();
+			}, 300);
 		}
 	}
 
