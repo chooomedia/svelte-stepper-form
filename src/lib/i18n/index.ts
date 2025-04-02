@@ -1,9 +1,10 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { translations, type Translation } from './translations';
+import { currencyStore } from '$lib/stores/currencyStore';
 
 // Unterstützte Sprachen
-export type SupportedLocale = 'de' | 'en' | 'fr';
+export type SupportedLocale = 'de' | 'fr' | 'en' | 'ch' | 'at' | 'ru' | 'ar';
 
 // Standardeinstellungen
 const DEFAULT_LOCALE: SupportedLocale = 'de';
@@ -77,21 +78,46 @@ function isValidLocale(locale: string): locale is SupportedLocale {
 }
 
 // Nutzerregion ermitteln (für Währung usw.)
-async function detectUserRegion() {
+export async function detectUserRegion() {
 	try {
 		const response = await fetch('https://ipapi.co/json/');
+		if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 		const data = await response.json();
 
-		if (data && data.country) {
-			// Speichere Ländercode für Währungsumrechnung
-			currencyStore.setCountry(data.country);
+		const countryCode = data?.country?.toLowerCase() || 'en';
+
+		if (isValidLocale(countryCode)) {
+			currentLocale.set(countryCode as SupportedLocale);
 		}
+
+		const currencyMapping: Record<string, string> = {
+			de: 'EUR',
+			fr: 'EUR',
+			en: 'USD',
+			ch: 'CHF',
+			at: 'EUR'
+		};
+
+		currencyStore.setCurrency(currencyMapping[countryCode] || 'EUR');
 	} catch (error) {
 		console.error('Could not detect user region:', error);
 	}
 }
 
 // Sprache wechseln
-export function changeLocale(locale: SupportedLocale) {
-	currentLocale.set(locale);
+export function changeLocale(locale: string) {
+	if (isValidLocale(locale)) {
+		currentLocale.set(locale as SupportedLocale);
+
+		// Währungswechsel bei Sprachwechsel
+		const currencyMapping: Record<SupportedLocale, string> = {
+			de: 'EUR',
+			fr: 'EUR',
+			en: 'USD',
+			ch: 'CHF',
+			at: 'EUR'
+		};
+
+		currencyStore.setCurrency(currencyMapping[locale as SupportedLocale]);
+	}
 }

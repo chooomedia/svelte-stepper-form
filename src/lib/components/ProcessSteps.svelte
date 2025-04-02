@@ -14,11 +14,11 @@
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
 		<!-- Step 1: Purchase -->
 		<div
-			class="flex flex-col rounded-lg bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
+			class="flex flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
 			in:fly={{ y: 20, duration: 500, delay: staggerDelay * 1 }}
 		>
 			<div
-				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600"
+				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-secondary"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -46,11 +46,11 @@
 
 		<!-- Step 2: Scheduling -->
 		<div
-			class="flex flex-col rounded-lg bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
+			class="flex flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
 			in:fly={{ y: 20, duration: 500, delay: staggerDelay * 2 }}
 		>
 			<div
-				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600"
+				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-secondary"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -78,11 +78,11 @@
 
 		<!-- Step 3: Implementation -->
 		<div
-			class="flex flex-col rounded-lg bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
+			class="flex flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
 			in:fly={{ y: 20, duration: 500, delay: staggerDelay * 3 }}
 		>
 			<div
-				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600"
+				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-secondary"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -110,11 +110,11 @@
 
 		<!-- Step 4: Handover -->
 		<div
-			class="flex flex-col rounded-lg bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
+			class="flex flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
 			in:fly={{ y: 20, duration: 500, delay: staggerDelay * 4 }}
 		>
 			<div
-				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600"
+				class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-secondary"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"

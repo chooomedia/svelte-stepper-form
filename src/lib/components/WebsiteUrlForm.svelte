@@ -640,7 +640,11 @@
 
 	<!-- Analysis Loading Box (stays visible during load and after) -->
 	{#if isLoading || (analysisData && !analysisError)}
-		<div class="analysis-in-progress mb-6" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
+		<div
+			class="analysis-in-progress mb-6 mt-3"
+			in:fade={{ duration: 300 }}
+			out:fade={{ duration: 300 }}
+		>
 			<div class="mx-auto max-w-3xl rounded-lg bg-white p-6 shadow-custom">
 				<div class="flex flex-col items-center">
 					<!-- Animated Progress Indicator - Only shows animation while not complete -->

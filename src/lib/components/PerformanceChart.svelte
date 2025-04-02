@@ -69,7 +69,14 @@
 	let averageValue = $state(0);
 	let improvedAverageValue = $state(0);
 	let needsRecalculation = $state(false);
-	let showingImprovement = $state(showImprovement);
+
+	// Synchronisieren des Props mit dem lokalen State
+	let showingImprovement = $state(false);
+
+	// Einmaliges Setzen des initialen Werts basierend auf dem Prop
+	$effect(() => {
+		showingImprovement = showImprovement;
+	});
 
 	// Animation control
 	const animationTween = tweened(1, { duration: 1500, easing: cubicOut });
@@ -488,19 +495,21 @@
 		chart.update('none');
 	}
 
-	export function toggleImprovementView(show: boolean): void {
+	function toggleImprovementView(show: boolean): void {
+		// Nur aktualisieren, wenn sich der Wert tatsächlich ändert
 		if (showingImprovement === show) return;
 
 		showingImprovement = show;
 
+		// Sicherstellen, dass ein Chart existiert
 		if (!chart) return;
 
 		if (showingImprovement) {
-			// Add improvement dataset
+			// Add improvement dataset zwischen dem aktuellen Datensatz und der Durchschnittslinie
 			chart.data.datasets.splice(1, 0, {
 				label: $i18n.schema.metrics.improvedValue,
 				data: metrics.map((m) => m.improvedValue * $animationTween),
-				borderColor: '#8B5CF6',
+				borderColor: '#8B5CF6', // Violett für verbesserter Wert
 				backgroundColor: 'rgba(139, 92, 246, 0.1)',
 				tension: 0.3,
 				fill: true,
@@ -510,12 +519,13 @@
 				pointHoverRadius: 6
 			});
 		} else {
-			// Remove improvement dataset
+			// Entferne den Verbesserungs-Datensatz
 			chart.data.datasets = chart.data.datasets.filter(
 				(dataset) => dataset.label !== $i18n.schema.metrics.improvedValue
 			);
 		}
 
+		// Chart aktualisieren
 		chart.update();
 	}
 
@@ -685,30 +695,6 @@
 					clip-rule="evenodd"
 				/>
 			</svg>
-			{showingImprovement ? hideImprovementLabel : showImprovementLabel}
-		</button>
-	</div>
-
-	<!-- Toggle improvement view button -->
-	<div class="mb-4 flex justify-center">
-		<button
-			class="flex items-center rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800 transition-colors hover:bg-primary-200 {showingImprovement
-				? 'bg-primary-200'
-				: ''}"
-			on:click={() => toggleImprovementView(!showingImprovement)}
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				class="mr-2 h-4 w-4"
-				viewBox="0 0 20 20"
-				fill="currentColor"
-			>
-				<path
-					fill-rule="evenodd"
-					d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-					clip-rule="evenodd"
-				/>
-			</svg>
 			{showingImprovement
 				? $i18n.schema.metrics.hideImprovement
 				: $i18n.schema.metrics.showImprovement}
@@ -795,10 +781,6 @@
 							/>
 						</div>
 					{/if}
-				</div>
-
-				<div class="mt-1 text-xs font-medium">
-					{metric.label}
 				</div>
 			</div>
 		{/each}

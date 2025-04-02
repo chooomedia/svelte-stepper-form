@@ -95,7 +95,7 @@
 </script>
 
 <div
-	class="seo-tip-card rounded-lg border border-blue-100 bg-blue-50 p-5 shadow-sm"
+	class="seo-tip-card rounded-lg border border-primary-100 bg-primary-50 p-5 shadow-sm"
 	in:fade={{ duration: 500 }}
 	out:fade={{ duration: 500 }}
 >
@@ -103,7 +103,7 @@
 		<div class="flex-shrink-0">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
-				class="h-6 w-6 text-blue-500"
+				class="h-6 w-6 text-primary-500"
 				fill="none"
 				viewBox="0 0 24 24"
 				stroke="currentColor"
@@ -117,11 +117,11 @@
 			</svg>
 		</div>
 		<div class="relative min-h-[4rem] w-full overflow-hidden">
-			<h3 class="font-semibold text-blue-800">{tipTitle}</h3>
+			<h3 class="font-semibold text-primary-800">{tipTitle}</h3>
 
 			{#if !inTransition}
 				<p
-					class="mt-1 text-blue-700"
+					class="mt-1 text-primary-700"
 					in:fly={{ y: -20, duration: 300 }}
 					out:fly={{ y: 20, duration: 300 }}
 				>
@@ -131,9 +131,9 @@
 		</div>
 	</div>
 	<div class="mt-4">
-		<div class="h-1 w-full overflow-hidden rounded-full bg-blue-200">
+		<div class="h-1 w-full overflow-hidden rounded-full bg-primary-200">
 			<div
-				class="h-full animate-pulse rounded-full bg-blue-500 transition-all duration-300"
+				class="h-full animate-pulse rounded-full bg-primary-500 transition-all duration-300"
 				style="width: {((currentTipIndex + 1) / activeTips.length) * 100}%"
 			></div>
 		</div>

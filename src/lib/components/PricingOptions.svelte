@@ -332,7 +332,9 @@
 					>
 						✓
 					</div>
-					<p class="ml-3 text-sm text-blue-100">Individuell auf Dein Unternehmen zugeschnitten</p>
+					<p class="text-md ml-3 text-primary-100">
+						Individuell auf Dein Unternehmen zugeschnitten
+					</p>
 				</div>
 				<div class="mt-2 flex items-center">
 					<div
@@ -340,7 +342,7 @@
 					>
 						✓
 					</div>
-					<p class="ml-3 text-sm text-blue-100">SEO-optimiert für mehr Sichtbarkeit</p>
+					<p class="text-md ml-3 text-primary-100">SEO-optimiert für mehr Sichtbarkeit</p>
 				</div>
 				<div class="mt-2 flex items-center">
 					<div
@@ -348,7 +350,7 @@
 					>
 						✓
 					</div>
-					<p class="ml-3 text-sm text-blue-100">Sofortige Steigerung Deiner Online-Präsenz</p>
+					<p class="text-md ml-3 text-primary-100">Sofortige Steigerung Deiner Online-Präsenz</p>
 				</div>
 			</div>
 			<div class="flex items-center justify-center bg-secondary-500 p-6 md:w-1/3">

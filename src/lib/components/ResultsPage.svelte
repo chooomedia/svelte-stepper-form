@@ -240,7 +240,7 @@
 	});
 </script>
 
-<div class="results-page mb-16">
+<div class="results-page mb-16 mt-3">
 	<!-- Score Section -->
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
 		<!-- Left column: Score visualization and website screenshot -->
@@ -404,12 +404,6 @@
 		</div>
 	</div>
 
-	<!-- Process Steps Section - NEW -->
-	<ProcessSteps />
-
-	<!-- Expert Profile Section - NEW -->
-	<ExpertProfile />
-
 	<!-- Improvement Section - NEW -->
 	<ImprovementSection score={processedScore} />
 
@@ -497,6 +491,12 @@
 			</ul>
 		</div>
 	</div>
+
+	<!-- Process Steps Section - NEW -->
+	<ProcessSteps />
+
+	<!-- Expert Profile Section - NEW -->
+	<ExpertProfile />
 
 	<!-- Pricing Section -->
 	<PricingOptions
@@ -600,9 +600,9 @@
 		<h3 class="relative mb-8 text-center text-3xl font-bold text-secondary">
 			<span
 				class="absolute -top-6 left-1/2 -translate-x-1/2 transform text-lg font-normal text-primary-500"
-				>{$i18n.results.testimonials.inspiration}</span
+				>{$i18n.results.sections.testimonials.inspiration}</span
 			>
-			{$i18n.results.testimonials.title}
+			{$i18n.results.sections.testimonials.title}
 		</h3>
 
 		<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -620,17 +620,17 @@
 					</div>
 					<h4 class="text-xl font-bold text-secondary-600">
 						{processedScore < 50
-							? $i18n.results.testimonials.case1.titleLow
-							: $i18n.results.testimonials.case1.titleHigh}
+							? $i18n.results.sections.testimonials.case1.titleLow
+							: $i18n.results.sections.testimonials.case1.titleHigh}
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
 							<span class="text-xl text-blue-300">"</span>
-							{$i18n.results.testimonials.case1.quote}
+							{$i18n.results.sections.testimonials.case1.quote}
 							<span class="text-2xl text-blue-300">"</span>
 						</blockquote>
 						<p class="mt-2 text-right text-sm font-medium text-gray-500">
-							{$i18n.results.testimonials.case1.author}
+							{$i18n.results.sections.testimonials.case1.author}
 						</p>
 					</div>
 				</div>
@@ -649,16 +649,16 @@
 						/>
 					</div>
 					<h4 class="text-xl font-bold text-secondary-600">
-						{$i18n.results.testimonials.case2.title}
+						{$i18n.results.sections.testimonials.case2.title}
 					</h4>
 					<div class="mt-3">
 						<blockquote class="text-gray-700">
 							<span class="text-2xl text-blue-300">"</span>
-							{$i18n.results.testimonials.case2.quote}
+							{$i18n.results.sections.testimonials.case2.quote}
 							<span class="text-2xl text-blue-300">"</span>
 						</blockquote>
 						<p class="mt-2 text-right text-sm font-medium text-gray-500">
-							{$i18n.results.testimonials.case2.author}
+							{$i18n.results.sections.testimonials.case2.author}
 						</p>
 					</div>
 				</div>
@@ -672,10 +672,10 @@
 		in:fade={{ duration: 500, delay: 1800 }}
 	>
 		<h3 class="text-2xl font-bold text-white">
-			{$i18n.results.cta.title}
+			{$i18n.results.sections.cta.title}
 		</h3>
 		<p class="mt-2 text-blue-100">
-			{$i18n.results.cta.subtitle}
+			{$i18n.results.sections.cta.subtitle}
 		</p>
 		<div class="mt-6">
 			<button
@@ -686,7 +686,7 @@
 						behavior: 'smooth'
 					})}
 			>
-				{$i18n.results.cta.button}
+				{$i18n.results.sections.cta.button}
 			</button>
 		</div>
 	</div>

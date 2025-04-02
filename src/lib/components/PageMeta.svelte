@@ -1,5 +1,6 @@
 <script>
 	export let totalSteps = 11;
+	import { i18n } from '$lib/i18n';
 
 	const calculateTime = (steps) => {
 		return Math.ceil(steps / 3); // Annahme: 3 Schritte pro Minute
@@ -18,12 +19,12 @@
 			></path>
 		</svg>
 		<p class="font-bold">4.8</p>
-		<span class="font-normal">von 5</span>
+		<span class="font-normal">{$i18n.start.meta.rating.from} 5</span>
 		<span class="h-4 border-l border-gray-200"></span>
 		<p class="font-bold">129</p>
-		<span class="font-normal">Nutzer</span>
+		<span class="font-normal">{$i18n.start.meta.rating.user}</span>
 	</div>
-	<p class="rounded-[4px] bg-white p-2 text-xs font-bold shadow-custom">
-		{calculateTime(totalSteps)}-MINUTEN QUIZ
+	<p class="rounded-[4px] bg-white p-2 text-xs font-bold uppercase shadow-custom">
+		{calculateTime(totalSteps)}{$i18n.start.meta.rating.quiztime}
 	</p>
 </div>

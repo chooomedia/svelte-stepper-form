@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick, onDestroy, createEventDispatcher } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
 	import type { ImageOption as ImageOptionType } from '$lib/schema';
+	import { i18n } from '$lib/i18n';
 
 	// Explicit event dispatcher for navigation events
 	const dispatch = createEventDispatcher<{
@@ -211,21 +211,21 @@
 	<!-- Information about max selections with countdown status -->
 	{#if multiple}
 		<div class="mb-4 text-center text-xs text-gray-600">
-			{#if showCountdown && selectedValues.length > 0}
-				<!-- Show countdown info -->
-				<div class="font-medium text-primary-700">
-					{selectionCount === 1 ? '1 Option' : `${selectionCount} Optionen`} ausgewählt · Weiterleitung
-					in <span class="font-bold">{countdownSeconds}</span>
+			<div class="font-medium text-primary-700">
+				{#if showCountdown && selectedValues.length > 0}
+					<!-- Show countdown info -->
+					{selectionCount === 1 ? '1 Option' : `${selectionCount} Optionen`} ausgewählt · weiter in
+					<span class="font-bold">{countdownSeconds}</span>
 					{countdownSeconds === 1 ? 'Sekunde' : 'Sekunden'}
-				</div>
-			{:else}
-				<!-- Default info -->
-				{#if maxSelections}
-					Du kannst bis zu {maxSelections} Optionen auswählen
 				{:else}
-					Wähle alle passenden Optionen
+					<!-- Default info -->
+					{#if maxSelections}
+						Du kannst bis zu {maxSelections} Optionen auswählen
+					{:else}
+						Wähle alle passenden Optionen
+					{/if}
 				{/if}
-			{/if}
+			</div>
 		</div>
 	{/if}
 
@@ -256,38 +256,31 @@
 						>
 							<path
 								fill-rule="evenodd"
-								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.293-9.707a1 1 0 00-1.414 0L10 11.586 7.121 8.707a1 1 0 00-1.414 1.414L10 14.414l4.293-4.293a1 1 0 000-1.414z"
 								clip-rule="evenodd"
 							/>
 						</svg>
 					</div>
 				{/if}
 
-				{#if option.imgSrc}
-					<!-- Image container -->
-					<div class="mx-auto p-4">
-						<img
-							src={option.imgSrc}
-							alt={option.description || option.label}
-							class="h-24 w-auto transform object-contain transition-transform hover:scale-110 lg:h-32"
-						/>
-					</div>
-				{/if}
+				<!-- Image preview -->
+				<img
+					src={option.image}
+					alt={i18n.schema.options[fieldName]?.[option.value]?.label || option.label}
+				/>
 
-				<!-- Content container -->
-				<div class="w-full border-t border-primary-200 bg-primary px-1 py-2">
-					<h3 class="hyphens-auto break-words text-base font-semibold text-secondary">
-						{option.label}
-					</h3>
+				<!-- Option text -->
+				<div class="flex h-full flex-col items-center justify-center gap-2 px-2 pb-4 text-center">
+					<div class="text-lg font-medium text-gray-900">
+						{i18n.schema.options[fieldName]?.[option.value]?.label || option.label}
+					</div>
 					{#if option.description}
-						<p class="mb-1 text-[12px] text-secondary-400 text-opacity-80">{option.description}</p>
+						<p class="text-xs text-gray-600">
+							{i18n.schema.options[fieldName]?.[option.value]?.description || option.description}
+						</p>
 					{/if}
 				</div>
 			</button>
 		{/each}
 	</div>
-
-	{#if error}
-		<p class="mt-2 text-sm text-red-600">{error}</p>
-	{/if}
 </div>

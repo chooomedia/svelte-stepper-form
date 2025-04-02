@@ -12,6 +12,7 @@
 	import WebsiteUrlForm from '$lib/components/WebsiteUrlForm.svelte';
 	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
 	import { last_step, TOTAL_STEPS } from '$lib/schema';
+	import { i18n } from '$lib/i18n';
 
 	// Import stores
 	import { stepperStore, jumpToStep } from '$lib/stores/stepperStore';
@@ -163,19 +164,6 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Kostenloses Digital Marketing Assessment | Digital Pusher</title>
-	<meta
-		name="description"
-		content="Analysiere Deine digitale Präsenz mit unserem kostenlosen Marketing-Assessment. Erhalte personalisierte Empfehlungen für mehr Online-Erfolg."
-	/>
-	<meta
-		name="keywords"
-		content="Digital Marketing Assessment, Online Marketing Analyse, Marketing Strategie, Digitale Präsenz, Marketing Beratung"
-	/>
-	<link rel="canonical" href="https://digitalpusher.de/assessment/" />
-</svelte:head>
-
 <div
 	class="form-container absolute mx-auto w-full"
 	itemscope
@@ -187,7 +175,7 @@
 			aria-hidden={$stepperStore.current.index > 1}
 		>
 			<h1 class="mb-6 text-5xl font-bold text-secondary-900" itemprop="name" id="assessment-title">
-				Marketing Check Quiz
+				{$i18n.start.title}
 			</h1>
 
 			<p
@@ -195,9 +183,7 @@
 				itemprop="description"
 				id="assessment-description"
 			>
-				Jetzt <strong>Onlinesichtbarkeit berechnen</strong> lassen,
-				<strong>Reichweite erhöhen</strong> sowie
-				<strong>Ressourcen sparen</strong> und <strong>Umsätze steigern</strong>.
+				{@html $i18n.start.text}
 			</p>
 			<!-- Page Meta -->
 			<PageMeta totalSteps={FORM_STEPS.length} />
@@ -211,7 +197,7 @@
 			{#if $stepperStore.current.index === 12}
 				{$stepperStore.current.description}
 				{#if $formData?.company_url}
-					von
+					{$i18n.start.meta.rating.from}
 					<span class="text-primary-600">
 						{$formData.company_url.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
 					</span>
