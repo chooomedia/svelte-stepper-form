@@ -1,42 +1,26 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { i18n } from '$lib/i18n';
 
 	// Props for the component
 	interface Props {
-		customTips?: string[]; // Optional custom tips from parent component
 		minDisplayTime?: number; // Minimum display time in seconds after webhook response
 		isResponseReceived?: boolean; // Flag to indicate if response was received
 	}
 
-	const { customTips = [], minDisplayTime = 8, isResponseReceived = false } = $props<Props>();
+	const { minDisplayTime = 8, isResponseReceived = false } = $props<Props>();
 
 	// Default SEO tips
-	const defaultSeoTips = [
-		'Verwende präzise Seitentitel (Title-Tags) für bessere Klickraten in Suchergebnissen.',
-		'Erstelle einzigartige Meta-Beschreibungen für jede Seite (150-160 Zeichen).',
-		'Verwende eine H1-Überschrift pro Seite, die das Hauptthema klar kommuniziert.',
-		'Optimiere Bilder mit Alt-Texten und komprimiere sie für schnellere Ladezeiten.',
-		'Erstelle eine klare Website-Struktur mit logischen URLs.',
-		'Optimiere Deine Website für Mobilgeräte mit responsivem Design.',
-		'Verbessere die Ladegeschwindigkeit - jede Sekunde zählt für SEO und Conversion.',
-		'Nutze interne Verlinkungen, um Besuchern und Suchmaschinen zu helfen, Deinen Content zu finden.',
-		'Erstelle regelmäßig hochwertigen, relevanten Content für Deine Zielgruppe.',
-		'Implementiere Schema.org Markup für bessere Darstellung in Suchergebnissen.',
-		'Erstelle eine XML-Sitemap und reiche sie bei Google Search Console ein.',
-		'Nutze eine sichere HTTPS-Verbindung für Deine gesamte Website.',
-		'Überprüfe und repariere defekte Links regelmäßig.',
-		'Optimiere Open Graph Tags für bessere Darstellung in sozialen Medien.'
-	];
+	const defaultSeoTips = $i18n.forms.seotips.default;
 
 	// State variables
 	let currentTipIndex = $state(0);
 	let intervalId: number | undefined;
 	let timeoutId: number | undefined;
-	let showCustomTips = $state(false);
 	let activeTips = $state(defaultSeoTips);
 	let inTransition = $state(false);
-	let tipTitle = $state('SEO-Tipp während der Analyse:');
+	let tipTitle = $state($i18n.forms.seotips.title);
 
 	// Handle tip rotation
 	function startTipRotation(tips: string[], interval: number = minDisplayTime * 1000) {
@@ -67,7 +51,7 @@
 	// Effect to handle custom tips when response is received
 	$effect(() => {
 		// If we have custom tips and response is received
-		if (customTips && customTips.length > 0 && isResponseReceived) {
+		if (defaultSeoTips && defaultSeoTips.length > 0 && isResponseReceived) {
 			// Clear existing timers
 			if (intervalId) clearInterval(intervalId);
 			if (timeoutId) clearTimeout(timeoutId);
@@ -75,14 +59,12 @@
 			// Switch to custom tips with smooth transition
 			inTransition = true;
 			setTimeout(() => {
-				showCustomTips = true;
-				activeTips = customTips;
-				tipTitle = 'SEO-Tipp basierend auf Deiner Analyse:';
+				tipTitle = $i18n.forms.seotips.title;
 				currentTipIndex = 0;
 				inTransition = false;
 
 				// Start rotation with custom tips
-				startTipRotation(customTips, 5000); // Show custom tips faster
+				startTipRotation(defaultSeoTips, 5000); // Show custom tips faster
 			}, 300);
 		}
 	});

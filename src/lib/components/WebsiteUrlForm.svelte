@@ -4,6 +4,7 @@
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
 	import SeoTips from './SeoTips.svelte';
+	import { i18n } from '$lib/i18n';
 	import {
 		extractScoreFromResponse,
 		calculateFinalScore,
@@ -14,7 +15,6 @@
 	import { stepperStore } from '$lib/stores/stepperStore';
 	import { scoreStore } from '$lib/utils/scoring';
 	import { websiteLoading } from '$lib/stores/loadingStore';
-	import { i18n } from '$lib/i18n';
 
 	interface Props {
 		form: SuperValidated<FormData>;
@@ -36,7 +36,7 @@
 
 	// State variables
 	let isLoading = $state(false);
-	let showSeoTips = $state(true); // Always show SEO tips
+	let showSeoTips = $state(true);
 	let analysisError = $state('');
 	let autoAdvanceTimeout: number | undefined;
 	let currentProgress = $state(0);
@@ -46,18 +46,10 @@
 	let localErrors = $state<Record<string, string>>({});
 	let touchedFields = $state(new Set<string>());
 	let isUrlValid = $state(true);
-	let analysisComplete = $state(false); // New state to track when analysis is complete
+	let analysisComplete = $state(false);
 
 	// Für erweiterte SEO-Tips
 	let tipInterval: number | undefined;
-	let customTips = $state<string[]>([
-		// Default SEO tips that show immediately
-		'Verwende präzise Seitentitel (Title-Tags) für bessere Klickraten in Suchergebnissen.',
-		'Erstelle einzigartige Meta-Beschreibungen für jede Seite (150-160 Zeichen).',
-		'Verwende eine H1-Überschrift pro Seite, die das Hauptthema klar kommuniziert.',
-		'Optimiere Bilder mit Alt-Texten und komprimiere sie für schnellere Ladezeiten.',
-		'Erstelle eine klare Website-Struktur mit logischen URLs.'
-	]);
 
 	// URL validation function
 	function validateUrl(url: string): { isValid: boolean; error: string } {
@@ -153,56 +145,6 @@
 		}, 1000);
 
 		return countdownInterval;
-	}
-
-	// Generate additional SEO tips based on analysis data
-	function generateCustomSeoTips(analysisData: any): string[] {
-		const basicSeoTips = [
-			'Verwende präzise Seitentitel (Title-Tags) für bessere Klickraten in Suchergebnissen.',
-			'Erstelle einzigartige Meta-Beschreibungen für jede Seite (150-160 Zeichen).',
-			'Verwende eine H1-Überschrift pro Seite, die das Hauptthema klar kommuniziert.',
-			'Optimiere Bilder mit Alt-Texten und komprimiere sie für schnellere Ladezeiten.',
-			'Erstelle eine klare Website-Struktur mit logischen URLs.'
-		];
-
-		// Add specific tips based on scores
-		const customTips = [];
-
-		// Performance tips
-		if (analysisData?.performance < 70) {
-			customTips.push(
-				'Die Ladegeschwindigkeit Deiner Website könnte verbessert werden. Optimiere Bilder und reduziere unnötige Skripte.'
-			);
-		}
-
-		// SEO tips
-		if (analysisData?.seo < 70) {
-			customTips.push(
-				'Deine SEO-Bewertung zeigt Verbesserungspotential. Überprüfe Title-Tags, Meta-Beschreibungen und interne Verlinkungen.'
-			);
-		}
-
-		// Accessibility tips
-		if (analysisData?.accessibility < 70) {
-			customTips.push(
-				'Verbessere die Zugänglichkeit Deiner Website durch bessere Farbkontraste und korrekte Verwendung von HTML-Elementen.'
-			);
-		}
-
-		// Security tip
-		if (analysisData?.securityGrade !== 'A') {
-			customTips.push(
-				'Verbessere die Sicherheit Deiner Website durch Implementierung von HTTPS und modernen Sicherheitsheadern.'
-			);
-		}
-
-		// Use basic tips if no custom tips were generated
-		if (customTips.length === 0) {
-			return basicSeoTips;
-		}
-
-		// Combine some basic and custom tips
-		return [...customTips, ...basicSeoTips.slice(0, 5 - customTips.length)];
 	}
 
 	// Generate mock data for fallback
@@ -461,11 +403,6 @@
 
 			analysisComplete = true;
 		} finally {
-			const generatedTips = generateCustomSeoTips(analysisData);
-			if (generatedTips.length > 0) {
-				customTips = generatedTips;
-			}
-
 			onAnalysisEnd();
 
 			remainingSeconds = Math.min(remainingSeconds, 7);
@@ -742,28 +679,22 @@
 
 					<h3 class="mb-2 text-center text-xl font-bold text-gray-800">
 						{#if analysisComplete}
-							Analyse der Website <span class="text-primary-600"
+							{$i18n.forms.seotips.headline}
+							<span class="text-primary-600"
 								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
 							> abgeschlossen
 						{:else}
-							Analyse Deiner Website <span class="text-primary-600"
+							{$i18n.forms.seotips.headline}
+							<span class="text-primary-600"
 								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
 							>
 						{/if}
 					</h3>
 
-					<p class="mb-4 text-center text-gray-600">
-						{#if analysisComplete}
-							Bericht wurde erstellt. Du wirst automatisch zum nächsten Schritt weitergeleitet.
-						{:else}
-							Wir analysieren Deine Website und erstellen einen umfassenden Performance-Bericht.
-						{/if}
-					</p>
-
 					<!-- SEO Tips integrated within the loading box (always visible) -->
-					{#if showSeoTips && customTips.length > 0}
+					{#if showSeoTips}
 						<div class="w-full">
-							<SeoTips {customTips} minDisplayTime={8} isResponseReceived={analysisComplete} />
+							<SeoTips minDisplayTime={8} isResponseReceived={analysisComplete} />
 						</div>
 					{/if}
 				</div>

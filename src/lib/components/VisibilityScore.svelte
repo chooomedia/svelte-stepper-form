@@ -1,8 +1,8 @@
-<!-- src/lib/components/VisibilityScore.svelte -->
 <script lang="ts">
 	// Import necessary Svelte functionality
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, scale } from 'svelte/transition';
+	import { i18n } from '$lib/i18n';
 
 	// Component props with defaults
 	const {
@@ -56,25 +56,25 @@
 	function getScoreMessage(score: number): { message: string; solution: string } {
 		if (score >= 80) {
 			return {
-				message: 'Hervorragend! Deine digitale Präsenz ist exzellent.',
-				solution: 'Nutze fortschrittliche Strategien, um Deine Dominanz weiter auszubauen!'
+				message: $i18n.results.score.excellent.title,
+				solution: $i18n.results.score.excellent.suggestion
 			};
 		}
 		if (score >= 60) {
 			return {
-				message: 'Gut! Aber es gibt noch Potenzial.',
-				solution: 'Mit gezieltem Optimieren kannst Du noch mehr Sichtbarkeit gewinnen.'
+				message: $i18n.results.score.high.title,
+				solution: $i18n.results.score.high.suggestion
 			};
 		}
 		if (score >= 40) {
 			return {
-				message: 'Deine Sichtbarkeit ist ausbaufähig.',
-				solution: 'Erhöhe Deine Reichweite durch smarte Online-Marketing-Strategien.'
+				message: $i18n.results.score.medium.title,
+				solution: $i18n.results.score.medium.suggestion
 			};
 		}
 		return {
-			message: 'Kritisch! Dein Unternehmen ist kaum sichtbar.',
-			solution: 'Wir zeigen Dir, wie Du sofort mehr Kunden erreichst.'
+			message: $i18n.results.score.low.title,
+			solution: $i18n.results.score.low.suggestion
 		};
 	}
 
@@ -242,7 +242,7 @@
 			<span class="text-6xl font-bold" style="color: {animatedColor}">
 				{Math.round(displayScore)}
 			</span>
-			<span class="text-lg text-gray-500">von 100</span>
+			<span class="text-lg text-gray-500">{$i18n.start.meta.rating.from} 100</span>
 		</div>
 	</div>
 

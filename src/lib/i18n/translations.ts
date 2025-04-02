@@ -22,6 +22,12 @@ export interface Translation {
 	};
 	forms: {
 		labels: Record<string, string>;
+		salutation: {
+			select: string;
+			male: string;
+			female: string;
+			diverse: string;
+		};
 		placeholders: Record<string, string>;
 		errors: Record<string, string>;
 		descriptions: Record<string, string> & { analyze: string };
@@ -30,6 +36,11 @@ export interface Translation {
 			seo: string;
 			accessibility: string;
 			security: string;
+		};
+		seotips: {
+			headline: string;
+			title: string;
+			default: string[];
 		};
 	};
 	schema: {
@@ -88,19 +99,47 @@ export interface Translation {
 		subtitle: string;
 		score: {
 			title: string;
-			low: string;
-			medium: string;
-			high: string;
-			excellent: string;
+			low: {
+				title: string;
+				suggestion: string;
+			};
+			medium: {
+				title: string;
+				suggestion: string;
+			};
+			high: {
+				title: string;
+				suggestion: string;
+			};
+			excellent: {
+				title: string;
+				suggestion: string;
+			};
 		};
 		sections: {
 			analysis: string;
 			steps: {
 				title: string;
-				purchase: string;
-				scheduling: string;
-				implementation: string;
-				handover: string;
+				purchase: {
+					title: string;
+					description: string;
+					icon: string;
+				};
+				scheduling: {
+					title: string;
+					description: string;
+					icon: string;
+				};
+				implementation: {
+					title: string;
+					description: string;
+					icon: string;
+				};
+				handover: {
+					title: string;
+					description: string;
+					icon: string;
+				};
 			};
 			plans: string;
 			testimonials: {
@@ -118,7 +157,13 @@ export interface Translation {
 					author: string;
 				};
 			};
-			improvement: string;
+			improvement: {
+				title: string;
+				steps: Array<{
+					title: string;
+					description: string;
+				}>;
+			};
 			cta: {
 				title: string;
 				subtitle: string;
@@ -266,9 +311,23 @@ const de: Translation = {
 			privacy_agreement: 'Datenschutzerklärung',
 			marketing_consent: 'Newsletter'
 		},
+		salutation: {
+			select: 'Bitte Anrede auswählen',
+			male: 'Herr',
+			female: 'Frau',
+			diverse: 'Divers'
+		},
 		placeholders: {
-			company_url: 'https://www.meinewebsite.de',
-			email: 'max.mustermann@example.de'
+			select: 'Bitte wählen',
+			salutation: 'Bitte wähle Deine Anrede',
+			first_name: 'Bitte gib Deinen Vornamen ein',
+			last_name: 'Bitte gib Deinen Nachnamen ein',
+			email: 'Bitte gib Deine E-Mail-Adresse ein',
+			phone: 'Telefonnummer (optional)',
+			privacy_agreement: 'Datenschutzerklärung akzeptieren',
+			privacy_policy: 'Datenschutzerklärung',
+			newsletter_terms: 'Newsletter-Bestimmungen',
+			company_url: 'https://www.meinewebsite.de'
 		},
 		errors: {
 			required: 'Dieses Feld ist erforderlich',
@@ -278,13 +337,35 @@ const de: Translation = {
 		descriptions: {
 			company_url:
 				"Gib die URL Deiner Website ein und klicke auf 'Analysieren', um einen umfassenden Bericht zu erhalten.",
-			analyze: 'Klicke auf "Analysieren", um Deine Website zu überprüfen'
+			analyze: 'Klicke auf "Analysieren", um Deine Website zu überprüfen',
+			privacy_agreement: 'Ich stimme der',
+			marketing_consent: 'Ich möchte den Newsletter erhalten und akzeptiere die'
 		},
 		checkpoints: {
 			performance: 'Performance-Check',
 			seo: 'SEO-Analyse',
 			accessibility: 'Zugänglichkeitstest',
 			security: 'Sicherheitscheck'
+		},
+		seotips: {
+			headline: 'Analyse Deiner Website',
+			title: 'SEO-Tipp während der Analyse:',
+			default: [
+				'Verwende präzise Seitentitel (Title-Tags) für bessere Klickraten in Suchergebnissen.',
+				'Erstelle einzigartige Meta-Beschreibungen für jede Seite (150-160 Zeichen).',
+				'Verwende eine H1-Überschrift pro Seite, die das Hauptthema klar kommuniziert.',
+				'Optimiere Bilder mit Alt-Texten und komprimiere sie für schnellere Ladezeiten.',
+				'Erstelle eine klare Website-Struktur mit logischen URLs.',
+				'Optimiere Deine Website für Mobilgeräte mit responsivem Design.',
+				'Verbessere die Ladegeschwindigkeit - jede Sekunde zählt für SEO und Conversion.',
+				'Nutze interne Verlinkungen, um Besuchern und Suchmaschinen zu helfen, Deinen Content zu finden.',
+				'Erstelle regelmäßig hochwertigen, relevanten Content für Deine Zielgruppe.',
+				'Implementiere Schema.org Markup für bessere Darstellung in Suchergebnissen.',
+				'Erstelle eine XML-Sitemap und reiche sie bei Google Search Console ein.',
+				'Nutze eine sichere HTTPS-Verbindung für Deine gesamte Website.',
+				'Überprüfe und repariere defekte Links regelmäßig.',
+				'Optimiere Open Graph Tags für bessere Darstellung in sozialen Medien.'
+			]
 		}
 	},
 	schema: {
@@ -436,11 +517,11 @@ const de: Translation = {
 					label: 'Gründung ist geplant',
 					description: 'In der Planungsphase'
 				},
-				less_then_6_months: {
+				less_than_6_months: {
 					label: 'Jünger als 6 Monate',
 					description: 'Junges Unternehmen'
 				},
-				more_then_6_months: {
+				more_than_6_months: {
 					label: 'Älter als 6 Monate',
 					description: 'Etabliertes Unternehmen'
 				},
@@ -502,19 +583,47 @@ const de: Translation = {
 		subtitle: 'Hier ist Dein individueller Analysebericht',
 		score: {
 			title: 'Dein Marketing Score',
-			low: 'Kritisch! Dein Unternehmen ist kaum sichtbar.',
-			medium: 'Deine Sichtbarkeit ist ausbaufähig.',
-			high: 'Gut! Aber es gibt noch Potenzial.',
-			excellent: 'Hervorragend! Deine digitale Präsenz ist exzellent.'
+			low: {
+				title: 'Kritisch! Dein Unternehmen ist kaum sichtbar.',
+				suggestion: 'Wir zeigen Dir, wie Du sofort mehr Kunden erreichst.'
+			},
+			medium: {
+				title: 'Deine Sichtbarkeit ist ausbaufähig.',
+				suggestion: 'Erhöhe Deine Reichweite durch smarte Online-Marketing-Strategien.'
+			},
+			high: {
+				title: 'Gut! Aber es gibt noch Potenzial.',
+				suggestion: 'Mit gezieltem Optimieren kannst Du noch mehr Sichtbarkeit gewinnen.'
+			},
+			excellent: {
+				title: 'Hervorragend! Deine digitale Präsenz ist exzellent.',
+				suggestion: 'Nutze fortschrittliche Strategien, um Deine Dominanz weiter auszubauen!'
+			}
 		},
 		sections: {
 			analysis: 'Deine Analyse-Ergebnisse',
 			steps: {
 				title: 'Wie geht es nach dem Kauf weiter?',
-				purchase: 'Auswahl des passenden Plans und unkomplizierter Kaufabschluss',
-				scheduling: 'Persönliche Terminvereinbarung mit unserem Digital-Experten',
-				implementation: 'Professionelle Umsetzung aller vereinbarten Maßnahmen',
-				handover: 'Übergabe und Einweisung in Dein optimiertes digitales System'
+				purchase: {
+					title: 'Kaufabschluss',
+					description: 'Auswahl des passenden Plans und unkomplizierter Kaufabschluss',
+					icon: 'cart'
+				},
+				scheduling: {
+					title: 'Terminvereinbarung',
+					description: 'Persönliche Terminvereinbarung mit unserem Digital-Experten',
+					icon: 'calendar'
+				},
+				implementation: {
+					title: 'Umsetzung',
+					description: 'Professionelle Umsetzung aller vereinbarten Maßnahmen',
+					icon: 'code'
+				},
+				handover: {
+					title: 'Übergabe',
+					description: 'Übergabe und Einweisung in Dein optimiertes digitales System',
+					icon: 'check'
+				}
 			},
 			plans: 'Wähle Deinen Plan',
 			testimonials: {
@@ -535,7 +644,27 @@ const de: Translation = {
 					author: '- M. Keller, Senior Brand Manager'
 				}
 			},
-			improvement: 'So verbessern wir Deine Ergebnisse',
+			improvement: {
+				title: 'So verbessern wir Deine Ergebnisse',
+				steps: [
+					{
+						title: 'Schritt 1',
+						description: 'Beschreibung des ersten Schrittes'
+					},
+					{
+						title: 'Schritt 2',
+						description: 'Beschreibung des zweiten Schrittes'
+					},
+					{
+						title: 'Schritt 3',
+						description: 'Beschreibung des dritten Schrittes'
+					},
+					{
+						title: 'Schritt 4',
+						description: 'Beschreibung des vierten Schrittes'
+					}
+				]
+			},
 			cta: {
 				title: 'Bereit, Deine digitale Präsenz zu revolutionieren?',
 				subtitle: 'Wähle jetzt Deinen Plan und starte Deine Reise zu mehr Sichtbarkeit und Erfolg.',
@@ -658,8 +787,8 @@ const en: Translation = {
 		text: 'Calculate your <strong>online visibility</strong>, <strong>increase reach</strong>, <strong>save resources</strong>, and <strong>boost revenue</strong> now.',
 		meta: {
 			rating: {
-				user: 'User',
-				from: 'from',
+				user: 'Customers',
+				from: 'of',
 				quiztime: '-minute quiz'
 			}
 		}
@@ -685,9 +814,23 @@ const en: Translation = {
 			privacy_agreement: 'Privacy Policy',
 			marketing_consent: 'Newsletter'
 		},
+		salutation: {
+			select: 'Please select a salutation',
+			male: 'Mr.',
+			female: 'Ms.',
+			diverse: 'Diverse'
+		},
 		placeholders: {
-			company_url: 'https://www.example.com',
-			email: 'john.doe@example.com',
+			select: 'Please select',
+			salutation: 'Please select your salutation',
+			first_name: 'Please enter your first name',
+			last_name: 'Please enter your last name',
+			email: 'Please enter your email address',
+			phone: 'Phone number (optional)',
+			privacy_agreement: 'Accept privacy policy',
+			privacy_policy: 'Privacy policy',
+			newsletter_terms: 'Newsletter terms',
+			company_url: 'https://www.mywebsite.com',
 			aria: 'Enter your Website Url'
 		},
 		errors: {
@@ -697,13 +840,35 @@ const en: Translation = {
 		},
 		descriptions: {
 			company_url: 'Enter your website URL and click "Analyse" to receive a comprehensive report.',
-			analyze: 'Click on "Analyse" to check your website'
+			analyze: 'Click on "Analyse" to check your website',
+			privacy_agreement: 'I agree to the',
+			marketing_consent: 'I would like to receive the newsletter and accept the'
 		},
 		checkpoints: {
 			performance: 'Performance check',
 			seo: 'SEO analysis',
 			accessibility: 'Accessibility test',
 			security: 'Security check'
+		},
+		seotips: {
+			headline: 'Analysis of Your Website',
+			title: 'SEO tip during analysis:',
+			default: [
+				'Use precise page titles (title tags) for better click-through rates in search results.',
+				'Create unique meta descriptions for each page (150-160 characters).',
+				'Use one H1 heading per page that clearly communicates the main topic.',
+				'Optimize images with alt texts and compress them for faster loading times.',
+				'Create a clear website structure with logical URLs.',
+				'Optimize your website for mobile devices with responsive design.',
+				'Improve loading speed – every second counts for SEO and conversion.',
+				'Use internal linking to help visitors and search engines find your content.',
+				'Regularly create high-quality, relevant content for your target audience.',
+				'Implement Schema.org markup for better search result presentation.',
+				'Create an XML sitemap and submit it to Google Search Console.',
+				'Use a secure HTTPS connection for your entire website.',
+				'Regularly check and fix broken links.',
+				'Optimize Open Graph tags for better social media display.'
+			]
 		}
 	},
 	schema: {
@@ -921,19 +1086,47 @@ const en: Translation = {
 		subtitle: 'Here is your personalized analysis report',
 		score: {
 			title: 'Your Marketing Score',
-			low: 'Critical! Your business is barely visible.',
-			medium: 'Your visibility can be improved.',
-			high: 'Good! But there is still potential.',
-			excellent: 'Excellent! Your digital presence is outstanding.'
+			low: {
+				title: 'Critical! Your business is barely visible.',
+				suggestion: 'We’ll show you how to reach more customers immediately.'
+			},
+			medium: {
+				title: 'Your visibility could be improved.',
+				suggestion: 'Increase your reach with smart online marketing strategies.'
+			},
+			high: {
+				title: 'Good! But there’s still potential.',
+				suggestion: 'With targeted optimization, you can gain even more visibility.'
+			},
+			excellent: {
+				title: 'Outstanding! Your digital presence is excellent.',
+				suggestion: 'Use advanced strategies to further expand your dominance!'
+			}
 		},
 		sections: {
 			analysis: 'Your Analysis Results',
 			steps: {
 				title: 'What happens after purchase?',
-				purchase: 'Selection of the suitable plan and straightforward purchase',
-				scheduling: 'Personal appointment scheduling with our digital expert',
-				implementation: 'Professional implementation of all agreed measures',
-				handover: 'Handover and briefing for your optimized digital system'
+				purchase: {
+					title: 'Purchase',
+					description: 'Selection of the appropriate plan and seamless purchase completion',
+					icon: 'cart'
+				},
+				scheduling: {
+					title: 'Appointment',
+					description: 'Personal appointment scheduling with our digital expert',
+					icon: 'calendar'
+				},
+				implementation: {
+					title: 'Implementation',
+					description: 'Professional implementation of all agreed-upon measures',
+					icon: 'code'
+				},
+				handover: {
+					title: 'Handover',
+					description: 'Handover and training on your optimized digital system',
+					icon: 'check'
+				}
 			},
 			plans: 'Choose Your Plan',
 			testimonials: {

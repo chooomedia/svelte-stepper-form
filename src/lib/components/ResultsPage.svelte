@@ -11,6 +11,7 @@
 	import ProcessSteps from './ProcessSteps.svelte';
 	import ImprovementSection from './ImprovementSection.svelte';
 	import { scoreStore, getFallbackAuditData, websiteScreenshot } from '$lib/utils/scoring';
+	import Icon from './Icon.svelte';
 
 	interface Props {
 		score: number;
@@ -322,39 +323,15 @@
 		<!-- Stärken -->
 		<div class="p-6">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="mr-2 h-6 w-6"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M5 13l4 4L19 7"
-					/>
-				</svg>
+				<Icon name="check" size={24} className="mr-2" />
 				{$i18n.results.strengths.title}
 			</h3>
 			<ul class="space-y-3">
 				{#each [...(processedScore > 60 ? [$i18n.results.strengths.goodBasics, $i18n.results.strengths.regularContent] : processedScore > 40 ? [$i18n.results.strengths.understanding, $i18n.results.strengths.quickImprovement] : [$i18n.results.strengths.growthPotential, $i18n.results.strengths.visibilityGain]), formData?.visibility === 'social_media' ? $i18n.results.strengths.socialPresence : formData?.visibility === 'search_engines' ? $i18n.results.strengths.seoUnderstanding : $i18n.results.strengths.digitalTransformation] as strength, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M5 13l4 4L19 7"
-							/>
-						</svg>
+						<div class="mr-3 text-green-500">
+							<Icon name="check" size={20} />
+						</div>
 						<span>{strength}</span>
 					</li>
 				{/each}
@@ -364,39 +341,15 @@
 		<!-- Verbesserungspotenzial -->
 		<div class="p-6">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-red-600">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="mr-2 h-6 w-6"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M6 18L18 6M6 6l12 12"
-					/>
-				</svg>
+				<Icon name="closeX" size={24} className="mr-2" />
 				{$i18n.results.weaknesses.title}
 			</h3>
 			<ul class="space-y-3">
 				{#each [...(processedScore < 40 ? [$i18n.results.weaknesses.poorVisibility, $i18n.results.weaknesses.noStrategy, $i18n.results.weaknesses.poorOptimization] : processedScore < 60 ? [$i18n.results.weaknesses.limitedReach, $i18n.results.weaknesses.underdevelopedContent, $i18n.results.weaknesses.poorConversion] : [$i18n.results.weaknesses.contentDistribution, $i18n.results.weaknesses.competitorAnalysis, $i18n.results.weaknesses.conversionRate])] as weakness, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="mr-2 h-5 w-5 flex-shrink-0 text-red-500"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M6 18L18 6M6 6l12 12"
-							/>
-						</svg>
+						<div class="mr-3 text-red-500">
+							<Icon name="closeX" size={20} />
+						</div>
 						<span>{weakness}</span>
 					</li>
 				{/each}
@@ -411,39 +364,15 @@
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2" in:fade={{ duration: 500, delay: 900 }}>
 		<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="mr-2 h-6 w-6"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
+				<Icon name="checkCircle" size={24} className="mr-1" />
 				{$i18n.results.benefits.title}
 			</h3>
 			<ul class="space-y-3">
 				{#each benefits as benefit, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M5 13l4 4L19 7"
-							/>
-						</svg>
+						<div class="text-green-600">
+							<Icon name="check" size={20} className="mr-2" />
+						</div>
 						<span>{benefit}</span>
 					</li>
 				{/each}
@@ -452,39 +381,15 @@
 
 		<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-primary-700">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="mr-2 h-6 w-6"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M13 10V3L4 14h7v7l9-11h-7z"
-					/>
-				</svg>
+				<Icon name="thunder" size={24} className="mr-1" />
 				{$i18n.results.recommendations.title}
 			</h3>
 			<ul class="space-y-3">
 				{#each recommendations as recommendation, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="mr-2 h-5 w-5 flex-shrink-0 text-primary-700"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M9 5l7 7-7 7"
-							/>
-						</svg>
+						<div class="text-primary-700">
+							<Icon name="thunder" size={20} className="mr-2" />
+						</div>
 						<span>{recommendation}</span>
 					</li>
 				{/each}
@@ -524,14 +429,7 @@
 							<div
 								class="flex h-12 w-12 items-center justify-center rounded-md bg-primary-500 text-white"
 							>
-								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M5 13l4 4L19 7"
-									/>
-								</svg>
+								<Icon name="check" size={26} />
 							</div>
 						</div>
 						<div class="ml-4">
@@ -553,14 +451,7 @@
 								<div
 									class="flex h-12 w-12 items-center justify-center rounded-md bg-red-500 text-white"
 								>
-									<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M6 18L18 6M6 6l12 12"
-										/>
-									</svg>
+									<Icon name="closeX" size={26} />
 								</div>
 							</div>
 							<div class="ml-4">
@@ -572,9 +463,9 @@
 			</div>
 
 			<div class="mt-16 text-center">
-				<div class="inline-flex rounded-md shadow">
+				<div class="inline-flex items-center rounded-md shadow">
 					<button
-						class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-5 py-3 text-base font-medium text-secondary hover:bg-primary-700"
+						class="flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-5 py-3 text-base font-medium text-secondary hover:bg-primary-700"
 						onclick={() =>
 							window.scrollTo({
 								top: document.querySelector('.pricing-cards')?.offsetTop || 0,
@@ -582,13 +473,7 @@
 							})}
 					>
 						{$i18n.pricing.choosePlan}
-						<svg class="-mr-1 ml-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-								clip-rule="evenodd"
-							/>
-						</svg>
+						<Icon name="arrowRight" fill="currentColor" size={32} className="mt-1 ml-2" />
 					</button>
 				</div>
 			</div>

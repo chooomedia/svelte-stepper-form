@@ -4,21 +4,14 @@
 	import { currentLocale, changeLocale, initLocale } from '$lib/i18n';
 	import { i18n } from '$lib/i18n';
 
-	// Lokale Variable, um den initialen Ladestatus zu verfolgen
-	let isInitialized = false;
-
 	function handleLanguageChange(locale: string) {
 		changeLocale(locale);
 	}
 
-	// Stellen Sie sicher, dass die Initialisierung nur im Browser geschieht
+	// Initialisierung nur im Browser
 	onMount(() => {
 		if (browser) {
-			// Sprache initialisieren
 			initLocale();
-
-			// Nach der Initialisierung als geladen markieren
-			isInitialized = true;
 		}
 	});
 </script>
@@ -31,9 +24,9 @@
 	>
 		© <span>{new Date().getFullYear()}</span> Digital Pusher. {$i18n.footer.copyright}
 
-		<!-- Buttons zeigen nur dann ihren aktiven Zustand an, wenn die Initialisierung abgeschlossen ist -->
+		<!-- Vereinfachte Buttons ohne isInitialized-Abhängigkeit -->
 		<button
-			class="rounded-md px-2 py-1 text-sm {isInitialized && $currentLocale === 'de'
+			class="rounded-md px-2 py-1 text-sm {$currentLocale === 'de'
 				? 'bg-primary-100 text-primary-800'
 				: 'text-gray-600 hover:bg-gray-100'}"
 			on:click={() => handleLanguageChange('de')}
@@ -42,7 +35,7 @@
 			DE
 		</button>
 		<button
-			class="rounded-md px-2 py-1 text-sm {isInitialized && $currentLocale === 'en'
+			class="rounded-md px-2 py-1 text-sm {$currentLocale === 'en'
 				? 'bg-primary-100 text-primary-800'
 				: 'text-gray-600 hover:bg-gray-100'}"
 			on:click={() => handleLanguageChange('en')}

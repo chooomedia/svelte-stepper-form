@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { i18n } from '$lib/i18n';
 
 	const { score = 50 } = $props<{ score?: number }>();
