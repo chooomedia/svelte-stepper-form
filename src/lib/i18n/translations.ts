@@ -18,12 +18,19 @@ export interface Translation {
 		loading: string;
 		error: string;
 		success: string;
+		analyze: string;
 	};
 	forms: {
 		labels: Record<string, string>;
 		placeholders: Record<string, string>;
 		errors: Record<string, string>;
-		descriptions: Record<string, string>;
+		descriptions: Record<string, string> & { analyze: string };
+		checkpoints: {
+			performance: string;
+			seo: string;
+			accessibility: string;
+			security: string;
+		};
 	};
 	schema: {
 		steps: Record<
@@ -244,7 +251,8 @@ const de: Translation = {
 		submit: 'Absenden',
 		loading: 'Wird geladen...',
 		error: 'Ein Fehler ist aufgetreten',
-		success: 'Erfolgreich!'
+		success: 'Erfolgreich!',
+		analyze: 'Analysieren'
 	},
 	forms: {
 		labels: {
@@ -269,7 +277,14 @@ const de: Translation = {
 		},
 		descriptions: {
 			company_url:
-				"Gib die URL Deiner Website ein und klicke auf 'Analysieren', um einen umfassenden Bericht zu erhalten."
+				"Gib die URL Deiner Website ein und klicke auf 'Analysieren', um einen umfassenden Bericht zu erhalten.",
+			analyze: 'Klicke auf "Analysieren", um Deine Website zu überprüfen'
+		},
+		checkpoints: {
+			performance: 'Performance-Check',
+			seo: 'SEO-Analyse',
+			accessibility: 'Zugänglichkeitstest',
+			security: 'Sicherheitscheck'
 		}
 	},
 	schema: {
@@ -372,6 +387,80 @@ const de: Translation = {
 				all: {
 					label: 'Alles zusammen',
 					description: 'All-in-One Lösung'
+				}
+			},
+			campaign_management: {
+				self: {
+					label: 'Ich selber',
+					description: 'Eigenständige Verwaltung'
+				},
+				digitalpusher: {
+					label: 'Digitalpusher',
+					description: 'Professionelle Betreuung'
+				},
+				employee: {
+					label: 'Mitarbeiter',
+					description: 'Interne Verwaltung'
+				}
+			},
+			online_reviews: {
+				positive: {
+					label: 'Eher positiv',
+					description: 'Gute Bewertungen'
+				},
+				negative: {
+					label: 'Eher negativ',
+					description: 'Verbesserungspotential'
+				},
+				none: {
+					label: 'Gibt keine',
+					description: 'Keine Bewertungen'
+				}
+			},
+			previous_campaigns: {
+				yes: {
+					label: 'Ja',
+					description: 'Erfahrung vorhanden'
+				},
+				no: {
+					label: 'Nein',
+					description: 'Keine Erfahrung'
+				},
+				would_like: {
+					label: 'Würde ich gerne',
+					description: 'Interesse vorhanden'
+				}
+			},
+			business_phase: {
+				planning: {
+					label: 'Gründung ist geplant',
+					description: 'In der Planungsphase'
+				},
+				less_then_6_months: {
+					label: 'Jünger als 6 Monate',
+					description: 'Junges Unternehmen'
+				},
+				more_then_6_months: {
+					label: 'Älter als 6 Monate',
+					description: 'Etabliertes Unternehmen'
+				},
+				family_business: {
+					label: 'Familienbetrieb',
+					description: 'Familienunternehmen'
+				}
+			},
+			implementation_time: {
+				immediate: {
+					label: 'In Rekordzeit',
+					description: 'Blitzschnelle Umsetzung'
+				},
+				medium: {
+					label: 'In 2-6 Monaten',
+					description: 'Mittelfristige Planung'
+				},
+				long_term: {
+					label: 'Mehr als 6 Monate',
+					description: 'Langfristige Strategie'
 				}
 			}
 		},
@@ -581,7 +670,8 @@ const en: Translation = {
 		submit: 'Submit',
 		loading: 'Loading...',
 		error: 'An error occurred',
-		success: 'Success!'
+		success: 'Success!',
+		analyze: 'Analyse'
 	},
 	forms: {
 		labels: {
@@ -597,7 +687,8 @@ const en: Translation = {
 		},
 		placeholders: {
 			company_url: 'https://www.example.com',
-			email: 'john.doe@example.com'
+			email: 'john.doe@example.com',
+			aria: 'Enter your Website Url'
 		},
 		errors: {
 			required: 'This field is required',
@@ -605,7 +696,14 @@ const en: Translation = {
 			email: 'Please enter a valid email address'
 		},
 		descriptions: {
-			company_url: "Enter your website URL and click 'Analyze' to receive a comprehensive report."
+			company_url: 'Enter your website URL and click "Analyse" to receive a comprehensive report.',
+			analyze: 'Click on "Analyse" to check your website'
+		},
+		checkpoints: {
+			performance: 'Performance check',
+			seo: 'SEO analysis',
+			accessibility: 'Accessibility test',
+			security: 'Security check'
 		}
 	},
 	schema: {
@@ -708,6 +806,80 @@ const en: Translation = {
 				all: {
 					label: 'Everything Together',
 					description: 'All-in-one solution'
+				}
+			},
+			campaign_management: {
+				self: {
+					label: 'By myself',
+					description: 'Managed company owner'
+				},
+				digitalpusher: {
+					label: 'Digitalpusher',
+					description: 'Managed Professional'
+				},
+				employee: {
+					label: 'Employee',
+					description: 'Managed internal'
+				}
+			},
+			online_reviews: {
+				positive: {
+					label: 'Positive Reviews',
+					description: 'Mostly positive feedback from customers'
+				},
+				negative: {
+					label: 'Negative Reviews',
+					description: 'Mostly negative feedback from customers'
+				},
+				none: {
+					label: 'No Reviews',
+					description: 'I didnt received reviews yet'
+				}
+			},
+			previous_campaigns: {
+				yes: {
+					label: 'Successful',
+					description: 'Previous campaigns were successful'
+				},
+				no: {
+					label: 'No Ads',
+					description: 'No online advertising to date'
+				},
+				would_like: {
+					label: 'I would like to',
+					description: 'I like to advertise in the future'
+				}
+			},
+			business_phase: {
+				planning: {
+					label: 'In Planning',
+					description: 'I am planning to start a business'
+				},
+				less_than_6_months: {
+					label: 'Start-Up',
+					description: 'The company is still unknown'
+				},
+				more_than_6_months: {
+					label: 'Stable Business',
+					description: 'Business is established'
+				},
+				family_business: {
+					label: 'Family Business',
+					description: 'Established company'
+				}
+			},
+			implementation_time: {
+				immediate: {
+					label: 'In record time',
+					description: 'Implement within a few days'
+				},
+				medium: {
+					label: 'Vital Growth',
+					description: 'Implement within a few months'
+				},
+				long_term: {
+					label: 'Long Term',
+					description: 'Implement over a longer period of time'
 				}
 			}
 		},

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick, onDestroy, createEventDispatcher } from 'svelte';
 	import type { ImageOption as ImageOptionType } from '$lib/schema';
-	import { i18n } from '$lib/i18n';
+	import { getTranslatedLabel, getTranslatedDescription } from '$lib/i18n';
 
 	// Explicit event dispatcher for navigation events
 	const dispatch = createEventDispatcher<{
@@ -240,7 +240,7 @@
 					? 'border-primary-500 shadow-primary-100 ring-1 ring-primary-500'
 					: 'border-gray-100'}"
 				onclick={() => handleOptionSelect(option.value)}
-				aria-label={option.description || option.label}
+				aria-label={getTranslatedDescription(fieldName, option.value)}
 				aria-pressed={isSelected(option.value)}
 			>
 				<!-- Selection indicator -->
@@ -256,31 +256,39 @@
 						>
 							<path
 								fill-rule="evenodd"
-								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.293-9.707a1 1 0 00-1.414 0L10 11.586 7.121 8.707a1 1 0 00-1.414 1.414L10 14.414l4.293-4.293a1 1 0 000-1.414z"
+								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
 								clip-rule="evenodd"
 							/>
 						</svg>
 					</div>
 				{/if}
 
-				<!-- Image preview -->
-				<img
-					src={option.image}
-					alt={i18n.schema.options[fieldName]?.[option.value]?.label || option.label}
-				/>
-
-				<!-- Option text -->
-				<div class="flex h-full flex-col items-center justify-center gap-2 px-2 pb-4 text-center">
-					<div class="text-lg font-medium text-gray-900">
-						{i18n.schema.options[fieldName]?.[option.value]?.label || option.label}
+				{#if option.imgSrc}
+					<!-- Image container -->
+					<div class="mx-auto p-4">
+						<img
+							src={option.imgSrc}
+							alt={getTranslatedDescription(fieldName, option.value)}
+							class="h-24 w-auto transform object-contain transition-transform hover:scale-110 lg:h-32"
+						/>
 					</div>
-					{#if option.description}
-						<p class="text-xs text-gray-600">
-							{i18n.schema.options[fieldName]?.[option.value]?.description || option.description}
-						</p>
-					{/if}
+				{/if}
+
+				<!-- Content container -->
+				<div class="w-full border-t border-primary-200 bg-primary px-1 py-2">
+					<h3 class="hyphens-auto break-words text-base font-semibold text-secondary">
+						{getTranslatedLabel(fieldName, option.value)}
+					</h3>
+
+					<p class="mb-1 text-[12px] text-secondary-400 text-opacity-80">
+						{getTranslatedDescription(fieldName, option.value)}
+					</p>
 				</div>
 			</button>
 		{/each}
 	</div>
+
+	{#if error}
+		<p class="mt-2 text-sm text-red-600">{error}</p>
+	{/if}
 </div>

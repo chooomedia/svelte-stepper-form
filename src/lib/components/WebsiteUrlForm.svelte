@@ -14,6 +14,7 @@
 	import { stepperStore } from '$lib/stores/stepperStore';
 	import { scoreStore } from '$lib/utils/scoring';
 	import { websiteLoading } from '$lib/stores/loadingStore';
+	import { i18n } from '$lib/i18n';
 
 	interface Props {
 		form: SuperValidated<FormData>;
@@ -30,6 +31,8 @@
 		onAnalysisStart = () => {},
 		onAnalysisEnd = () => {}
 	} = $props<Props>();
+
+	const features = ['performance', 'seo', 'accessibility', 'security'];
 
 	// State variables
 	let isLoading = $state(false);
@@ -561,8 +564,7 @@
 							for="company_url"
 							class="form-label text-semibold mb-1 hyphens-auto break-words text-center text-sm text-gray-600"
 						>
-							Gib die URL Deiner Website ein und klicke auf "Analysieren", um einen umfassenden
-							Bericht zu erhalten.
+							{$i18n.forms.descriptions.company_url}
 						</label>
 
 						<div class="flex flex-col lg:flex-row">
@@ -580,11 +582,11 @@
 										analyzeWebsite();
 									}
 								}}
-								placeholder="https://www.meinewebsite.com"
+								placeholder={$i18n.forms.placeholders.company_url}
 								disabled={isLoading}
 								aria-invalid={shouldShowError('company_url') ? 'true' : 'false'}
 								aria-describedby={shouldShowError('company_url') ? 'company_url-error' : undefined}
-								aria-label="Bitte gib Deine Website-URL ein"
+								aria-label={$i18n.forms.placeholders.aria}
 							/>
 							<button
 								type="button"
@@ -594,9 +596,9 @@
 							>
 								{#if isLoading}
 									<span class="loading loading-spinner loading-sm"></span>
-									Analysiere...
+									{$i18n.common.analyze}...
 								{:else}
-									Analysieren
+									{$i18n.common.analyze}
 								{/if}
 							</button>
 						</div>
@@ -613,14 +615,14 @@
 						{/if}
 						{#if !shouldShowError('company_url') && $form?.company_url && !isLoading && !analysisError}
 							<p class="mt-1 text-sm text-gray-500" id="company_url-description">
-								Klicke auf "Analysieren", um Deine Website zu überprüfen
+								{$i18n.forms.descriptions.analyze}
 							</p>
 						{/if}
 					</div>
 
 					<!-- Feature List -->
 					<div class="mt-5 flex flex-wrap gap-4 lg:my-2">
-						{#each ['Performance-Check', 'SEO-Analyse', 'Zugänglichkeitstest', 'Sicherheitscheck'] as feature, i}
+						{#each features as feature}
 							<div class="flex items-start">
 								<svg class="mr-2 h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
 									<path
@@ -629,7 +631,7 @@
 										clip-rule="evenodd"
 									/>
 								</svg>
-								<span class="text-sm text-gray-700">{feature}</span>
+								<span class="text-sm text-gray-700">{$i18n.forms.checkpoints[feature]}</span>
 							</div>
 						{/each}
 					</div>

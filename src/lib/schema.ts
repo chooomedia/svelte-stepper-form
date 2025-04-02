@@ -177,110 +177,178 @@ export const formOptions = {
 	visibility: [
 		{
 			value: 'search_engines',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-online-suchmaschine-google-0.png',
 			weight: 3
 		},
 		{
 			value: 'social_media',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-social-media-facebook-insta-linkedin-0.png',
 			weight: 5
 		},
 		{
 			value: 'print',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-flyer-zeitung-print-0.png',
 			weight: 2
 		},
 		{
 			value: 'store',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmen-sichtbarkeit-ladengeschaeft-0.png',
 			weight: 2
 		}
 	],
 	advertising_frequency: [
 		{
 			value: 'weekly',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-lieferintervall-werbung-woechentlich-1.png',
 			weight: 7
 		},
 		{
 			value: 'monthly',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-lieferintervall-werbung-monatlich-1.png',
 			weight: 3
 		},
 		{
 			value: 'yearly',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-lieferintervall-werbung-jaehrlich-1.png',
 			weight: 1
 		}
 	],
 	goals: [
 		{
 			value: 'new_clients',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-neukundegewinnung-2.png',
 			weight: 5
 		},
 		{
 			value: 'new_employees',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-mitarbeitergewinnung-2.png',
 			weight: 5
 		},
 		{
 			value: 'more_online',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-mehr-onlinepraesenz-2.png',
 			weight: 10
 		},
 		{
 			value: 'all',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-alle-zusammen-2.png',
 			weight: 10
 		}
 	],
 	campaign_management: [
 		{
 			value: 'self',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-werbeverantwortlicher-ich-selber-3.png',
 			weight: 3
 		},
 		{
 			value: 'digitalpusher',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-werbeverantwortlicher-digitalpusher-3.png',
 			weight: 10
 		},
 		{
 			value: 'employee',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-werbeverantwortlicher-mitarbeiter-3.png',
 			weight: 1
 		}
 	],
 	online_reviews: [
 		{
 			value: 'positive',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-positive-kundenbewertungen-4.png',
 			weight: 7
 		},
 		{
 			value: 'negative',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-negative-kundenbewertungen-4.png',
 			weight: 2
 		},
 		{
 			value: 'none',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-hat-noch-keine-werbung-online-geschaltet-5.png',
 			weight: 1
 		}
 	],
 	previous_campaigns: [
 		{
 			value: 'yes',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-hat-bereits-werbung-online-geschaltet-5.png',
 			weight: 7
 		},
 		{
 			value: 'no',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-hat-noch-keine-werbung-online-geschaltet-5.png',
 			weight: 1
 		},
 		{
 			value: 'would_like',
+			imgSrc:
+				'https://digitalpusher.de//wp-content/uploads/2024/10/digitalpusher-positive-wuerde-gerne-4.png',
 			weight: 3
 		}
 	],
 	business_phase: [
 		{
 			value: 'planning',
-			weight: 6
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmensphase-in-planung-6.png',
+			weight: 5
 		},
 		{
-			value: 'startup',
-			weight: 7
+			value: 'less_than_6_months',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmensphase-juenger-als-6monate-6.png',
+			weight: 3
 		},
 		{
-			value: 'growth',
+			value: 'more_than_6_months',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmensphase-aelter-als-6monate-6.png',
+			weight: 4
+		},
+		{
+			value: 'family_business',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-unternehmensphase-mehrgenerationen-familienbetrieb-6.png',
 			weight: 8
+		}
+	],
+	implementation_time: [
+		{
+			value: 'immediate',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-sehr-kurzfristige-umsetzungszeit-7.png',
+			weight: 3
 		},
 		{
-			value: 'maturity',
+			value: 'medium',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-schnelle-umsetzungszeit-7.png',
+			weight: 10
+		},
+		{
+			value: 'long_term',
+			imgSrc:
+				'https://digitalpusher.de/wp-content/uploads/2024/09/digitalpusher-moderate-umsetzungszeit-7-1.png',
 			weight: 5
 		}
 	]

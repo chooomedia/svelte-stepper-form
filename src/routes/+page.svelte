@@ -22,7 +22,10 @@
 	// Import schema and options
 	import { FORM_STEPS, formOptions, type FormData } from '$lib/schema';
 
-	const { data } = $props();
+	const { data = Array, fieldName = [] } = $props<{
+		fieldName?: string;
+	}>();
+
 	const isDev = import.meta.env.DEV;
 
 	// Initialize the form with SuperForms
@@ -195,7 +198,8 @@
 		<!-- Dynamic step content based on current step -->
 		<h2 class="mb-1 text-center text-xl font-semibold text-secondary-700">
 			{#if $stepperStore.current.index === 12}
-				{$stepperStore.current.description}
+				<!-- Für den Ergebnisschritt -->
+				{$i18n.schema.steps.result.description}
 				{#if $formData?.company_url}
 					{$i18n.start.meta.rating.from}
 					<span class="text-primary-600">
@@ -203,7 +207,9 @@
 					</span>
 				{/if}
 			{:else}
-				{$stepperStore.current.description}
+				<!-- Für alle anderen Schritte -->
+				{$i18n.schema.steps[$stepperStore.current.title]?.description ||
+					$stepperStore.current.description}
 			{/if}
 		</h2>
 		{#key $stepperStore.current.index}
