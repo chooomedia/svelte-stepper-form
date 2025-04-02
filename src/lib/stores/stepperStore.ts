@@ -1,4 +1,4 @@
-// src/lib/stores/stepperStore.ts - Improved version
+// src/lib/stores/stepperStore.ts - Updated for better undefined handling
 import { writable, derived } from 'svelte/store';
 import { FORM_STEPS, TOTAL_STEPS, last_step } from '$lib/schema';
 
@@ -12,6 +12,13 @@ export interface StepStatus {
 	isInvalid: boolean;
 	isCurrent: boolean;
 	isReachable: boolean;
+}
+
+export interface StepInfo {
+	index: number;
+	title: string;
+	description: string;
+	schema?: any;
 }
 
 interface StepperState {
@@ -127,25 +134,36 @@ function createStepperStore() {
 // Create the core store
 export const stepperStore = createStepperStore();
 
-// Derived store for the current step
+// Derived store for the current step index
 export const currentStepIndex = derived(stepperStore, ($store) => $store.currentStepIndex);
 
 // Derived store for the current step details
 export const currentStep = derived(stepperStore, ($store) => {
 	const index = $store.currentStepIndex;
+	let stepInfo: StepInfo;
 
-	// Special case for step 12 (final step)
+	// Special case for step beyond the FORM_STEPS length (final step)
 	if (index > FORM_STEPS.length) {
-		return {
+		stepInfo = {
+			index,
 			title: 'final',
 			description: 'Ergebnisse',
 			schema: last_step
 		};
+	} else {
+		// Normal case for steps within FORM_STEPS range
+		const validIndex = Math.max(1, Math.min(index, FORM_STEPS.length));
+		const stepData = FORM_STEPS[validIndex - 1];
+
+		stepInfo = {
+			index: validIndex,
+			title: stepData.title,
+			description: stepData.description,
+			schema: stepData.schema
+		};
 	}
 
-	// Normal case for steps 1-11
-	const validIndex = Math.max(1, Math.min(index, FORM_STEPS.length));
-	return FORM_STEPS[validIndex - 1];
+	return stepInfo;
 });
 
 // Derived store for step statuses (for UI)
@@ -171,4 +189,9 @@ export function jumpToStep(step: number): void {
 	} else {
 		console.warn(`Invalid step number: ${step}. Valid range is 1-${TOTAL_STEPS}`);
 	}
+}
+
+// Export goToStep for convenience
+export function goToStep(step: number): void {
+	stepperStore.goToStep(step);
 }

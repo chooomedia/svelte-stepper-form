@@ -1,11 +1,11 @@
-<!-- src/routes/+layout.svelte - Improved version -->
+<!-- src/routes/+layout.svelte -->
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import Stepper from '$lib/components/Stepper.svelte';
-	import { stepperStore } from '$lib/stores/stepperStore';
+	import { stepperStore, currentStepIndex } from '$lib/stores/stepperStore';
 	import { i18n, currentLocale, initLocale } from '$lib/i18n';
 	import { TOTAL_STEPS } from '$lib/schema';
 	import Footer from '$lib/components/Footer.svelte';
@@ -110,6 +110,14 @@
 
 	// Is this an embedded version?
 	const isEmbedded = browser && window.self !== window.top;
+
+	// Safely access current step index with a default value
+	// This fixes the "Cannot read properties of undefined (reading 'index')" error
+	const safeCurrentStepIndex = $derived(() => {
+		// Check if stepperStore.current exists and has an index property
+		// If not, default to 1
+		return $stepperStore?.current?.index || 1;
+	});
 </script>
 
 <svelte:head>
@@ -152,7 +160,8 @@
 			</nav>
 
 			<!-- Step Progress Indicator -->
-			{#if $stepperStore.current.index > 1}
+			<!-- Use safeCurrentStepIndex instead of potentially undefined value -->
+			{#if safeCurrentStepIndex > 1}
 				<Stepper on:stepChange={handleStepChange} />
 			{/if}
 		</div>

@@ -1,7 +1,7 @@
-<!-- src/lib/components/Stepper.svelte - Improved version -->
+<!-- src/lib/components/Stepper.svelte -->
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { stepStatuses, currentStepIndex, goToStep } from '$lib/stores/stepperStore';
+	import { stepStatuses, currentStepIndex, stepperStore } from '$lib/stores/stepperStore';
 	import { websiteLoading, formSubmitting } from '$lib/stores/loadingStore';
 	import { derived, get } from 'svelte/store';
 
@@ -144,7 +144,6 @@
 									stroke-width="4"
 									fill="none"
 								></circle>
-								<!-- src/lib/components/Stepper.svelte - Improved version (continued) -->
 								<path
 									class="opacity-75"
 									fill="currentColor"
@@ -161,7 +160,7 @@
 	<!-- Screen reader text describing current progress -->
 	<div class="sr-only" aria-live="polite">
 		Schritt {$currentStepIndex} von {$stepStatuses.length}
-		{#if $stepperStore.current}
+		{#if $stepperStore?.current}
 			- {$stepperStore.current.description}
 		{/if}
 	</div>

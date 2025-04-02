@@ -8,7 +8,7 @@
 	import PerformanceChart from './PerformanceChart.svelte';
 	import PricingOptions from './PricingOptions.svelte';
 	import ExpertProfile from './ExpertProfile.svelte';
-	import ProcessSteps from './ProcessSteps.svelte';
+	import ProcessSteps from './steps/ProcessSteps.svelte';
 	import ImprovementSection from './ImprovementSection.svelte';
 	import { scoreStore, getFallbackAuditData, websiteScreenshot } from '$lib/utils/scoring';
 	import Icon from './Icon.svelte';
