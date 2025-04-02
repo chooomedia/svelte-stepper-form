@@ -3,10 +3,27 @@
 	import { i18n } from '$lib/i18n';
 	import Icon from './Icon.svelte';
 
-	// Animation properties
-	export let staggerDelay = 200;
+	// Animation properties using Svelte 5 props syntax
+	const { staggerDelay = 200 } = $props<{ staggerDelay?: number }>();
 
-	const steps = $i18n.results.sections.steps;
+	// Process steps data from translations
+	// Get all step entries except the title field
+	const getProcessSteps = () => {
+		const stepsData = $i18n.results.sections.steps;
+
+		// Filter out the 'title' key and transform into an array of step objects
+		return Object.entries(stepsData)
+			.filter(([key]) => key !== 'title')
+			.map(([key, step]) => ({
+				key,
+				title: step.title,
+				description: step.description,
+				icon: step.icon
+			}));
+	};
+
+	// Reactive value that updates when translations change
+	const processSteps = $derived(getProcessSteps());
 </script>
 
 <div class="process-steps my-16">
@@ -15,24 +32,23 @@
 	</h2>
 
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-		{#each Object.entries(steps).filter(([key]) => key !== 'title') as [key, { title, description, icon }], index}
+		{#each processSteps as step, index}
 			<div
 				class="flex flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
 				in:fly={{ y: 20, duration: 500, delay: staggerDelay * (index + 1) }}
-				{key}
+				key={step.key}
 			>
 				<div
 					class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-secondary"
 				>
-					<!-- Dynamisches Icon anhand des "icon"-Namens -->
-					<Icon name={icon} size={24} className="h-8 w-8" />
+					<Icon name={step.icon} size={24} className="h-8 w-8" />
 				</div>
 				<div class="mb-2 flex items-center">
 					<span class="mr-2 text-2xl font-bold text-primary-600">{index + 1}</span>
-					<h3 class="font-bold text-gray-900">{title}</h3>
+					<h3 class="font-bold text-gray-900">{step.title}</h3>
 				</div>
 				<p class="text-gray-600">
-					{description}
+					{step.description}
 				</p>
 			</div>
 		{/each}

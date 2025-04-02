@@ -7,6 +7,8 @@
 	import { ModalController, modalStore } from '$lib/components/modal';
 	import { currencyStore } from '$lib/stores/currencyStore';
 	import Icon from './Icon.svelte';
+	import { i18n } from '$lib/i18n';
+	import { get } from 'svelte/store';
 
 	interface Props {
 		score: number;
@@ -24,7 +26,11 @@
 		errors?: Record<string, string>;
 	}
 
-	let { score, onPlanSelect, pricePlans, form, errors = {} } = $props<Props>();
+	let { onPlanSelect, pricePlans, form, errors = {} } = $props<Props>();
+
+	let translations = get(i18n) || {};
+	translations.bonusBox = translations.bonusBox || { benefits: [] };
+	translations.planLabels = translations.planLabels || { longTimeSuffix: {} };
 
 	// Calculated total price based on selected plan and payment type
 	let totalPrice: number = $state(0);
@@ -55,6 +61,9 @@
 		{ name: 'American Express', icon: '/amex.svg', alt: 'American Express' },
 		{ name: 'PayPal', icon: '/paypal.svg', alt: 'PayPal' }
 	];
+
+	const bonusBox = $derived($i18n.pricing.bonusBox);
+	const benefits = $derived(Object.values(bonusBox.benefits));
 
 	// Calculate pricing for a given plan and payment type
 	function calculatePricing(planName: string, paymentMethod: string) {
@@ -112,7 +121,7 @@
 		modalStore.open('payment', {
 			selectedPlan,
 			paymentType,
-			totalPrice: numericPrice, // Hier explizit als Zahl übergeben
+			totalPrice: numericPrice,
 			form,
 			errors,
 			redirectUrl: '/dashboard'
@@ -246,10 +255,10 @@
 	<!-- Header -->
 	<div class="mb-6 text-center">
 		<h3 class="text-2xl font-bold text-gray-900" in:fade={{ duration: 300 }}>
-			Wähle den perfekten Plan für Deine digitale Transformation
+			{$i18n.pricing.header.title}
 		</h3>
 		<p class="mt-2 text-gray-600" in:fade={{ duration: 300, delay: 200 }}>
-			Basierend auf Deinem Score von {score} empfehlen wir Dir einen maßgeschneiderten Ansatz
+			{@html $i18n.pricing.header.title}
 		</p>
 	</div>
 
@@ -260,21 +269,10 @@
 	>
 		<div class="flex flex-col items-center justify-between md:flex-row">
 			<div class="mb-2 flex items-center space-x-2 md:mb-0">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-6 w-6 text-red-600"
-					viewBox="0 0 20 20"
-					fill="currentColor"
-				>
-					<path
-						fill-rule="evenodd"
-						d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-						clip-rule="evenodd"
-					/>
-				</svg>
+				<Icon name="clock" size={32} />
 				<div>
-					<span class="text-lg font-bold text-red-600">Sonderangebot!</span>
-					<span class="text-gray-700"> Rabatt läuft ab in:</span>
+					<span class="text-lg font-bold text-red-600"> {$i18n.pricing.countdown.title}</span>
+					<span class="text-gray-700"> {$i18n.pricing.countdown.subtitle}</span>
 				</div>
 			</div>
 			<div class="flex space-x-2">
@@ -319,39 +317,25 @@
 				<div
 					class="inline-block rounded-full bg-yellow-400 px-3 py-1 text-xs font-semibold text-gray-900"
 				>
-					EXKLUSIV-BONUS
+					{$i18n.pricing.bonusBox.tag}
 				</div>
-				<h3 class="mt-3 text-2xl font-bold text-white">Hochwertiger Blogartikel GRATIS</h3>
+				<h3 class="mt-3 text-2xl font-bold text-white">{$i18n.pricing.bonusBox.title}</h3>
 				<p class="mt-2 text-blue-100">
-					Bei Buchung innerhalb der Aktionszeit erhältst Du einen maßgeschneiderten, SEO-optimierten
-					Blogartikel für Dein Unternehmen – perfekt angepasst, um Deine Reichweite sofort zu
-					steigern!
+					{$i18n.pricing.bonusBox.description}
 				</p>
-				<div class="mt-4 flex items-center">
-					<div
-						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-lg font-bold text-secondary"
-					>
-						✓
-					</div>
-					<p class="text-md ml-3 text-primary-100">
-						Individuell auf Dein Unternehmen zugeschnitten
-					</p>
-				</div>
-				<div class="mt-2 flex items-center">
-					<div
-						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-lg font-bold text-secondary"
-					>
-						✓
-					</div>
-					<p class="text-md ml-3 text-primary-100">SEO-optimiert für mehr Sichtbarkeit</p>
-				</div>
-				<div class="mt-2 flex items-center">
-					<div
-						class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-lg font-bold text-secondary"
-					>
-						✓
-					</div>
-					<p class="text-md ml-3 text-primary-100">Sofortige Steigerung Deiner Online-Präsenz</p>
+				<div class="mt-4 space-y-2">
+					{#each benefits as benefit}
+						<div class="mt-2 flex items-center">
+							<div
+								class="flex aspect-square h-10 w-10 items-center justify-center rounded-full bg-primary-500 text-lg font-bold text-secondary"
+							>
+								✓
+							</div>
+							<p class="text-md ml-3 text-primary-100">
+								{benefit}
+							</p>
+						</div>
+					{/each}
 				</div>
 			</div>
 			<div class="flex items-center justify-center bg-secondary-500 p-6 md:w-1/3">
@@ -361,8 +345,8 @@
 					>
 						<Icon name="document" size={50} />
 					</div>
-					<p class="text-lg font-semibold text-white">Wert: 99€</p>
-					<p class="text-xs text-primary-300">Nur für begrenzte Zeit</p>
+					<p class="text-lg font-semibold text-white">{$i18n.pricing.bonusBox.value}</p>
+					<p class="text-xs text-primary-300">{$i18n.pricing.bonusBox.limited}</p>
 				</div>
 			</div>
 		</div>
@@ -371,33 +355,33 @@
 	<!-- Payment Type Toggle -->
 	<div class="mb-8">
 		<div class="flex flex-col items-center justify-center">
-			<h4 class="mb-3 text-lg font-semibold text-gray-700">Wähle Deine Zahlungsoption:</h4>
+			<h4 class="mb-3 text-lg font-semibold text-gray-700">{$i18n.pricing.paymentOptions.title}</h4>
 			<div class="join rounded-lg border border-gray-200 shadow-md">
 				<button
-					class={`btn join-item ${paymentType === 'monatlich' ? 'btn-primary' : 'btn-ghost'}`}
-					onclick={() => handlePaymentTypeChange('monatlich')}
+					class={`btn join-item ${paymentType === $i18n.pricing.paymentOptions.monthly ? 'btn-primary' : 'btn-ghost'}`}
+					onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.monthly)}
 					type="button"
 				>
-					Monatlich
+					{$i18n.pricing.paymentOptions.monthly}
 				</button>
 				<button
-					class={`btn join-item ${paymentType === 'einmalig' ? 'btn-primary' : 'btn-ghost'}`}
-					onclick={() => handlePaymentTypeChange('einmalig')}
+					class={`btn join-item ${paymentType === $i18n.pricing.paymentOptions.oneTime ? 'btn-primary' : 'btn-ghost'}`}
+					onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.oneTime)}
 					type="button"
 				>
-					Einmalig (-8%)
+					{$i18n.pricing.paymentOptions.oneTime}
 				</button>
 				<button
-					class={`btn join-item hidden md:block lg:block ${paymentType === 'longtime' ? 'btn-primary' : 'btn-ghost'} relative`}
-					onclick={() => handlePaymentTypeChange('longtime')}
+					class={`btn join-item hidden md:block lg:block ${paymentType === $i18n.pricing.paymentOptions.longTime ? 'btn-primary' : 'btn-ghost'} relative`}
+					onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.longTime)}
 					type="button"
 				>
-					<span>Longtime (-20%)</span>
-					{#if paymentType !== 'longtime'}
+					<span>{$i18n.pricing.paymentOptions.longTime}</span>
+					{#if paymentType !== $i18n.pricing.paymentOptions.longTime}
 						<span
 							class="absolute -right-1 -top-1 flex h-5 w-5 rotate-[12deg] animate-pulse items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
 						>
-							HOT
+							{$i18n.pricing.paymentOptions.hotLabel}
 						</span>
 					{/if}
 				</button>
@@ -427,7 +411,7 @@
 					<div
 						class="absolute left-0 right-0 top-0 bg-primary-600 py-1 text-center text-xs font-semibold uppercase tracking-wide text-white"
 					>
-						★ AM BELIEBTESTEN
+						{$i18n.pricing.planLabels.popular}
 					</div>
 				{/if}
 
@@ -443,12 +427,8 @@
 							onchange={() => handlePlanChange(plan.name)}
 						/>
 						<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
-							{paymentType === 'longtime'
-								? plan.name === '1-MONATS-PLAN'
-									? 'BASIS LONGTIME'
-									: plan.name === '3-MONATS-PLAN'
-										? 'PREMIUM LONGTIME'
-										: 'BUSINESS LONGTIME'
+							{paymentType === 'longtime' && $i18n.planLabels.longTimeSuffix[plan.name]
+								? $i18n.planLabels.longTimeSuffix[plan.name]
 								: plan.name}
 						</label>
 					</div>
@@ -468,129 +448,77 @@
 
 						<span class="ml-1 text-3xl font-bold text-gray-900">
 							{currencyStore.formatPrice(
-								paymentType === 'monatlich'
+								paymentType === $i18n.pricing.paymentOptions.monthly
 									? plan.price
-									: paymentType === 'einmalig'
+									: paymentType === $i18n.pricing.paymentOptions.oneTime
 										? plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92
 										: plan.price * 30 * parseInt(plan.name.split('-')[0]) * longtimeYears * 0.8
 							)}
 						</span>
 						<span class="text-sm text-gray-500">
-							{paymentType === 'monatlich'
+							{paymentType === $i18n.pricing.paymentOptions.monthly
 								? plan.perDay
-								: paymentType === 'einmalig'
-									? 'einmalig'
-									: 'longtime'}
+								: paymentType === $i18n.pricing.paymentOptions.oneTime
+									? $i18n.pricing.paymentOptions.oneTime
+									: $i18n.pricing.paymentOptions.longTime}
 						</span>
 					</div>
 
 					<ul class="mt-6 space-y-2">
 						{#each plan.features as feature}
-							<li class="flex items-start">
-								<svg
-									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-									fill="currentColor"
-									viewBox="0 0 20 20"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-										clip-rule="evenodd"
-									></path>
-								</svg>
+							<li class="flex items-start gap-1 text-green-500">
+								<Icon name="check" stroke="currentcolor" size={24} />
 								<span class="text-sm text-gray-700">{feature}</span>
 							</li>
 						{/each}
-						{#if paymentType === 'einmalig'}
+						{#if paymentType === $i18n.pricing.paymentOptions.oneTime}
 							<li class="flex items-start">
-								<svg
-									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-									fill="currentColor"
-									viewBox="0 0 20 20"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-										clip-rule="evenodd"
-									></path>
-								</svg>
-								<span class="text-sm font-semibold text-gray-700">8% Rabatt auf Gesamtpreis</span>
-							</li>
-							<li class="flex items-start">
-								<svg
-									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-									fill="currentColor"
-									viewBox="0 0 20 20"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-										clip-rule="evenodd"
-									></path>
-								</svg>
-								<span class="text-sm font-semibold text-gray-700">Keine monatlichen Gebühren</span>
-							</li>
-						{:else if paymentType === 'longtime'}
-							<li class="flex items-start">
-								<svg
-									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-									fill="currentColor"
-									viewBox="0 0 20 20"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-										clip-rule="evenodd"
-									></path>
-								</svg>
+								<Icon name="checkCircle" size={24} />
 								<span class="text-sm font-semibold text-gray-700"
-									>{displayLongtimeYears} Jahre Zugang</span
+									>{$i18n.pricing.additionalBenefits.oneTime[0]}</span
 								>
 							</li>
 							<li class="flex items-start">
-								<svg
-									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-									fill="currentColor"
-									viewBox="0 0 20 20"
+								<Icon name="checkCircle" size={24} />
+								<span class="text-sm font-semibold text-gray-700"
+									>{$i18n.pricing.additionalBenefits.oneTime[1]}</span
 								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-										clip-rule="evenodd"
-									></path>
-								</svg>
-								<span class="text-sm font-semibold text-gray-700">Massiver 20% Rabatt</span>
+							</li>
+						{:else if paymentType === $i18n.pricing.paymentOptions.longTime}
+							<li class="flex items-start">
+								<Icon name="checkCircle" size={24} />
+								<span class="text-sm font-semibold text-gray-700"
+									>{displayLongtimeYears} {@html $i18n.pricing.additionalBenefits.longTime[0]}</span
+								>
 							</li>
 							<li class="flex items-start">
-								<svg
-									class="mr-2 h-5 w-5 flex-shrink-0 text-green-500"
-									fill="currentColor"
-									viewBox="0 0 20 20"
+								<Icon name="checkCircle" size={24} />
+								<span class="text-sm font-semibold text-gray-700"
+									>{$i18n.pricing.additionalBenefits.longTime[1]}</span
 								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-										clip-rule="evenodd"
-									></path>
-								</svg>
-								<span class="text-sm font-semibold text-primary-600">Alle zukünftigen Updates</span>
+							</li>
+							<li class="flex items-start">
+								<Icon name="checkCircle" size={24} />
+								<span class="text-sm font-semibold text-primary-600"
+									>{$i18n.pricing.additionalBenefits.longTime[2]}</span
+								>
 							</li>
 						{/if}
 					</ul>
 
-					{#if paymentType === 'longtime'}
+					{#if paymentType === $i18n.pricing.paymentOptions.longTime}
 						{@const planMonths = parseInt(plan.name.split('-')[0]) || 1}
 						{@const planDays = planMonths * 30}
 						{@const fullPrice =
-							paymentType === 'einmalig'
+							paymentType === $i18n.pricing.paymentOptions.oneTime
 								? plan.price * planDays
-								: paymentType === 'longtime'
+								: paymentType === $i18n.pricing.paymentOptions.longTime
 									? plan.price * planDays * 5
 									: 0}
 						{@const discount =
-							paymentType === 'einmalig'
+							paymentType === $i18n.pricing.paymentOptions.oneTime
 								? fullPrice * 0.08
-								: paymentType === 'longtime'
+								: paymentType === $i18n.pricing.paymentOptions.longTime
 									? fullPrice * 0.2
 									: 0}
 						<div class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-2">
@@ -609,7 +537,7 @@
 					{/if}
 				</div>
 
-				{#if paymentType === 'longtime'}
+				{#if paymentType === $i18n.pricing.paymentOptions.longTime}
 					<!-- "Best Value" badge for longtime plans -->
 					<div
 						class="absolute -right-10 top-5 rotate-45 bg-red-600 px-10 py-1 text-center text-xs font-bold uppercase text-white shadow-md"
@@ -636,19 +564,25 @@
 				<span
 					class="relative inline-block transform transition-transform duration-300 group-hover:scale-105"
 				>
-					{paymentType === 'monatlich'
-						? 'PLAN ABONNIEREN'
-						: paymentType === 'einmalig'
-							? 'JETZT KAUFEN'
-							: 'LONGTIME ZUGANG SICHERN'} - {totalPrice.toFixed(2)}€
+					{paymentType === $i18n.pricing.paymentOptions.monthly
+						? $i18n.pricing.ctaButton.monthly
+						: paymentType === $i18n.pricing.paymentOptions.oneTime
+							? $i18n.pricing.ctaButton.oneTime
+							: $i18n.pricing.ctaButton.longTime} - {totalPrice.toFixed(2)}€
 				</span>
 
 				{#if paymentType === 'einmalig' && savingsAmount > 0}
-					<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
-				{:else if paymentType === 'monatlich' && savingsAmount > 0}
-					<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€!</span>
-				{:else if paymentType === 'longtime' && savingsAmount > 0}
-					<span class="block text-sm font-normal">Du sparst {savingsAmount.toFixed(2)}€</span>
+					<span class="block text-sm font-normal"
+						>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€</span
+					>
+				{:else if paymentType === $i18n.pricing.paymentOptions.monthly && savingsAmount > 0}
+					<span class="block text-sm font-normal"
+						>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€!</span
+					>
+				{:else if paymentType === $i18n.pricing.paymentOptions.longTime && savingsAmount > 0}
+					<span class="block text-sm font-normal"
+						>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€</span
+					>
 				{/if}
 			</button>
 		</div>
@@ -663,13 +597,13 @@
 			<div class="text-primary-500">
 				<Icon name="lock" fill="currentColor" size={26} />
 			</div>
-			Sicher & geschützt bezahlen
+			{$i18n.pricing.trustBadges[0]}
 		</div>
 		<div class="flex items-center">
 			<div class="text-primary-500">
 				<Icon name="plusCircle" fill="currentColor" size={26} />
 			</div>
-			30 Tage Geld-zurück-Garantie
+			{$i18n.pricing.trustBadges[1]}
 		</div>
 	</div>
 
@@ -705,12 +639,11 @@
 			<div class="flex flex-col items-center md:flex-row">
 				<div class="p-2 md:w-3/4">
 					<h3 class="mb-2 text-xl font-bold text-white">
-						<span class="block sm:inline">Longtime-Zugang</span>
-						<span class="sm:inline"> mit 20% Rabatt!</span>
+						<span class="block sm:inline">{$i18n.pricing.discountBanner.title}</span>
+						<span class="sm:inline">{$i18n.pricing.discountBanner.discount}</span>
 					</h3>
 					<p class="text-sm text-indigo-100">
-						Sichere Dir <span class="font-bold">JETZT</span> Deinen 5 Jahre langen Zugang zu allen Features
-						und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.
+						{@html $i18n.pricing.discountBanner.description}
 					</p>
 				</div>
 				<div class="flex justify-center p-2 md:w-1/4 lg:mr-10">
@@ -718,7 +651,7 @@
 						onclick={() => handlePaymentTypeChange('longtime')}
 						class="btn btn-warning transform animate-pulse shadow-lg transition-transform duration-300 hover:scale-105"
 					>
-						Jetzt sichern!
+						{$i18n.pricing.discountBanner.buttonText}
 					</button>
 				</div>
 			</div>
@@ -727,22 +660,15 @@
 
 	<!-- Terms -->
 	<div class="mt-8 text-center text-xs text-gray-500" in:fade={{ duration: 300, delay: 800 }}>
-		Indem auf „{paymentType === 'monatlich' ? 'PLAN ABONNIEREN' : 'JETZT KAUFEN'}" geklickt wird,
-		werden die Allgemeinen Geschäftsbedingungen und die Datenschutzrichtlinie akzeptiert.
-		{#if paymentType === 'monatlich'}
-			Um Unterbrechungen zu vermeiden, erklärst Du dich damit einverstanden, dass der von Dir
-			gewählte Plan {selectedPlan} automatisch zum vollen Preis für aufeinanderfolgende Verlängerungszeiträume
-			verlängert wird und Dir {monthlyPrice.toFixed(2)}€ monatlich in Rechnung gestellt werden. Du
-			kannst Dein Abonnement jederzeit kündigen, indem Du unser Serviceteam per E-Mail an
-			abo@digitalpusher.de kontaktierst falls du mehr als einen Abo Monat ausgewählt hast.
+		{@html $i18n.pricing.terms.acceptance}
+		{#if paymentType === $i18n.pricing.paymentOptions.monthly}
+			{@html $i18n.pricing.terms.acceptance}
 		{:else}
-			Der Gesamtbetrag von {totalPrice.toFixed(2)}€ wird einmalig abgebucht. Es entstehen keine
-			weiteren Kosten oder automatischen Verlängerungen. Dein longtime-Zugang gilt für 5 Jahre.
+			{$i18n.pricing.terms.oneTime}
 		{/if}
 
-		{#if paymentType === 'monatlich'}
-			Ansonsten erhälst du 5 Werktage vor dem Ablauf des Abos eine E-Mail mit der Möglichkeit das
-			Abo zu kündigen.
+		{#if paymentType === $i18n.pricing.paymentOptions.monthly}
+			{$i18n.pricing.terms.oneTime}
 		{/if}
 	</div>
 </div>

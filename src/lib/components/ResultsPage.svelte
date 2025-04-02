@@ -10,6 +10,7 @@
 	import ExpertProfile from './ExpertProfile.svelte';
 	import ProcessSteps from './ProcessSteps.svelte';
 	import ImprovementSection from './ImprovementSection.svelte';
+	import BenefitsSection from './BenefitsSection.svelte';
 	import { scoreStore, getFallbackAuditData, websiteScreenshot } from '$lib/utils/scoring';
 	import Icon from './Icon.svelte';
 
@@ -361,41 +362,7 @@
 	<ImprovementSection score={processedScore} />
 
 	<!-- Benefits and Recommendations -->
-	<div class="grid grid-cols-1 gap-8 md:grid-cols-2" in:fade={{ duration: 500, delay: 900 }}>
-		<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
-			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
-				<Icon name="checkCircle" size={24} className="mr-1" />
-				{$i18n.results.benefits.title}
-			</h3>
-			<ul class="space-y-3">
-				{#each benefits as benefit, i}
-					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
-						<div class="text-green-600">
-							<Icon name="check" size={20} className="mr-2" />
-						</div>
-						<span>{benefit}</span>
-					</li>
-				{/each}
-			</ul>
-		</div>
-
-		<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
-			<h3 class="mb-4 flex items-center text-xl font-bold text-primary-700">
-				<Icon name="thunder" size={24} className="mr-1" />
-				{$i18n.results.recommendations.title}
-			</h3>
-			<ul class="space-y-3">
-				{#each recommendations as recommendation, i}
-					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
-						<div class="text-primary-700">
-							<Icon name="thunder" size={20} className="mr-2" />
-						</div>
-						<span>{recommendation}</span>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	</div>
+	<BenefitsSection />
 
 	<!-- Process Steps Section - NEW -->
 	<ProcessSteps />

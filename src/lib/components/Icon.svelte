@@ -1,23 +1,20 @@
-<!-- src/lib/components/Icon.svelte -->
 <script lang="ts">
-	// Erweiterte Icon-Komponente mit Unterstützung für komplexe SVGs
+	export let name: string;
+	export let size: number = 24;
+	export let color: string = 'currentColor';
+	export let secondaryColor: string = '';
+	export let className: string = '';
+	export let viewbox: string = '';
+	export let fill: string = '';
+	export let stroke: string = '';
 
-	export let name: string; // Icon name
-	export let size: number = 24; // Icon size in pixels
-	export let color: string = 'currentColor'; // Icon color
-	export let secondaryColor: string = ''; // Optional secondary color for multi-color icons
-	export let className: string = ''; // Additional CSS classes
-	export let fill: string = ''; // Optional fill color
-	export let stroke: string = ''; // Optional stroke color
-
-	// Interface für komplexe SVG-Icons mit mehreren Pfaden oder Elementen
 	interface ComplexIcon {
-		viewBox?: string; // Optional custom viewBox
+		viewBox?: string;
 		content:
 			| string
 			| Array<{
 					type: 'path' | 'circle' | 'rect' | 'line' | 'polyline' | 'polygon' | 'g';
-					attrs: Record<string, string | number>; // Element attributes
+					attrs: Record<string, string | number>;
 					children?: Array<{
 						type: string;
 						attrs: Record<string, string | number>;
@@ -31,13 +28,15 @@
 		heart:
 			'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z',
 		lock: 'M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z',
-		shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+		shield:
+			'M9 12L11 14L15 9.99999M20 12C20 16.4611 14.54 19.6937 12.6414 20.683C12.4361 20.79 12.3334 20.8435 12.191 20.8712C12.08 20.8928 11.92 20.8928 11.809 20.8712C11.6666 20.8435 11.5639 20.79 11.3586 20.683C9.45996 19.6937 4 16.4611 4 12V8.21759C4 7.41808 4 7.01833 4.13076 6.6747C4.24627 6.37113 4.43398 6.10027 4.67766 5.88552C4.9535 5.64243 5.3278 5.50207 6.0764 5.22134L11.4382 3.21067C11.6461 3.13271 11.75 3.09373 11.857 3.07827C11.9518 3.06457 12.0482 3.06457 12.143 3.07827C12.25 3.09373 12.3539 3.13271 12.5618 3.21067L17.9236 5.22134C18.6722 5.50207 19.0465 5.64243 19.3223 5.88552C19.566 6.10027 19.7537 6.37113 19.8692 6.6747C20 7.01833 20 7.41808 20 8.21759V12Z',
 		info: 'M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14h-2v-2h2zm0-4h-2V7h2z',
 		clock: 'M16 7L12.5 11M8 12L13.25 17L22 7M2 12L7.25 17C7.25 17 8.66939 15.3778 9.875 14',
 		closeX: 'M6 18L18 6M6 6l12 12',
 		alertCircle:
 			'M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z',
-		checkCircle: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+		checkCircle:
+			'M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z',
 		check: 'M5 13l4 4L19 7',
 		share:
 			'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z',
@@ -68,12 +67,16 @@
 		thunder: 'M13 10V3L4 14h7v7l9-11h-7z',
 		defconRight: 'M9 5l7 7-7 7',
 		arrowRight:
-			'M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z'
+			'M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z',
+		users:
+			'M16 17.25c2.17 0 3.96 1.57 4.42 3.62a.75.75 0 0 1-.73.88H4.31a.75.75 0 0 1-.73-.88c.46-2.05 2.25-3.62 4.42-3.62h8zM12 2a5.25 5.25 0 1 1 0 10.5A5.25 5.25 0 0 1 12 2z',
+		experience:
+			'M12 3L1 9l11 6 9-4.9V17h2V9l-11-6zm0 12.5L4.24 9.74 2 11l10 5.5L22 11l-2.24-1.26L12 15.5zm6 2.5l-6 3-6-3v2.5l6 3 6-3V18z',
+		star: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'
 	};
 
 	// Komplexe Icons mit mehreren Elementen
 	const complexIcons: Record<string, ComplexIcon> = {
-		// Fragezeichen-Icon mit mehreren Elementen
 		question: {
 			content: [
 				{
@@ -173,9 +176,6 @@
 		return '0 0 24 24'; // Standard-ViewBox
 	}
 
-	// Bestimme, ob fill oder stroke verwendet werden soll
-	// Falls explizit angegeben, werden die übergebenen Werte verwendet,
-	// ansonsten wird geprüft, ob das Icon gefüllt sein sollte oder einen Stroke haben sollte
 	const shouldUseFill = fill !== '' || name === 'info' || name === 'lock';
 	const effectiveFill = fill || (shouldUseFill ? color : 'none');
 	const effectiveStroke = stroke || (shouldUseFill ? 'none' : color);

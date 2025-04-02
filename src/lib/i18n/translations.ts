@@ -162,6 +162,8 @@ export interface Translation {
 				steps: Array<{
 					title: string;
 					description: string;
+					icon: string;
+					underScore: number;
 				}>;
 			};
 			cta: {
@@ -221,6 +223,30 @@ export interface Translation {
 			extendedContent: string;
 			competitorAnalysis: string;
 		};
+		expertProfile: {
+			name: string;
+			role: string;
+			bio: string;
+			imageUrl: string;
+			imageAlt: string;
+			badges: {
+				googlePartner: {
+					label: string;
+					value: string;
+					icon: string;
+				};
+				customers: {
+					label: string;
+					value: string;
+					icon: string;
+				};
+				experience: {
+					label: string;
+					value: string;
+					icon: string;
+				};
+			};
+		};
 		buttons: {
 			restart: string;
 			getReport: string;
@@ -271,6 +297,64 @@ export interface Translation {
 		excludedTitle: string;
 		notWorking: string;
 		choosePlan: string;
+
+		// New detailed pricing options structure
+		header: {
+			title: string;
+			subtitle: string;
+		};
+		countdown: {
+			title: string;
+			subtitle: string;
+		};
+		bonusBox: {
+			tag: string;
+			title: string;
+			description: string;
+			benefits: string[];
+			value: string;
+			limited: string;
+		};
+		paymentOptions: {
+			title: string;
+			monthly: string;
+			oneTime: string;
+			longTime: string;
+			hotLabel: string;
+		};
+		planLabels: {
+			popular: string;
+			longTimeSuffix: {
+				'1-MONATS-PLAN': string;
+				'3-MONATS-PLAN': string;
+				BUSINESS: string;
+			};
+		};
+		additionalBenefits: {
+			oneTime: string[];
+			longTime: string[];
+		};
+		ctaButton: {
+			monthly: string;
+			oneTime: string;
+			longTime: string;
+		};
+		savings: string;
+		trustBadges: string[];
+		discountBanner: {
+			title: string;
+			discount: string;
+			description: string;
+			buttonText: string;
+		};
+		terms: {
+			monthly: {
+				main: string;
+				reminder: string;
+			};
+			oneTime: string;
+			acceptance: string;
+		};
 	};
 	footer: {
 		copyright: string;
@@ -648,20 +732,56 @@ const de: Translation = {
 				title: 'So verbessern wir Deine Ergebnisse',
 				steps: [
 					{
-						title: 'Schritt 1',
-						description: 'Beschreibung des ersten Schrittes'
+						title: 'Website-Optimierung',
+						description:
+							'Verbesserung von Ladezeiten, Mobil-Kompatibilität und Benutzerfreundlichkeit.',
+						icon: 'deviceDesktop',
+						underScore: 40
 					},
 					{
-						title: 'Schritt 2',
-						description: 'Beschreibung des zweiten Schrittes'
+						title: 'SEO & Keywords',
+						description:
+							'Auf Ihre Branche abgestimmte Suchmaschinen-Optimierung für bessere Rankings.',
+						icon: 'search',
+						underScore: 40
 					},
 					{
-						title: 'Schritt 3',
-						description: 'Beschreibung des dritten Schrittes'
+						title: 'Grundlegende Web-Präsenz',
+						description: 'Aufbau einer soliden Online-Präsenz mit allen notwendigen Grundlagen.',
+						icon: 'home',
+						underScore: 40
 					},
 					{
-						title: 'Schritt 4',
-						description: 'Beschreibung des vierten Schrittes'
+						title: 'Lokales SEO',
+						description:
+							'Optimierung für lokale Suchanfragen, damit Kunden in Ihrer Nähe Sie finden.',
+						icon: 'mapPin',
+						underScore: 40
+					},
+					{
+						title: 'Content-Strategie',
+						description:
+							'Entwicklung einer Inhaltstrategie, die Ihr Publikum anspricht und überzeugt.',
+						icon: 'fileText',
+						underScore: 60
+					},
+					{
+						title: 'Social Media Integration',
+						description: 'Verbindung Ihrer Website mit sozialen Medien für größere Reichweite.',
+						icon: 'share2',
+						underScore: 60
+					},
+					{
+						title: 'Conversion-Optimierung',
+						description: 'Gezielte Verbesserungen, um mehr Besucher in Kunden umzuwandeln.',
+						icon: 'trendingUp',
+						underScore: 80
+					},
+					{
+						title: 'Content-Marketing',
+						description: 'Hochwertige Inhalte, die Ihre Expertise zeigen und Kunden überzeugen.',
+						icon: 'edit',
+						underScore: 80
 					}
 				]
 			},
@@ -723,6 +843,31 @@ const de: Translation = {
 			extendedContent: 'Erweiterte Content-Strategie für maximale Sichtbarkeit',
 			competitorAnalysis: 'Wettbewerbsanalyse zur Identifizierung von Wachstumschancen'
 		},
+		expertProfile: {
+			name: 'Christopher Matt',
+			role: 'Digital Marketing Expert',
+			bio: 'Mit über 10 Jahren Erfahrung in der digitalen Welt hilft Christopher Unternehmen, ihre Online-Präsenz zu optimieren und messbare Erfolge zu erzielen. Als zertifizierter Google Partner und Social Media Spezialist kennt er alle relevanten Strategien für nachhaltige Sichtbarkeit.',
+			imageUrl:
+				'https://www.chooomedia.de/wp-content/uploads/2023/03/chooomedia-christopher-matt-ceo-freelancer-webdesigner-ui-designer-information-designer-500x500px__1_-removebg-preview.png',
+			imageAlt: 'Christopher Matt - Digital Marketing Expert',
+			badges: {
+				googlePartner: {
+					label: 'Google Partner',
+					value: '',
+					icon: 'star'
+				},
+				customers: {
+					label: 'Kunden',
+					value: '220+',
+					icon: 'users'
+				},
+				experience: {
+					label: 'Jahre Erfahrung',
+					value: '10+',
+					icon: 'experience'
+				}
+			}
+		},
 		buttons: {
 			restart: 'Quiz und Analyse neu starten',
 			getReport: 'Analysebericht per E-Mail erhalten'
@@ -773,7 +918,73 @@ const de: Translation = {
 		inAllPlans: 'in all unseren Paketen',
 		excludedTitle: 'Wir arbeiten',
 		notWorking: 'nicht mit',
-		choosePlan: 'Passenden Plan auswählen'
+		choosePlan: 'Passenden Plan auswählen',
+		header: {
+			title: 'Wähle den perfekten Plan für Deine digitale Transformation',
+			subtitle:
+				'Basierend auf Deinem Score von {score} empfehlen wir Dir einen maßgeschneiderten Ansatz'
+		},
+		countdown: {
+			title: 'Sonderangebot!',
+			subtitle: 'Rabatt läuft ab in:'
+		},
+		bonusBox: {
+			tag: 'EXKLUSIV-BONUS',
+			title: 'Hochwertiger Blogartikel GRATIS',
+			description:
+				'Bei Buchung innerhalb der Aktionszeit erhältst Du einen maßgeschneiderten, SEO-optimierten Blogartikel für Dein Unternehmen – perfekt angepasst, um Deine Reichweite sofort zu steigern!',
+			benefits: [
+				'Individuell auf Dein Unternehmen zugeschnitten',
+				'SEO-optimiert für mehr Sichtbarkeit',
+				'Sofortige Steigerung Deiner Online-Präsenz'
+			],
+			value: 'Wert: 99€',
+			limited: 'Nur für begrenzte Zeit'
+		},
+		paymentOptions: {
+			title: 'Wähle Deine Zahlungsoption:',
+			monthly: 'Monatlich',
+			oneTime: 'Einmalig (-8%)',
+			longTime: 'Longtime (-20%)',
+			hotLabel: 'HOT'
+		},
+		planLabels: {
+			popular: '★ AM BELIEBTESTEN',
+			longTimeSuffix: {
+				'1-MONATS-PLAN': 'BASIS LONGTIME',
+				'3-MONATS-PLAN': 'PREMIUM LONGTIME',
+				BUSINESS: 'BUSINESS LONGTIME'
+			}
+		},
+		additionalBenefits: {
+			oneTime: ['8% Rabatt auf Gesamtpreis', 'Keine monatlichen Gebühren'],
+			longTime: ['{years} Jahre Zugang', 'Massiver 20% Rabatt', 'Alle zukünftigen Updates']
+		},
+		ctaButton: {
+			monthly: 'PLAN ABONNIEREN',
+			oneTime: 'JETZT KAUFEN',
+			longTime: 'LONGTIME ZUGANG SICHERN'
+		},
+		savings: 'Du sparst',
+		trustBadges: ['Sicher & geschützt bezahlen', '30 Tage Geld-zurück-Garantie'],
+		discountBanner: {
+			title: 'Longtime-Zugang mit',
+			discount: ' mit 20% Rabatt!',
+			description:
+				'Sichere Dir <span class="font-bold">JETZT</span> Deinen 5 Jahre langen Zugang zu allen Features und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.',
+			buttonText: 'Jetzt sichern!'
+		},
+		terms: {
+			monthly: {
+				main: 'Um Unterbrechungen zu vermeiden, erklärst Du dich damit einverstanden, dass der von Dir gewählte Plan {selectedPlan} automatisch zum vollen Preis für aufeinanderfolgende Verlängerungszeiträume verlängert wird und Dir {totalPrice.toFixed(2)} monatlich in Rechnung gestellt werden. Du kannst Dein Abonnement jederzeit kündigen, indem Du unser Serviceteam per E-Mail an abo@digitalpusher.de kontaktierst falls du mehr als einen Abo Monat ausgewählt hast.',
+				reminder:
+					'Ansonsten erhälst du 5 Werktage vor dem Ablauf des Abos eine E-Mail mit der Möglichkeit das Abo zu kündigen.'
+			},
+			oneTime:
+				'Der Gesamtbetrag von {totalPrice.toFixed(2)}€ wird einmalig abgebucht. Es entstehen keine weiteren Kosten oder automatischen Verlängerungen. Dein longtime-Zugang gilt für 5 Jahre.',
+			acceptance:
+				'Indem auf „{paymentType === $i18n.pricing.paymentOptions.monthly ? $i18n.pricing.ctaButton.monthly : $i18n.pricing.ctaButton.oneTime}" geklickt wird, werden die Allgemeinen Geschäftsbedingungen und die Datenschutzrichtlinie akzeptiert.'
+		}
 	},
 	footer: {
 		copyright: 'Alle Rechte vorbehalten.'
@@ -1146,7 +1357,61 @@ const en: Translation = {
 					author: '- M. Keller, Senior Brand Manager'
 				}
 			},
-			improvement: 'How We Improve Your Results',
+			improvement: {
+				title: 'How We Improve Your Results',
+				steps: [
+					{
+						title: 'Website Optimization',
+						description: 'Improving loading times, mobile compatibility, and user experience.',
+						icon: 'deviceDesktop',
+						underScore: 40
+					},
+					{
+						title: 'SEO & Keywords',
+						description:
+							'Search engine optimization tailored to your industry for better rankings.',
+						icon: 'search',
+						underScore: 40
+					},
+					{
+						title: 'Basic Web Presence',
+						description: 'Building a solid online presence with all essential foundations.',
+						icon: 'home',
+						underScore: 40
+					},
+					{
+						title: 'Local SEO',
+						description: 'Optimizing for local searches so customers in your area can find you.',
+						icon: 'mapPin',
+						underScore: 40
+					},
+					{
+						title: 'Content Strategy',
+						description: 'Developing a content strategy that engages and convinces your audience.',
+						icon: 'fileText',
+						underScore: 60
+					},
+					{
+						title: 'Social Media Integration',
+						description: 'Connecting your website with social media for greater reach.',
+						icon: 'share2',
+						underScore: 60
+					},
+					{
+						title: 'Conversion Optimization',
+						description: 'Targeted improvements to turn more visitors into customers.',
+						icon: 'trendingUp',
+						underScore: 80
+					},
+					{
+						title: 'Content Marketing',
+						description:
+							'High-quality content that showcases your expertise and convinces customers.',
+						icon: 'edit',
+						underScore: 80
+					}
+				]
+			},
 			cta: {
 				title: 'Ready to revolutionize your digital presence?',
 				subtitle: 'Choose your plan now and start your journey to more visibility and success.',
@@ -1204,6 +1469,31 @@ const en: Translation = {
 			extendedContent: 'Extended content strategy for maximum visibility',
 			competitorAnalysis: 'Competitor analysis to identify growth opportunities'
 		},
+		expertProfile: {
+			name: 'Christopher Matt',
+			role: 'Digital Marketing Expert',
+			bio: 'With over 10 years of experience in the digital world, Christopher helps companies optimize their online presence and achieve measurable success. As a certified Google Partner and social media specialist, he knows all the relevant strategies for sustainable visibility.',
+			imageUrl:
+				'https://www.chooomedia.de/wp-content/uploads/2023/03/chooomedia-christopher-matt-ceo-freelancer-webdesigner-ui-designer-information-designer-500x500px__1_-removebg-preview.png',
+			imageAlt: 'Christopher Matt - Digital Marketing Expert',
+			badges: {
+				googlePartner: {
+					label: 'Google Partner',
+					value: '',
+					icon: 'star'
+				},
+				customers: {
+					label: 'Customers',
+					value: '220+',
+					icon: 'users'
+				},
+				experience: {
+					label: 'Years of Experience',
+					value: '10+',
+					icon: 'experience'
+				}
+			}
+		},
 		buttons: {
 			restart: 'Restart Quiz and Analysis',
 			getReport: 'Receive Analysis Report by Email'
@@ -1223,38 +1513,109 @@ const en: Translation = {
 		perDay: 'per day',
 		features: {
 			websiteOptimization: 'Website Optimization',
-			basicSeo: 'Basic SEO Measures',
-			monthlyContent: 'Content Creation (1× per month)',
+			basicSeo: 'Essential SEO Strategies',
+			monthlyContent: 'Monthly Content Creation (1× per month)',
 			performanceReport: 'Monthly Performance Report',
-			allBasicFeatures: 'All features from 1-month plan',
+			allBasicFeatures: 'All Features from 1-Month Plan',
 			socialMedia: 'Social Media Management',
 			weeklyContent: 'Weekly Content Creation',
-			keywordOptimization: 'Keyword Optimization',
-			competitorAnalysis: 'Detailed Competitor Analysis',
-			allPremiumFeatures: 'All features from 3-month plan',
-			marketingStrategy: 'Comprehensive Marketing Strategy',
+			keywordOptimization: 'Advanced Keyword Optimization',
+			competitorAnalysis: 'Comprehensive Competitor Analysis',
+			allPremiumFeatures: 'All Features from 3-Month Plan',
+			marketingStrategy: 'Holistic Marketing Strategy',
 			dailyContent: 'Daily Content Updates',
 			sem: 'Search Engine Marketing (SEM)',
-			personalManager: 'Personal Marketing Manager',
+			personalManager: 'Dedicated Marketing Manager',
 			cro: 'Conversion Rate Optimization'
 		},
 		included: {
-			longtermBusiness: 'Method to create a genuine long-term online business',
-			viralContent: 'Exclusive concepts for creating viral content',
-			expertFrameworks: 'Proven expert frameworks for quick and efficient scaling',
-			targetedStrategies: 'Fact-based strategies based on your target group needs'
+			longtermBusiness: 'Proven Method for Building a Sustainable Online Business',
+			viralContent: 'Exclusive Strategies for Creating Viral Content',
+			expertFrameworks: 'Proven Expert Frameworks for Rapid and Efficient Scaling',
+			targetedStrategies: 'Data-Driven Strategies Tailored to Your Target Audience'
 		},
 		excluded: {
-			getRichQuick: 'Get-rich-quick schemes: Becoming rich overnight',
-			noContracts: 'No long-term commitments or contracts',
-			noInvestment: 'An investment-free approach that never delivers',
-			pyramidSchemes: 'MLM, dropshipping or reselling pyramid schemes'
+			getRichQuick: 'No Get-Rich-Quick Schemes or Overnight Success Fantasies',
+			noContracts: 'No Long-Term Commitments or Binding Contracts',
+			noInvestment: 'No Empty Promises or Unrealistic Investment Claims',
+			pyramidSchemes: 'Avoiding MLM, Dropshipping, or Pyramid Scheme Traps'
 		},
 		includedTitle: 'Included',
-		inAllPlans: 'in all our plans',
-		excludedTitle: "We don't work with",
-		notWorking: 'the following',
-		choosePlan: 'Choose Suitable Plan'
+		inAllPlans: 'in all our packages',
+		excludedTitle: 'We Do Not',
+		notWorking: 'work with',
+		choosePlan: 'Select Your Perfect Plan',
+
+		// Detailed pricing options
+		header: {
+			title: 'Unlock Your Digital Transformation Potential',
+			subtitle:
+				"Based on your score of {score}, we've crafted a precision-targeted strategy just for you"
+		},
+		countdown: {
+			title: 'Limited Time Offer!',
+			subtitle: 'Discount Ends In:'
+		},
+		bonusBox: {
+			tag: 'EXCLUSIVE BONUS',
+			title: 'FREE High-Impact Blog Article',
+			description:
+				'Book within our promotional window and receive a custom, SEO-optimized blog post designed to dramatically boost your online visibility and reach!',
+			benefits: [
+				'Tailored exclusively to your business DNA',
+				'SEO-engineered for maximum visibility',
+				'Instant rocket fuel for your online presence'
+			],
+			value: 'Value: €99',
+			limited: 'Strictly Limited Time Offer'
+		},
+		paymentOptions: {
+			title: 'Choose Your Power Plan:',
+			monthly: 'Monthly',
+			oneTime: 'One-Time (-8%)',
+			longTime: 'Longtime (-20%)',
+			hotLabel: 'HOT'
+		},
+		planLabels: {
+			popular: '★ MOST POPULAR',
+			longTimeSuffix: {
+				'1-MONATS-PLAN': 'BASIS LONGTIME',
+				'3-MONATS-PLAN': 'PREMIUM LONGTIME',
+				BUSINESS: 'BUSINESS LONGTIME'
+			}
+		},
+		additionalBenefits: {
+			oneTime: ['8% Discount on Total Price', 'Zero Monthly Recurring Fees'],
+			longTime: [
+				'{years} Years of Unlimited Access',
+				'Massive 20% Lifetime Discount',
+				'All Future Updates Included'
+			]
+		},
+		ctaButton: {
+			monthly: 'SUBSCRIBE NOW',
+			oneTime: 'SECURE MY PLAN',
+			longTime: 'LOCK IN LONGTIME ACCESS'
+		},
+		savings: 'You save',
+		trustBadges: ['Secure & Protected Payment', '30-Day Money-Back Guarantee'],
+		discountBanner: {
+			title: 'Longtime Access with 20% Mega Discount!',
+			description:
+				'Secure your 5-year growth accelerator NOW! One strategic investment, endless business potential. Skip monthly payments and future-proof your success!',
+			buttonText: 'Claim My Advantage!'
+		},
+		terms: {
+			monthly: {
+				main: "To ensure uninterrupted service, your selected plan {selectedPlan} will automatically renew at the full price for consecutive periods, billing you {monthlyPrice} monthly. You can cancel anytime by contacting our service team via email at abo@digitalpusher.de if you've selected more than one subscription month.",
+				reminder:
+					"We'll send a friendly reminder email 5 working days before your subscription expires, giving you the option to continue or pause."
+			},
+			oneTime:
+				'A one-time charge of {totalPrice}€ grants you complete access. No hidden fees, no automatic renewals. Your longtime access is locked in for 5 full years of digital empowerment.',
+			acceptance:
+				'By clicking "{ctaText}", you confirm acceptance of our Terms of Service and Privacy Policy.'
+		}
 	},
 	footer: {
 		copyright: 'All rights reserved.'

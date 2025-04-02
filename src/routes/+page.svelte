@@ -1,32 +1,36 @@
-<!-- src/routes/+page.svelte - Improved version -->
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
+	import SuperDebug from 'sveltekit-superforms';
 	import PageMeta from '$lib/components/PageMeta.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import ImageOption from '$lib/components/ImageOption.svelte';
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
+	import { scoreStore } from '$lib/utils/scoring';
 	import WebsiteUrlForm from '$lib/components/WebsiteUrlForm.svelte';
 	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
-	import { FORM_STEPS, TOTAL_STEPS } from '$lib/schema';
-	import { i18n } from '$lib/i18n';
-	import { browser } from '$app/environment';
+	import { last_step, TOTAL_STEPS } from '$lib/schema';
+	import { i18n, getLocalizedLabel, getLocalizedDescription } from '$lib/i18n';
 
 	// Import stores
-	import { stepperStore, jumpToStep } from '$lib/stores/stepperStore';
-	import { formStore, calculatedScore } from '$lib/stores/formStore';
+	import {
+		currentStepIndex,
+		stepperStore,
+		currentStep,
+		jumpToStep
+	} from '$lib/stores/stepperStore';
+	import { formData, calculatedScore, updateFormField } from '$lib/stores/formStore';
 	import { formSubmitting } from '$lib/stores/loadingStore';
-	import { scoreStore } from '$lib/utils/scoring';
 
 	// Import schema and options
-	import { formOptions, type FormData } from '$lib/schema';
+	import { FORM_STEPS, formOptions, type FormData } from '$lib/schema';
 
-	// Props
-	const { data } = $props();
+	const { data = Array, fieldName = [] } = $props<{
+		fieldName?: string;
+	}>();
 
-	// Is in development mode?
 	const isDev = import.meta.env.DEV;
 
 	// Initialize the form with SuperForms
@@ -44,64 +48,84 @@
 		}
 	});
 
-	// State management
+	// Store subscription to update our form data store when form changes
+	let scoreStoreData = $state(null);
 	let contactFormValid = $state(false);
 	let showDebugSidebar = $state(false);
 	let isWebsiteAnalysisInProgress = $state(false);
-	let debugStepNumber = $state($stepperStore.current.index);
 
-	// Subscribe to form and sync with formStore
 	$effect(() => {
-		formStore.updateFields($form);
+		$formData = { ...$form };
+
+		const unsubscribe = scoreStore.subscribe((data) => {
+			scoreStoreData = data;
+		});
+
+		return unsubscribe;
 	});
 
-	// Analysis event handlers
 	function handleAnalysisStart() {
 		isWebsiteAnalysisInProgress = true;
+		console.log('Website analysis started');
 	}
 
 	function handleAnalysisEnd() {
 		isWebsiteAnalysisInProgress = false;
+		console.log('Website analysis completed');
 	}
 
-	function handleAnalysisComplete(data: any, score: number) {
+	// Website analysis function
+	async function handleAnalysisComplete(data: any, score: number) {
 		if (data) {
-			// Update form store with results
-			formStore.updateField('visibility_score', score);
+			// Store analysis results, update score
+			updateFormField('visibility_score', score);
 
-			// Navigate to next step after a short delay
+			// Move to next step after analysis
 			setTimeout(() => {
-				stepperStore.markStepValid($stepperStore.current.index);
+				stepperStore.markStepValid($currentStepIndex);
 				stepperStore.nextStep();
 			}, 1000);
 		}
 	}
 
-	// Image option navigation handler
+	// Aktualisierter Event-Handler für ImageOption navigation events
 	function handleImageOptionNavigation(
 		event: CustomEvent<{ fieldName: string; values: string[] }>
 	) {
 		const { fieldName, values } = event.detail;
+		console.log(`RECEIVED Navigation event for ${fieldName} with values:`, values);
 
-		// Update form data
-		formStore.updateField(fieldName, values);
+		// Aktualisiere das Formular
+		updateFormField(fieldName, values);
 		$form[fieldName] = values;
 
-		// Navigate to next step
-		stepperStore.markStepValid($stepperStore.current.index);
+		// Navigiere zum nächsten Schritt - direkt ohne setTimeout
+		console.log(`Navigating to next step from ${fieldName}`);
+		stepperStore.markStepValid($currentStepIndex);
+
+		// Explizit die Schrittnummer für die Konsole ausgeben
+		console.log(`Current step before navigation: ${$currentStepIndex}`);
+
+		// Zum nächsten Schritt gehen
 		stepperStore.nextStep();
+
+		// Nach der Navigation die neue Schrittnummer ausgeben
+		setTimeout(() => {
+			console.log(`Current step after navigation: ${$currentStepIndex}`);
+		}, 0);
 	}
 
-	// Handle selection of an image option
+	// Function to handle image option selection
 	function handleImageOptionSelect(fieldName: string, value: string | string[]) {
-		// Update form data
-		formStore.updateField(fieldName, value);
+		// Formularwerte aktualisieren
+		updateFormField(fieldName, value);
 		$form[fieldName] = value;
 
-		// For single selection, auto-advance
+		// Bei Einzelauswahl direkt weiterleiten
 		if (!Array.isArray(value)) {
+			console.log(`Einfachauswahl für ${fieldName}: ${value} - navigiere weiter`);
 			setTimeout(() => {
-				stepperStore.markStepValid($stepperStore.current.index);
+				stepperStore.markStepValid($currentStepIndex);
 				stepperStore.nextStep();
 			}, 500);
 		}
@@ -110,12 +134,23 @@
 	// Restart assessment
 	function restartAssessment() {
 		stepperStore.goToStep(1);
-		formStore.reset();
 	}
 
-	// Debug controls
-	function handleStepChange(event: Event) {
-		const newStep = parseInt((event.target as HTMLInputElement).value, 10);
+	// Component display logic based on current step
+	$effect(() => {
+		// Update step validation
+		const currentStepKey = FORM_STEPS[$currentStepIndex - 1]?.title;
+		const isValid = currentStepKey && $form[currentStepKey];
+
+		if (isValid && !$stepperStore.stepValidity[$currentStepIndex] === 'valid') {
+			stepperStore.markStepValid($currentStepIndex);
+		}
+	});
+
+	let debugStepNumber = $currentStepIndex;
+
+	function handleStepChange(event) {
+		const newStep = parseInt(event.target.value, 10);
 		if (newStep >= 1 && newStep <= TOTAL_STEPS) {
 			debugStepNumber = newStep;
 			jumpToStep(newStep);
@@ -135,21 +170,17 @@
 			jumpToStep(debugStepNumber);
 		}
 	}
-
-	function toggleDebugSidebar() {
-		showDebugSidebar = !showDebugSidebar;
-	}
 </script>
 
 <div
-	class="form-container relative mx-auto w-full"
+	class="form-container absolute mx-auto w-full"
 	itemscope
 	itemtype="https://schema.org/WebApplication"
 >
 	<header>
 		<div
-			class={$stepperStore.current.index > 1 ? 'sr-only' : 'text-center'}
-			aria-hidden={$stepperStore.current.index > 1}
+			class={$currentStepIndex > 1 ? 'sr-only' : 'text-center'}
+			aria-hidden={$currentStepIndex > 1}
 		>
 			<h1 class="mb-6 text-5xl font-bold text-secondary-900" itemprop="name" id="assessment-title">
 				{$i18n.start.title}
@@ -162,38 +193,38 @@
 			>
 				{@html $i18n.start.text}
 			</p>
-
-			<!-- Page Meta Information -->
+			<!-- Page Meta -->
 			<PageMeta totalSteps={FORM_STEPS.length} />
 		</div>
 	</header>
 
-	<!-- Dynamic Form Content -->
+	<!-- Step Content -->
 	<div class="form-wrapper">
-		<!-- Step Title Header -->
-		<h2 class="mb-4 text-center text-xl font-semibold text-secondary-700">
-			{#if $stepperStore.current.index === TOTAL_STEPS}
-				<!-- Title for results step -->
-				{$i18n.schema.steps.result.description}
-				{#if $formStore.formData?.company_url}
+		<!-- Dynamic step content based on current step -->
+		<h2 class="mb-1 text-center text-xl font-semibold text-secondary-700">
+			{#if $currentStepIndex === 12}
+				{getLocalizedLabel(
+					FORM_STEPS[$currentStepIndex - 1].title,
+					$form[FORM_STEPS[$currentStepIndex - 1].title]
+				)}
+				{#if $formData?.company_url}
 					{$i18n.start.meta.rating.from}
 					<span class="text-primary-600">
-						{$formStore.formData.company_url.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+						{$formData.company_url.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
 					</span>
 				{/if}
 			{:else}
-				<!-- Title for regular steps -->
-				{$i18n.schema.steps[$stepperStore.current.title]?.description ||
-					$stepperStore.current.description}
+				{getLocalizedDescription(
+					FORM_STEPS[$currentStepIndex - 1].title,
+					$form[FORM_STEPS[$currentStepIndex - 1].title]
+				)}
 			{/if}
 		</h2>
-
-		{#key $stepperStore.current.index}
+		{#key $currentStepIndex}
 			<div transition:fade={{ duration: 500 }} class="form-card">
-				<FormTransitioner currentStep={$stepperStore.current.index} height="40vh">
-					<!-- Dynamic step content based on current step index -->
-					{#if $stepperStore.current.index === 1}
-						<!-- Step 1: Visibility -->
+				<FormTransitioner currentStep={$currentStepIndex} height="40vh">
+					<!-- Step 1: Visibility -->
+					{#if $currentStepIndex === 1}
 						<ImageOption
 							value={$form.visibility}
 							options={formOptions.visibility}
@@ -204,17 +235,23 @@
 							multiple={true}
 							maxSelections={4}
 						/>
-					{:else if $stepperStore.current.index === 2}
-						<!-- Step 2: Website URL Analysis -->
+
+						<!-- Step 2: Website URL -->
+					{:else if $currentStepIndex === 2}
 						<WebsiteUrlForm
 							{form}
 							error={$errors}
 							onAnalysisComplete={handleAnalysisComplete}
 							onAnalysisStart={handleAnalysisStart}
 							onAnalysisEnd={handleAnalysisEnd}
+							onclick={() => {
+								stepperStore.markStepValid($currentStepIndex);
+								stepperStore.nextStep();
+							}}
 						/>
-					{:else if $stepperStore.current.index === 3}
+
 						<!-- Step 3: Advertising Frequency -->
+					{:else if $currentStepIndex === 3}
 						<ImageOption
 							value={$form.advertising_frequency}
 							options={formOptions.advertising_frequency}
@@ -223,69 +260,146 @@
 							fieldName="advertising_frequency"
 							multiple={false}
 						/>
-						<!-- Continue for steps 4-12... -->
 
-						<!-- Step 10: Contact Form -->
-					{:else if $stepperStore.current.index === 10}
+						<!-- Step 4: Goals -->
+					{:else if $currentStepIndex === 4}
+						<ImageOption
+							value={$form.goals}
+							options={formOptions.goals}
+							error={$errors.goals}
+							onSelect={(value) => handleImageOptionSelect('goals', value)}
+							fieldName="goals"
+							multiple={false}
+						/>
+
+						<!-- Step 5: Campaign Management -->
+					{:else if $currentStepIndex === 5}
+						<ImageOption
+							value={$form.campaign_management}
+							options={formOptions.campaign_management}
+							error={$errors.campaign_management}
+							onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
+							fieldName="campaign_management"
+							multiple={false}
+						/>
+
+						<!-- Step 6: Online Reviews -->
+					{:else if $currentStepIndex === 6}
+						<ImageOption
+							value={$form.online_reviews}
+							options={formOptions.online_reviews}
+							error={$errors.online_reviews}
+							onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
+							fieldName="online_reviews"
+							multiple={false}
+						/>
+
+						<!-- Step 7: Previous Campaigns -->
+					{:else if $currentStepIndex === 7}
+						<ImageOption
+							value={$form.previous_campaigns}
+							options={formOptions.previous_campaigns}
+							error={$errors.previous_campaigns}
+							onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
+							fieldName="previous_campaigns"
+							multiple={false}
+						/>
+
+						<!-- Step 8: Business Phase -->
+					{:else if $currentStepIndex === 8}
+						<ImageOption
+							value={$form.business_phase}
+							options={formOptions.business_phase}
+							error={$errors.business_phase}
+							onSelect={(value) => handleImageOptionSelect('business_phase', value)}
+							fieldName="business_phase"
+							multiple={false}
+						/>
+
+						<!-- Step 9: Implementation Time -->
+					{:else if $currentStepIndex === 9}
+						<ImageOption
+							value={$form.implementation_time}
+							options={formOptions.implementation_time}
+							error={$errors.implementation_time}
+							onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
+							fieldName="implementation_time"
+							multiple={false}
+						/>
+
+						<!-- Step 10: Company Form -->
+					{:else if $currentStepIndex === 10}
 						<ContactForm
 							{form}
 							error={$errors}
 							onValidation={(isValid) => {
 								contactFormValid = isValid;
+
+								// Wenn das Formular gültig ist, markiere diesen Schritt als abgeschlossen
 								if (isValid) {
-									stepperStore.markStepValid($stepperStore.current.index);
+									stepperStore.markStepValid($currentStepIndex);
 								} else {
-									stepperStore.markStepIncomplete($stepperStore.current.index);
+									// Wenn nicht gültig, markiere als unvollständig
+									stepperStore.markStepIncomplete($currentStepIndex);
 								}
 							}}
 						/>
-						<!-- Step 11: Waiting Screen -->
-					{:else if $stepperStore.current.index === 11}
-						<WaitingScreen
-							autoAdvance={7}
-							nextStep={() => {
-								stepperStore.markStepValid($stepperStore.current.index);
-								stepperStore.nextStep();
-							}}
-						/>
-						<!-- Step 12: Results Page -->
-					{:else if $stepperStore.current.index === 12}
+
+						<!-- Step 12: Results -->
+					{:else if $currentStepIndex === 12 && last_step}
 						<ResultsPage
 							score={$calculatedScore}
-							formData={$formStore.formData}
-							auditData={$scoreStore.auditData}
+							formData={$formData}
+							auditData={$scoreStore?.auditData || null}
 							nextStep={() => stepperStore.goToStep(1)}
 							{restartAssessment}
 						/>
+						<!-- Fallback: Loading screen -->
+					{:else if $currentStepIndex === 11}
+						<WaitingScreen
+							autoAdvance={7}
+							nextStep={() => {
+								console.log('Moving to step 12');
+								stepperStore.markStepValid($currentStepIndex);
+								stepperStore.nextStep();
+							}}
+						/>
 					{/if}
 
-					<!-- Navigation Buttons -->
-					{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11, 12].includes($stepperStore.current.index)}
+					<!-- Navigation Buttons (except for specific steps) -->
+					{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11, 12].includes($currentStepIndex)}
 						<div class="mt-8 flex justify-between">
 							<Button
-								label={$i18n.common.back}
-								variant="outline"
-								disabled={$stepperStore.current.index === 1}
-								onClick={() => stepperStore.prevStep()}
+								label="Zurück"
+								type="button"
+								variant="primary"
+								disabled={$currentStepIndex === 1}
+								on:click={() => stepperStore.prevStep()}
 							/>
 
 							<Button
-								label={$stepperStore.current.index === 2 ? 'Überspringen' : $i18n.common.next}
+								label={$currentStepIndex === 2 ? 'Überspringen' : 'Weiter'}
+								type="button"
 								variant="primary"
-								disabled={($stepperStore.current.index === 10 && !contactFormValid) ||
-									($stepperStore.current.index === 2 && isWebsiteAnalysisInProgress)}
-								onClick={() => {
-									if ($stepperStore.current.index === 10) {
+								disabled={($currentStepIndex === 10 && !contactFormValid) ||
+									($currentStepIndex === 2 && isWebsiteAnalysisInProgress)}
+								on:click={() => {
+									// Für Schritt 10: Prüfen ob das Kontaktformular gültig ist
+									if ($currentStepIndex === 10) {
 										if (contactFormValid) {
-											stepperStore.markStepValid($stepperStore.current.index);
+											stepperStore.markStepValid($currentStepIndex);
 											stepperStore.nextStep();
 										} else {
-											stepperStore.markStepIncomplete($stepperStore.current.index);
+											stepperStore.markStepIncomplete($currentStepIndex);
 										}
-									} else if ($stepperStore.current.index === 2) {
+									}
+									// Für Schritt 2: Einfach überspringen ohne Validierung
+									else if ($currentStepIndex === 2) {
 										stepperStore.nextStep();
-									} else {
-										stepperStore.markStepValid($stepperStore.current.index);
+									}
+									// Für alle anderen Schritte: Normales Verhalten
+									else {
+										stepperStore.markStepValid($currentStepIndex);
 										stepperStore.nextStep();
 									}
 								}}
@@ -298,22 +412,22 @@
 	</div>
 </div>
 
-<!-- Debug Panel (dev mode only) -->
 {#if isDev}
+	<!-- Debug-Toggle Button -->
 	<button
 		class="fixed left-4 top-4 z-50 rounded-full bg-gray-800 p-2 text-white shadow-lg hover:bg-gray-700"
-		on:click={toggleDebugSidebar}
-		aria-label="Toggle Debug Panel"
+		onclick={() => (showDebugSidebar = !showDebugSidebar)}
+		aria-label="Testing-Panel anzeigen/verbergen"
 	>
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6">
-			<path
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6"
+			><path
 				fill="currentColor"
 				d="M4.6 15c-.9-2.6-.6-4.6-.5-5.4 2.4-1.5 5.3-2 8-1.3.7-.3 1.5-.5 2.3-.6-.1-.3-.2-.5-.3-.8h2l1.2-3.2-.9-.4-1 2.6h-1.8C13 4.8 12.1 4 11.1 3.4l2.1-2.1-.7-.7L10.1 3c-.7 0-1.5 0-2.3.1L5.4.7l-.7.7 2.1 2.1C5.7 4.1 4.9 4.9 4.3 6H2.5l-1-2.6-.9.4L1.8 7h2C3.3 8.3 3 9.6 3 11H1v1h2c0 1 .2 2 .5 3H1.8L.6 18.3l.9.3 1-2.7h1.4c.4.8 2.1 4.5 5.8 3.9-.3-.2-.5-.5-.7-.8-2.9 0-4.4-3.5-4.4-4zM9 3.9c2 0 3.7 1.6 4.4 3.8-2.9-1-6.2-.8-9 .6.7-2.6 2.5-4.4 4.6-4.4zm14.8 19.2l-4.3-4.3c2.1-2.5 1.8-6.3-.7-8.4s-6.3-1.8-8.4.7-1.8 6.3.7 8.4c2.2 1.9 5.4 1.9 7.7 0l4.3 4.3c.2.2.5.2.7 0 .2-.2.2-.5 0-.7zm-8.8-3c-2.8 0-5.1-2.3-5.1-5.1s2.3-5.1 5.1-5.1 5.1 2.3 5.1 5.1-2.3 5.1-5.1 5.1z"
-			/>
-			<path fill="none" d="M0 0h24v24H0z" />
-		</svg>
+			/><path fill="none" d="M0 0h24v24H0z" /></svg
+		>
 	</button>
 
+	<!-- Debug Sidebar -->
 	{#if showDebugSidebar}
 		<div
 			class="fixed left-0 top-0 h-full w-80 overflow-y-auto bg-gray-100 p-4 shadow-2xl transition-transform duration-300"
@@ -321,10 +435,10 @@
 			transition:slide={{ duration: 300, axis: 'x' }}
 		>
 			<div class="flex items-center justify-between border-b border-gray-300 py-1">
-				<h3 class="ml-12 text-lg font-semibold text-gray-800">Debug Panel</h3>
+				<h3 class="text-grayto-sky-800 ml-12 text-lg font-semibold">Testing-Panel</h3>
 				<button
 					class="rounded-full p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
-					on:click={toggleDebugSidebar}
+					onclick={() => (showDebugSidebar = false)}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -344,32 +458,34 @@
 			</div>
 
 			<div class="mt-4">
-				<label for="jumpStep" class="block text-sm font-medium text-gray-700">Jump to Step:</label>
+				<label for="jumpStep" class="block text-sm font-medium text-gray-700"
+					>Springe zu Schritt:</label
+				>
 				<div class="mt-2 flex items-center">
 					<input
 						id="jumpStep"
 						type="number"
 						min="1"
 						max={TOTAL_STEPS}
-						value={$stepperStore.current.index}
-						on:input={handleStepChange}
+						value={$currentStepIndex}
+						oninput={handleStepChange}
 						class="w-16 rounded border border-gray-300 p-2 text-center shadow-sm"
 					/>
 
 					<div class="ml-2 flex space-x-2">
 						<button
-							on:click={prevStep}
+							onclick={prevStep}
 							class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
-							aria-label="Previous Step"
+							aria-label="Vorheriger Schritt"
 							disabled={debugStepNumber <= 1}
 						>
 							◀
 						</button>
 
 						<button
-							on:click={nextStep}
+							onclick={nextStep}
 							class="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
-							aria-label="Next Step"
+							aria-label="Nächster Schritt"
 							disabled={debugStepNumber >= TOTAL_STEPS}
 						>
 							▶
@@ -380,62 +496,21 @@
 
 			<div class="mt-6">
 				<h4 class="mb-2 font-medium text-gray-700">
-					Current Step: {$stepperStore.current.index}
+					Aktueller Schritt: {$currentStepIndex}
 				</h4>
 				<div class="rounded bg-gray-200 p-2">
-					<p class="text-sm">{$stepperStore.current.description || 'No description'}</p>
+					<p class="text-sm">
+						{$currentStep?.description || 'No description available'}
+					</p>
 				</div>
 			</div>
 
 			<div class="mt-6">
-				<h4 class="mb-2 font-medium text-gray-700">Form Data</h4>
+				<h4 class="mb-2 font-medium text-gray-700">Formular-Status</h4>
 				<div class="rounded border border-gray-300 bg-white p-3">
-					<pre class="max-h-40 overflow-auto text-xs">
-              {JSON.stringify($formStore.formData, null, 2)}
-            </pre>
-				</div>
-			</div>
-
-			<div class="mt-4">
-				<h4 class="mb-2 font-medium text-gray-700">Score Data</h4>
-				<div class="rounded border border-gray-300 bg-white p-3">
-					<p class="text-xs">Calculated Score: {$calculatedScore}</p>
-					<p class="text-xs">Form Score: {$scoreStore ? $scoreStore.formScore : 'N/A'}</p>
-					<p class="text-xs">Website Score: {$scoreStore ? $scoreStore.websiteScore : 'N/A'}</p>
-				</div>
-			</div>
-
-			<div class="mt-4">
-				<h4 class="mb-2 font-medium text-gray-700">Step Status</h4>
-				<div class="rounded border border-gray-300 bg-white p-3 text-xs">
-					<ul class="space-y-1">
-						{#each $stepperStore.status as status}
-							<li class="flex justify-between">
-								<span>Step {status.index}</span>
-								<span
-									class={status.isValid
-										? 'text-green-600'
-										: status.isInvalid
-											? 'text-red-600'
-											: status.isIncomplete
-												? 'text-orange-500'
-												: status.isCurrent
-													? 'font-bold text-blue-600'
-													: 'text-gray-500'}
-								>
-									{status.isValid
-										? 'Valid'
-										: status.isInvalid
-											? 'Invalid'
-											: status.isIncomplete
-												? 'Incomplete'
-												: status.isCurrent
-													? 'Current'
-													: 'Untouched'}
-								</span>
-							</li>
-						{/each}
-					</ul>
+					<div class="text-xs">
+						<SuperDebug data={form} />
+					</div>
 				</div>
 			</div>
 		</div>

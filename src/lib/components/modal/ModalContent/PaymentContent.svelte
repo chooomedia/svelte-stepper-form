@@ -1,13 +1,14 @@
 <!-- src/lib/components/modal/ModalContent/PaymentContent.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { modalStore } from '../modalStore';
 	import SecurityBadge from '../../SecurityBadge.svelte';
 	import Icon from '../../Icon.svelte';
 	import { calculateTax } from '$lib/utils/payment';
 	import { taxInfo } from '$lib/stores/taxStore';
 	import { PAYPAL_SCRIPT_BASE } from '$lib/config';
+	import { currencyStore } from '$lib/stores/currencyStore';
 
 	// Props
 	const {
@@ -79,48 +80,113 @@
 			return;
 		}
 
-		const script = document.createElement('script');
-		script.src = `${PAYPAL_SCRIPT_BASE || 'https://www.paypal.com/sdk/js'}?${getPayPalConfig()}`;
-		script.async = true;
-		script.onload = () => {
-			console.log('PayPal SDK loaded successfully');
-			paypalSDKLoaded = true;
-			addTimer(() => {
-				renderPayPalButtons();
-			}, 300);
-		};
-		script.onerror = (err) => {
-			console.error('Error loading PayPal SDK:', err);
+		try {
+			// For development, use a simpler configuration
+			const isDev = import.meta.env.DEV;
+			let scriptUrl;
+
+			if (isDev) {
+				// Use minimal configuration for development
+				scriptUrl = `https://www.paypal.com/sdk/js?client-id=${import.meta.env.VITE_PAYPAL_CLIENT_ID}&currency=EUR&components=buttons`;
+			} else {
+				// Use full configuration for production
+				scriptUrl = `${PAYPAL_SCRIPT_BASE}?${getPayPalConfig()}`;
+			}
+
+			console.log('Loading PayPal SDK from:', scriptUrl);
+
+			const script = document.createElement('script');
+			script.src = scriptUrl;
+			script.async = true;
+
+			script.onload = () => {
+				console.log('PayPal SDK loaded successfully');
+				paypalSDKLoaded = true;
+				addTimer(() => {
+					renderPayPalButtons();
+				}, 300);
+			};
+
+			script.onerror = (err) => {
+				console.error('Error loading PayPal SDK:', err);
+				modalStore.open('error', {
+					error: 'Fehler beim Laden des PayPal SDKs. Bitte versuche es später erneut.'
+				});
+			};
+
+			document.head.appendChild(script);
+		} catch (error) {
+			console.error('Failed to load PayPal SDK:', error);
 			modalStore.open('error', {
 				error: 'Fehler beim Laden des PayPal SDKs. Bitte versuche es später erneut.'
 			});
-		};
-		document.head.appendChild(script);
+		}
 	}
 
 	// Configure PayPal parameters
 	function getPayPalConfig(): string {
 		const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+		const isSandbox = import.meta.env.DEV;
 
-		// Verwende einen eindeutigen Client-ID-Wert für Log-Nachrichten
-		const logClientId = clientId ? clientId.substring(0, 8) + '...' : 'not set';
-		console.log(
-			`Using PayPal client ID: ${logClientId}, environment: ${import.meta.env.DEV ? 'sandbox' : 'production'}`
-		);
+		// Log the raw taxInfo for debugging
+		console.log('PayPal config - taxInfo:', JSON.stringify($taxInfo));
+		console.log('PayPal config - currencyStore:', $currencyStore);
 
-		return new URLSearchParams({
+		// Get country code and ensure it's valid
+		const rawCountryCode = $taxInfo.country;
+		console.log('Raw country code from taxInfo:', rawCountryCode);
+
+		// Valid country codes for PayPal
+		const validCountryCodes = [
+			'US',
+			'GB',
+			'DE',
+			'FR',
+			'IT',
+			'ES',
+			'CA',
+			'AU',
+			'AT',
+			'BE',
+			'CH',
+			'NL'
+		];
+
+		// Normalize country code
+		let countryCode;
+		if (rawCountryCode === 'UK' || rawCountryCode === 'EN') {
+			countryCode = 'GB';
+		} else if (validCountryCodes.includes(rawCountryCode)) {
+			countryCode = rawCountryCode;
+		} else {
+			// Default to a safe country code
+			countryCode = 'DE';
+			console.warn(`Invalid country code: ${rawCountryCode}, using default: DE`);
+		}
+
+		// Build params without buyer-country for now
+		const params: Record<string, string> = {
 			'client-id': clientId || 'test',
-			currency: 'EUR',
+			currency: $currencyStore || 'EUR',
 			intent: 'capture',
 			locale: 'de_DE',
 			components: 'buttons',
-			'buyer-country': $taxInfo.country,
 			commit: 'true'
-		}).toString();
-	}
+		};
 
-	// Render PayPal Buttons
-	// In PaymentContent.svelte, im Bereich der renderPayPalButtons-Funktion
+		// Development mode parameters
+		if (isSandbox) {
+			params['disable-funding'] = 'paylater,credit';
+			params['enable-funding'] = 'venmo';
+			params.debug = 'true';
+		}
+
+		// Log the final PayPal configuration URL
+		const configString = new URLSearchParams(params).toString();
+		console.log('PayPal config URL:', `${PAYPAL_SCRIPT_BASE}?${configString}`);
+
+		return configString;
+	}
 
 	function renderPayPalButtons(): void {
 		if (!paypalSDKLoaded || typeof window === 'undefined' || typeof window.paypal === 'undefined') {
@@ -159,13 +225,23 @@
 
 							console.log('Creating order with amount:', amount);
 
-							// Detailliertes Logging der Client-ID (versteckt im Produktionsmodus)
+							// In development mode, use the mock payment function instead of loading PayPal SDK
 							if (import.meta.env.DEV) {
-								console.log(
-									'Using PayPal client ID:',
-									import.meta.env.VITE_PAYPAL_CLIENT_ID || '(not set)'
-								);
-								console.log('Environment:', import.meta.env.MODE);
+								// Don't actually try to load PayPal in development mode
+								console.log('Development mode: Using mock payment instead of PayPal');
+								paypalSDKLoaded = true; // Pretend it's loaded
+								// Add a message or visual indicator in the UI
+								const container = document.getElementById('paypal-button-container');
+								if (container) {
+									container.innerHTML = `
+            <button class="btn btn-primary w-full" onclick="mockPaymentForTesting()">
+                Test Payment (Development Mode)
+            </button>
+            <p class="mt-2 text-xs text-gray-500">
+                PayPal integration disabled in development mode. Click to simulate payment.
+            </p>
+        `;
+								}
 							}
 
 							// Erstelle die Bestellung mit PayPal
