@@ -1,124 +1,171 @@
-// src/lib/stores/formStore.ts
 import { writable, derived, get } from 'svelte/store';
 import type { FormData } from '$lib/schema';
-import {
-	calculateVisibilityScore,
-	calculateFinalScore,
-	extractScoreFromResponse
-} from '$lib/utils/scoring';
+import { calculateVisibilityScore, calculateFinalScore } from '$lib/utils/scoring';
 import { scoreStore } from '$lib/utils/scoring';
 
-// Core form data
-export const formData = writable<Partial<FormData>>({});
-
-// Analysis-related state
-export const analysisState = writable({
-	isLoading: false,
-	isComplete: false,
-	score: 0,
-	error: '',
-	data: null
-});
-
-// Calculate the score when form data changes
-export const calculatedScore = derived([formData, analysisState], ([$formData, $analysisState]) => {
-	// Get the latest scores from the analysis state and form data
-	if ($analysisState.score > 0) {
-		// Use website analysis score with 70% weight
-		const formScore = calculateVisibilityScore($formData);
-		return Math.round($analysisState.score * 0.7 + formScore * 0.3);
-	}
-
-	// Fall back to just form-based score
-	return calculateVisibilityScore($formData);
-});
-
-// Sync form data changes with score calculation
-formData.subscribe(($formData) => {
-	// Update the score store with the latest form data
-	scoreStore.updateFormScore($formData);
-});
-
-// Helper functions
-export function updateFormField(field: keyof FormData, value: any) {
-	formData.update((data) => {
-		const updatedData = { ...data, [field]: value };
-
-		// Recalculate visibility score whenever form data changes
-		const formScore = calculateVisibilityScore(updatedData);
-
-		// Only update visibility_score if it's not already set by an API
-		if (!updatedData.visibility_score || field === 'visibility_score') {
-			updatedData.visibility_score = formScore;
-		}
-
-		return updatedData;
-	});
+// Define the store state interface
+interface FormStoreState {
+	formData: Partial<FormData>;
+	analysis: {
+		isLoading: boolean;
+		isComplete: boolean;
+		score: number;
+		error: string;
+		data: any | null;
+	};
 }
 
-// Set analysis results from API response
-export function setAnalysisResults(results: any) {
-	// Extract score from API response
-	const websiteScore = extractScoreFromResponse(results);
-
-	// Get current form data for score calculation
-	const currentFormData = get(formData);
-
-	// Calculate final score
-	const finalScore = calculateFinalScore(websiteScore, currentFormData);
-
-	// Update analysis state
-	analysisState.update((state) => ({
-		...state,
-		isComplete: true,
-		isLoading: false,
-		data: results,
-		score: websiteScore
-	}));
-
-	// Update form data with visibility score
-	formData.update((data) => ({
-		...data,
-		visibility_score: finalScore
-	}));
-
-	// Update score store
-	scoreStore.setWebsiteAnalysis(results, currentFormData);
-
-	return finalScore;
-}
-
-// Set loading state
-export function setAnalysisLoading(isLoading: boolean) {
-	analysisState.update((state) => ({
-		...state,
-		isLoading
-	}));
-}
-
-// Set error state
-export function setAnalysisError(error: string) {
-	analysisState.update((state) => ({
-		...state,
-		error,
-		isLoading: false
-	}));
-
-	// Update score store
-	scoreStore.setError(error);
-}
-
-// Reset store
-export function resetFormStore() {
-	formData.set({});
-	analysisState.set({
+// Initial state
+const initialState: FormStoreState = {
+	formData: {},
+	analysis: {
 		isLoading: false,
 		isComplete: false,
 		score: 0,
 		error: '',
 		data: null
+	}
+};
+
+// Create the form store
+function createFormStore() {
+	const { subscribe, set, update } = writable<FormStoreState>(initialState);
+
+	// Calculate score whenever form data changes
+	const calculatedScore = derived({ subscribe }, ($state) => {
+		// Get the latest scores from analysis state and form data
+		if ($state.analysis.score > 0) {
+			// Use website analysis score with 70% weight
+			const formScore = calculateVisibilityScore($state.formData);
+			return Math.round($state.analysis.score * 0.7 + formScore * 0.3);
+		}
+
+		// Fall back to just form-based score
+		return calculateVisibilityScore($state.formData);
 	});
 
-	// Reset score store
-	scoreStore.reset();
+	return {
+		subscribe,
+
+		// Update a specific form field
+		updateField: (field: keyof FormData, value: any) => {
+			update((state) => {
+				const updatedFormData = { ...state.formData, [field]: value };
+
+				// Recalculate visibility score
+				const formScore = calculateVisibilityScore(updatedFormData);
+
+				// Only update visibility_score if it's not already set by an API
+				if (!updatedFormData.visibility_score || field === 'visibility_score') {
+					updatedFormData.visibility_score = formScore;
+				}
+
+				return {
+					...state,
+					formData: updatedFormData
+				};
+			});
+
+			// Update the score store with the latest form data
+			const currentState = get({ subscribe });
+			scoreStore.updateFormScore(currentState.formData);
+		},
+
+		// Update multiple fields at once
+		updateFields: (fields: Partial<FormData>) => {
+			update((state) => {
+				const updatedFormData = { ...state.formData, ...fields };
+				return {
+					...state,
+					formData: updatedFormData
+				};
+			});
+
+			// Update the score store
+			const currentState = get({ subscribe });
+			scoreStore.updateFormScore(currentState.formData);
+		},
+
+		// Set analysis loading state
+		setAnalysisLoading: (isLoading: boolean) => {
+			update((state) => ({
+				...state,
+				analysis: {
+					...state.analysis,
+					isLoading
+				}
+			}));
+		},
+
+		// Set analysis results with score calculation
+		setAnalysisResults: (results: any) => {
+			update((state) => {
+				const currentFormData = state.formData;
+				const websiteScore = typeof results.score === 'number' ? results.score : 0;
+				const finalScore = calculateFinalScore(websiteScore, currentFormData);
+
+				return {
+					...state,
+					analysis: {
+						isComplete: true,
+						isLoading: false,
+						data: results,
+						score: websiteScore,
+						error: ''
+					},
+					formData: {
+						...currentFormData,
+						visibility_score: finalScore
+					}
+				};
+			});
+
+			// Update score store
+			const currentState = get({ subscribe });
+			scoreStore.setWebsiteAnalysis(currentState.analysis.data, currentState.formData);
+
+			return currentState.analysis.score;
+		},
+
+		// Set error state
+		setAnalysisError: (error: string) => {
+			update((state) => ({
+				...state,
+				analysis: {
+					...state.analysis,
+					error,
+					isLoading: false
+				}
+			}));
+
+			// Update score store
+			scoreStore.setError(error);
+		},
+
+		// Reset the store
+		reset: () => {
+			set(initialState);
+			scoreStore.reset();
+		},
+
+		// Get current full state (for debugging)
+		getState: () => {
+			return get({ subscribe });
+		}
+	};
 }
+
+// Create and export the store
+export const formStore = createFormStore();
+
+// Export calculated score as a derived store
+export const calculatedScore = derived(formStore, ($formStore) => {
+	const state = $formStore;
+
+	if (state.analysis.score > 0) {
+		const formScore = calculateVisibilityScore(state.formData);
+		return Math.round(state.analysis.score * 0.7 + formScore * 0.3);
+	}
+
+	return calculateVisibilityScore(state.formData);
+});

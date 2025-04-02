@@ -1,63 +1,59 @@
+<!-- src/lib/components/WebsiteUrlForm.svelte - Improved version -->
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
-	import SeoTips from './SeoTips.svelte';
 	import { i18n } from '$lib/i18n';
-	import {
-		extractScoreFromResponse,
-		calculateFinalScore,
-		calculateVisibilityScore,
-		extractScreenshot,
-		analyzeResponseStructure
-	} from '$lib/utils/scoring';
-	import { stepperStore } from '$lib/stores/stepperStore';
-	import { scoreStore } from '$lib/utils/scoring';
-	import { websiteLoading } from '$lib/stores/loadingStore';
+	import SeoTips from './SeoTips.svelte';
+	import Button from './Button.svelte';
+	import { formStore } from '$lib/stores/formStore';
+	import { loadingStore } from '$lib/stores/loadingStore';
 
+	import { stepperStore } from '$lib/stores/stepperStore';
+
+	// Props
 	interface Props {
 		form: SuperValidated<FormData>;
-		errors: Record<string, string>;
-		onAnalysisComplete: (healthData: any, score: number) => void;
+		error?: Record<string, string>;
+		onAnalysisComplete?: (data: any, score: number) => void;
 		onAnalysisStart?: () => void;
 		onAnalysisEnd?: () => void;
 	}
 
 	let {
 		form,
-		errors = {},
-		onAnalysisComplete,
+		error = {},
+		onAnalysisComplete = () => {},
 		onAnalysisStart = () => {},
 		onAnalysisEnd = () => {}
 	} = $props<Props>();
-
-	const features = ['performance', 'seo', 'accessibility', 'security'];
 
 	// State variables
 	let isLoading = $state(false);
 	let showSeoTips = $state(true);
 	let analysisError = $state('');
-	let autoAdvanceTimeout: number | undefined;
-	let currentProgress = $state(0);
-	let analysisData = $state<any>(null);
 	let formattedUrl = $state('');
-	let remainingSeconds = $state(45); // Start with 45 seconds
 	let localErrors = $state<Record<string, string>>({});
 	let touchedFields = $state(new Set<string>());
 	let isUrlValid = $state(true);
 	let analysisComplete = $state(false);
+	let currentProgress = $state(0);
+	let remainingSeconds = $state(45);
 
-	// Für erweiterte SEO-Tips
-	let tipInterval: number | undefined;
+	// Timeouts and intervals
+	let progressAnimationId: number;
+	let countdownIntervalId: number;
+	let autoAdvanceTimeoutId: number;
 
-	// URL validation function
+	// Features for display
+	const features = ['performance', 'seo', 'accessibility', 'security'];
+
+	// URL validation with better error messages
 	function validateUrl(url: string): { isValid: boolean; error: string } {
 		if (!url || url.trim() === '') {
-			return { isValid: false, error: 'Bitte eine URL eingeben' };
+			return { isValid: false, error: $i18n.forms.errors.required };
 		}
 
-		// Check if URL has a valid format
 		try {
 			// Ensure URL has a protocol for validation
 			const urlToCheck =
@@ -65,18 +61,18 @@
 
 			const parsed = new URL(urlToCheck);
 
-			// Check if domain has a dot (as per schema)
+			// Domain must have at least one dot
 			if (!parsed.hostname.includes('.')) {
-				return { isValid: false, error: 'Ungültige Domain' };
+				return { isValid: false, error: $i18n.forms.errors.invalidDomain };
 			}
 
 			return { isValid: true, error: '' };
 		} catch (error) {
-			return { isValid: false, error: 'Ungültiges URL-Format' };
+			return { isValid: false, error: $i18n.forms.errors.url };
 		}
 	}
 
-	// Handle field blur
+	// Handle field blur for validation
 	function handleBlur(fieldName: string) {
 		touchedFields.add(fieldName);
 
@@ -92,22 +88,23 @@
 		}
 	}
 
-	// Check if field should show error
+	// Check if error should be shown
 	function shouldShowError(fieldName: string): boolean {
-		// Safely check if form is defined and has the company_url property
-		if (touchedFields.has(fieldName)) {
-			return !!errors[fieldName] || !!localErrors[fieldName];
-		}
-		return false;
+		return touchedFields.has(fieldName) && !!localErrors[fieldName];
 	}
 
 	// Get error message
 	function getErrorMessage(fieldName: string): string {
-		return localErrors[fieldName] || errors[fieldName] || '';
+		return localErrors[fieldName] || error[fieldName] || '';
 	}
 
 	// Start progress animation for auto-advance
 	function startProgressAnimation(durationMs: number) {
+		// Clear any existing animation
+		if (progressAnimationId) {
+			cancelAnimationFrame(progressAnimationId);
+		}
+
 		const startTime = Date.now();
 		const endTime = startTime + durationMs;
 
@@ -123,177 +120,52 @@
 			currentProgress = (elapsed / durationMs) * 100;
 
 			if (remaining > 0) {
-				requestAnimationFrame(animateProgress);
+				progressAnimationId = requestAnimationFrame(animateProgress);
 			} else {
 				currentProgress = 100;
 			}
 		};
 
-		requestAnimationFrame(animateProgress);
+		progressAnimationId = requestAnimationFrame(animateProgress);
 	}
 
 	// Start countdown timer
 	function startCountdown(fromSeconds: number = 45) {
+		// Clear any existing countdown
+		if (countdownIntervalId) {
+			clearInterval(countdownIntervalId);
+		}
+
 		remainingSeconds = fromSeconds;
 
-		const countdownInterval = setInterval(() => {
+		countdownIntervalId = setInterval(() => {
 			if (remainingSeconds > 0) {
 				remainingSeconds--;
 			} else {
-				clearInterval(countdownInterval);
+				clearInterval(countdownIntervalId);
 			}
 		}, 1000);
 
-		return countdownInterval;
+		return countdownIntervalId;
 	}
 
-	// Generate mock data for fallback
-	function generateMockData(url: string) {
-		// Extract domain for display
-		let domain = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-		if (domain.startsWith('www.')) {
-			domain = domain.substring(4);
-		}
-
-		// Generate scores for mockup
-		const score = Math.floor(Math.random() * 25) + 35; // 35-60
-		const performance = Math.floor(Math.random() * 20) + 30; // 30-50
-		const seo = Math.floor(Math.random() * 30) + 35; // 35-65
-		const accessibility = Math.floor(Math.random() * 20) + 30; // 30-50
-		const bestPractices = Math.floor(Math.random() * 25) + 35; // 35-60
-
-		return {
-			url: url,
-			domain: domain,
-			score: score,
-			performance: performance,
-			seo: seo,
-			accessibility: accessibility,
-			bestPractices: bestPractices,
-			securityGrade: ['B', 'C', 'D'][Math.floor(Math.random() * 3)],
-			technologies: ['WordPress', 'PHP', 'JavaScript', 'jQuery', 'Bootstrap'].slice(
-				0,
-				Math.floor(Math.random() * 3) + 2
-			),
-			suggestions: [
-				'Meta-Beschreibungen für bessere Klickraten optimieren',
-				'Seitengeschwindigkeit verbessern',
-				'Mobilfreundlichkeit sicherstellen',
-				'Interne Verlinkungen optimieren',
-				'SSL-Zertifikat implementieren'
-			].slice(0, Math.floor(Math.random() * 2) + 2)
-		};
-	}
-
-	// Process analysis data from webhook or mock data
-	function processAnalysisData(data: any): any {
-		if (!data) {
-			// Return mock data if no data is available
-			return generateMockData(formattedUrl);
-		}
-
-		// Set some default values
-		const processed = {
-			url: formattedUrl,
-			score: extractScoreFromResponse(data) || 25,
-			performance: 0,
-			seo: 0,
-			accessibility: 0,
-			bestPractices: 0,
-			content: 0,
-			security: 0,
-			technologies: [],
-			suggestions: [],
-			lighthouse_report: null,
-			detailed_scores: {}
-		};
-
-		try {
-			// Handle array or object response format
-			const dataObj = Array.isArray(data)
-				? data.find((item) => item.lighthouse_report) || data[0]
-				: data;
-
-			// Store the entire lighthouse report
-			if (dataObj.lighthouse_report) {
-				processed.lighthouse_report = dataObj.lighthouse_report;
-			}
-
-			// Extract Lighthouse scores if available
-			if (dataObj.lighthouse_report && dataObj.lighthouse_report.categories) {
-				const categories = dataObj.lighthouse_report.categories;
-				processed.performance = Math.round((categories.performance?.score || 0) * 100);
-				processed.seo = Math.round((categories.seo?.score || 0) * 100);
-				processed.accessibility = Math.round((categories.accessibility?.score || 0) * 100);
-				processed.bestPractices = Math.round((categories['best-practices']?.score || 0) * 100);
-			}
-
-			// Extract security grade
-			if (dataObj.security_headers && dataObj.security_headers.grade) {
-				processed.security = dataObj.security_headers.grade;
-			}
-
-			// Extract technologies
-			if (dataObj.technologies && Array.isArray(dataObj.technologies)) {
-				processed.technologies = dataObj.technologies.slice(0, 5);
-			}
-
-			// Extract suggestions
-			if (dataObj.suggestions && Array.isArray(dataObj.suggestions)) {
-				processed.suggestions = dataObj.suggestions.slice(0, 3);
-			} else {
-				// Default suggestions if none available
-				processed.suggestions = [
-					'Meta-Beschreibungen für bessere Klickraten optimieren',
-					'Seitengeschwindigkeit verbessern',
-					'Mobilfreundlichkeit sicherstellen'
-				];
-			}
-
-			if (data.detailed_scores) {
-				processed.detailed_scores = data.detailed_scores;
-				// Berechnung des Content-Scores
-				const contentFactors = [
-					data.detailed_scores.meta_description || 0,
-					data.detailed_scores.h1 || 0,
-					data.detailed_scores.alt_attributes || 0
-				];
-				processed.content = Math.round(
-					contentFactors.reduce((sum, score) => sum + score, 0) / contentFactors.length
-				);
-			}
-
-			try {
-				// Extract screenshot if available in the response
-				const screenshotData = extractScreenshot(data);
-				if (screenshotData) {
-					processed.screenshot = screenshotData;
-					console.log('Screenshot erfolgreich verarbeitet');
-				} else {
-					console.log('Kein Screenshot in den API-Daten gefunden');
-				}
-			} catch (screenshotError) {
-				console.error('Fehler bei der Screenshot-Verarbeitung:', screenshotError);
-			}
-
-			return processed;
-		} catch (error) {
-			console.error('Error processing webhook data:', error);
-			// Return mock data if processing fails
-			return generateMockData(formattedUrl);
-		}
+	// Clean up all timers and intervals
+	function cleanupTimers() {
+		if (progressAnimationId) cancelAnimationFrame(progressAnimationId);
+		if (countdownIntervalId) clearInterval(countdownIntervalId);
+		if (autoAdvanceTimeoutId) clearTimeout(autoAdvanceTimeoutId);
 	}
 
 	// Main analyze function
 	async function analyzeWebsite() {
-		// Check if form and company_url are defined
+		// Validate input first
 		if (!$form || !$form.company_url) {
-			localErrors.company_url = 'Bitte eine URL eingeben';
+			localErrors.company_url = $i18n.forms.errors.required;
 			touchedFields.add('company_url');
 			return;
 		}
 
-		// Validate URL
+		// Validate URL format
 		const validation = validateUrl($form.company_url);
 		if (!validation.isValid) {
 			localErrors.company_url = validation.error;
@@ -301,13 +173,14 @@
 			return;
 		}
 
-		// Prepare URL for webhook - just basic formatting
+		// Clean up any existing timers
+		cleanupTimers();
+
+		// Prepare URL for API - ensure protocol and trailing slash
 		let webhookUrl = $form.company_url.trim();
-		// Ensure URL has protocol
 		if (!webhookUrl.startsWith('http://') && !webhookUrl.startsWith('https://')) {
 			webhookUrl = 'https://' + webhookUrl;
 		}
-		// Ensure trailing slash for API compatibility
 		if (!webhookUrl.endsWith('/')) {
 			webhookUrl = webhookUrl + '/';
 		}
@@ -316,38 +189,25 @@
 		formattedUrl = webhookUrl;
 
 		// Update loading states
-		$websiteLoading = true;
 		isLoading = true;
+		$loadingStore.websiteLoading = true;
 		analysisComplete = false;
 		analysisError = '';
 
+		// Call the start callback
 		onAnalysisStart();
 
-		// Clear any existing timeout
-		if (autoAdvanceTimeout) {
-			clearTimeout(autoAdvanceTimeout);
-			autoAdvanceTimeout = undefined;
-		}
-
-		// Stop existing interval if present
-		if (tipInterval) {
-			clearInterval(tipInterval);
-			tipInterval = undefined;
-		}
-
 		// Start countdown
-		let countdownInterval = startCountdown(45);
+		startCountdown(45);
 
 		try {
-			// Use the URL directly in the API call
-			const apiUrl = `https://n8n.chooomedia.com/webhook/websitehealth?url=${webhookUrl}`;
+			// Create API URL with the website URL as a parameter
+			const apiUrl = `https://n8n.chooomedia.com/webhook/websitehealth?url=${encodeURIComponent(webhookUrl)}`;
 
-			// Log for debugging
-			console.log('API URL:', apiUrl);
-
-			// Make API request with longer timeout to ensure we get a response
+			console.log('Calling API:', apiUrl);
+			// Set up fetch with timeout
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 180000); // 180 second timeout
+			const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
 			const response = await fetch(apiUrl, {
 				method: 'GET',
@@ -364,142 +224,187 @@
 				throw new Error(`API error: ${response.status}`);
 			}
 
-			// Parse response data - explicitly wait for this
+			// Parse response data
 			const data = await response.json();
-			console.log('Webhook response data:', data);
+			console.log('API response data:', data);
 
-			// On success
-			analysisData = processAnalysisData(data);
-			scoreStore.setWebsiteAnalysis(analysisData, $form);
-			analysisComplete = true;
+			// Process the data and store results
+			const processedData = processApiResponse(data);
 
-			analyzeResponseStructure(data);
-
-			// Check if we have usable data
-			if (!data || (Array.isArray(data) && data.length === 0)) {
-				throw new Error('No data returned from webhook');
-			}
-
-			// Process data
-			analysisData = processAnalysisData(data);
-
-			// Update the score store with the new data
-			if (data?.lighthouseResult) {
-				console.log('Lighthouse metrics available:', data.lighthouseResult.categories);
-			}
-
-			// Update the score store with the new data
-			scoreStore.setWebsiteAnalysis(analysisData, $form);
+			// Update the form store with analysis results
+			formStore.setAnalysisResults(processedData);
 
 			// Mark analysis as complete
 			analysisComplete = true;
+
+			// Call the completion callback with data and score
+			onAnalysisComplete(processedData, processedData.score || 0);
 		} catch (error) {
-			console.warn('Error fetching from webhook, using mock data:', error);
-			analysisError = `Fehler bei der API-Anfrage: ${error.message}. Fallback-Daten werden verwendet.`;
+			console.warn('API error, using fallback data:', error);
 
-			analysisData = generateMockData(formattedUrl);
+			// Create fallback data for graceful degradation
+			const fallbackData = createFallbackData(formattedUrl);
 
-			scoreStore.setWebsiteAnalysis(analysisData, $form);
+			// Update stores with fallback data
+			formStore.setAnalysisResults(fallbackData);
+			formStore.setAnalysisError(`${error.message}. Using fallback data.`);
 
+			// Complete analysis with fallback
 			analysisComplete = true;
+			onAnalysisComplete(fallbackData, fallbackData.score || 0);
+
+			// Set error message for display
+			analysisError = `${$i18n.common.error}: ${error.message}. ${$i18n.forms.fallbackUsed}`;
 		} finally {
+			// Clean up regardless of success/failure
+			remainingSeconds = Math.min(remainingSeconds, 7);
+			$loadingStore.websiteLoading = false;
 			onAnalysisEnd();
 
-			remainingSeconds = Math.min(remainingSeconds, 7);
-			$websiteLoading = false;
+			// Start animation for auto-advance progress (7 seconds)
+			const autoAdvanceDelay = 7000;
+			startProgressAnimation(autoAdvanceDelay);
+
+			// Schedule step advance after 7 seconds
+			autoAdvanceTimeoutId = setTimeout(() => {
+				// Mark current step as complete and advance
+				stepperStore.markStepValid($stepperStore.current.index);
+				stepperStore.nextStep();
+			}, autoAdvanceDelay);
 		}
-
-		// Calculate final score
-		const formScore = calculateVisibilityScore($form);
-		const websiteScore = analysisData?.score || formScore;
-		const finalScore = calculateFinalScore(websiteScore, $form);
-
-		// Update form with calculated score - this is crucial
-		if ($form && typeof $form === 'object') {
-			$form.visibility_score = finalScore;
-		}
-
-		// Call the callback with the data and score
-		onAnalysisComplete(analysisData, finalScore);
-
-		// Start animation for auto-advance progress (7 seconds)
-		const autoAdvanceDelay = 7000;
-		startProgressAnimation(autoAdvanceDelay);
-
-		// Auto advance after 7 seconds
-		autoAdvanceTimeout = setTimeout(() => {
-			// Stop the interval before advancing
-			if (tipInterval) {
-				clearInterval(tipInterval);
-				tipInterval = undefined;
-			}
-			if (countdownInterval) {
-				clearInterval(countdownInterval);
-			}
-
-			$websiteLoading = false;
-
-			// Mark current step as valid in the stepper store
-			stepperStore.markStepValid($stepperStore.current.index);
-			// Navigate to the next step
-			stepperStore.nextStep();
-		}, autoAdvanceDelay);
 	}
 
-	// URL validation effect when value changes
-	$effect(() => {
-		if ($form?.company_url !== undefined && touchedFields.has('company_url')) {
-			const validation = validateUrl($form.company_url);
-			if (!validation.isValid) {
-				localErrors.company_url = validation.error;
-				isUrlValid = false;
-			} else {
-				delete localErrors.company_url;
-				isUrlValid = true;
-			}
-		}
-	});
+	// Process API response data
+	function processApiResponse(data: any) {
+		if (!data) return createFallbackData(formattedUrl);
 
-	// Auto-analyze when component mounts if URL is already set
-	onMount(() => {
-		if ($form?.company_url && !$form.visibility_score) {
-			// Validate URL first
-			const validation = validateUrl($form.company_url);
-			if (validation.isValid) {
-				setTimeout(() => {
-					analyzeWebsite();
-				}, 500);
-			} else {
-				localErrors.company_url = validation.error;
-				touchedFields.add('company_url');
-			}
-		}
+		try {
+			// Handle various response formats
+			const processedData = {
+				url: formattedUrl,
+				score: 0,
+				performance: 0,
+				seo: 0,
+				accessibility: 0,
+				bestPractices: 0,
+				content: 0,
+				security: 0,
+				suggestions: [],
+				lighthouse_report: null,
+				detailed_scores: {},
+				screenshot: null
+			};
 
-		// Clean up on component unmount
-		return () => {
-			if (autoAdvanceTimeout) {
-				clearTimeout(autoAdvanceTimeout);
+			// Try to extract score - handle different data structures
+			if (typeof data.score === 'number') {
+				processedData.score = data.score;
+			} else if (data.overall_score && typeof data.overall_score === 'number') {
+				processedData.score = data.overall_score;
+			} else if (Array.isArray(data) && data.length > 0 && data[0].score) {
+				processedData.score = data[0].score;
+			} else {
+				// Fallback score between 40-60
+				processedData.score = Math.floor(Math.random() * 20) + 40;
 			}
-			if (tipInterval) {
-				clearInterval(tipInterval);
+
+			// Extract lighthouse data if available
+			const lighthouseData =
+				Array.isArray(data) && data[0]?.lighthouse_report
+					? data[0].lighthouse_report
+					: data.lighthouse_report;
+
+			if (lighthouseData && lighthouseData.categories) {
+				const categories = lighthouseData.categories;
+				processedData.performance = Math.round((categories.performance?.score || 0) * 100);
+				processedData.seo = Math.round((categories.seo?.score || 0) * 100);
+				processedData.accessibility = Math.round((categories.accessibility?.score || 0) * 100);
+				processedData.bestPractices = Math.round((categories['best-practices']?.score || 0) * 100);
+				processedData.lighthouse_report = lighthouseData;
 			}
-			$websiteLoading = false;
+
+			// Extract suggestions if available
+			if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+				processedData.suggestions = data.suggestions.slice(0, 5);
+			} else {
+				// Default suggestions
+				processedData.suggestions = [
+					$i18n.results.recommendations.website,
+					$i18n.results.recommendations.content,
+					$i18n.results.recommendations.seo
+				];
+			}
+
+			// Extract screenshot if available
+			try {
+				// Check various paths for screenshot data
+				if (data.screenshot) {
+					processedData.screenshot = data.screenshot;
+				} else if (lighthouseData?.audits?.['final-screenshot']?.details?.data) {
+					processedData.screenshot = lighthouseData.audits['final-screenshot'].details.data;
+				}
+			} catch (e) {
+				console.warn('Screenshot extraction failed:', e);
+			}
+
+			return processedData;
+		} catch (error) {
+			console.error('Error processing API data:', error);
+			return createFallbackData(formattedUrl);
+		}
+	}
+
+	// Create fallback data when API fails
+	function createFallbackData(url: string) {
+		// Extract domain name for display
+		const domain = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+		// Generate reasonable random scores
+		const score = Math.floor(Math.random() * 25) + 35; // 35-60
+		const performance = Math.floor(Math.random() * 20) + 30; // 30-50
+		const seo = Math.floor(Math.random() * 30) + 35; // 35-65
+		const accessibility = Math.floor(Math.random() * 20) + 30; // 30-50
+		const bestPractices = Math.floor(Math.random() * 25) + 35; // 35-60
+
+		return {
+			url: url,
+			domain: domain,
+			score: score,
+			performance: performance,
+			seo: seo,
+			accessibility: accessibility,
+			bestPractices: bestPractices,
+			content: Math.floor((seo + accessibility) / 2),
+			security: Math.floor(Math.random() * 20) + 60, // 60-80
+			securityGrade: ['B', 'C', 'D'][Math.floor(Math.random() * 3)],
+			suggestions: [
+				$i18n.results.recommendations.website,
+				$i18n.results.recommendations.content,
+				$i18n.results.recommendations.seo,
+				$i18n.results.recommendations.performance
+			].slice(0, Math.floor(Math.random() * 2) + 2)
 		};
+	}
+
+	// Clean up resources on component destroy
+	onDestroy(() => {
+		cleanupTimers();
+		$loadingStore.websiteLoading = false;
 	});
 </script>
 
 <div class="website-url-form space-y-6">
-	<!-- Ansprechende Illustration im Stil des Beispiels -->
+	<!-- Intro illustration (when not loading) -->
 	{#if !isLoading}
 		<div class="analysis-placeholder mb-6 shadow-custom" transition:fade={{ duration: 300 }}>
 			<div class="mx-auto mt-2 rounded-lg bg-white p-6 shadow-sm">
 				<div class="flex flex-col items-center">
 					<img src="/ui-mockup.svg" alt="Website Analysis Illustration" class="mb-4 h-32 w-auto" />
-					<!-- Input Form (always visible) -->
-					<div class="form-group">
+
+					<!-- URL Input Form -->
+					<div class="form-group w-full max-w-2xl">
 						<label
 							for="company_url"
-							class="form-label text-semibold mb-1 hyphens-auto break-words text-center text-sm text-gray-600"
+							class="form-label text-semibold mb-1 text-center text-sm text-gray-600"
 						>
 							{$i18n.forms.descriptions.company_url}
 						</label>
@@ -523,21 +428,16 @@
 								disabled={isLoading}
 								aria-invalid={shouldShowError('company_url') ? 'true' : 'false'}
 								aria-describedby={shouldShowError('company_url') ? 'company_url-error' : undefined}
-								aria-label={$i18n.forms.placeholders.aria}
 							/>
-							<button
-								type="button"
-								class="btn btn-primary mt-2 lg:ml-2 lg:mt-0"
+
+							<Button
+								label={$i18n.common.analyze}
+								{isLoading}
 								disabled={isLoading || !$form?.company_url || !isUrlValid}
-								onclick={analyzeWebsite}
-							>
-								{#if isLoading}
-									<span class="loading loading-spinner loading-sm"></span>
-									{$i18n.common.analyze}...
-								{:else}
-									{$i18n.common.analyze}
-								{/if}
-							</button>
+								onClick={analyzeWebsite}
+								variant="primary"
+								class="mt-2 lg:ml-2 lg:mt-0"
+							/>
 						</div>
 
 						{#if shouldShowError('company_url')}
@@ -545,11 +445,13 @@
 								{getErrorMessage('company_url')}
 							</p>
 						{/if}
+
 						{#if analysisError}
 							<p class="mt-2 text-sm text-red-600" role="alert" transition:fade>
 								{analysisError}
 							</p>
 						{/if}
+
 						{#if !shouldShowError('company_url') && $form?.company_url && !isLoading && !analysisError}
 							<p class="mt-1 text-sm text-gray-500" id="company_url-description">
 								{$i18n.forms.descriptions.analyze}
@@ -577,8 +479,8 @@
 		</div>
 	{/if}
 
-	<!-- Analysis Loading Box (stays visible during load and after) -->
-	{#if isLoading || (analysisData && !analysisError)}
+	<!-- Analysis Loading/Results Box -->
+	{#if isLoading || (analysisComplete && !analysisError)}
 		<div
 			class="analysis-in-progress mb-6 mt-3"
 			in:fade={{ duration: 300 }}
@@ -586,71 +488,32 @@
 		>
 			<div class="mx-auto max-w-3xl rounded-lg bg-white p-6 shadow-custom">
 				<div class="flex flex-col items-center">
-					<!-- Animated Progress Indicator - Only shows animation while not complete -->
+					<!-- Progress Circle -->
 					<div class="relative mb-4 h-24 w-24">
-						<!-- Static completed circle when analysis is complete -->
-						{#if analysisComplete}
-							<svg class="absolute inset-0" viewBox="0 0 100 100">
-								<circle
-									class="text-primary-100"
-									stroke-width="4"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-								<circle
-									class="text-primary-500"
-									stroke-width="4"
-									stroke-dasharray="264"
-									stroke-dashoffset="0"
-									stroke-linecap="round"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-							</svg>
-						{:else}
-							<!-- Animated circle during loading -->
-							<svg class="absolute inset-0" viewBox="0 0 100 100">
-								<circle
-									class="text-primary-100"
-									stroke-width="4"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-								<circle
-									class="text-primary-500 transition-all duration-300 ease-in-out"
-									stroke-width="4"
-									stroke-dasharray="264"
-									stroke-dashoffset={264 - (currentProgress * 264) / 100}
-									stroke-linecap="round"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-							</svg>
-						{/if}
+						<!-- Background static circle -->
+						<svg class="absolute inset-0" viewBox="0 0 100 100">
+							<circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" stroke-width="4" />
 
-						<!-- Pulse effect in center - only while loading -->
-						{#if !analysisComplete}
-							<div class="absolute inset-0 flex items-center justify-center">
-								<div class="h-16 w-16 animate-ping rounded-full bg-primary-400 opacity-30"></div>
-							</div>
-						{/if}
+							<!-- Progress circle with animation -->
+							<circle
+								cx="50"
+								cy="50"
+								r="42"
+								fill="none"
+								stroke={analysisComplete ? '#10B981' : '#3B82F6'}
+								stroke-width="4"
+								stroke-linecap="round"
+								stroke-dasharray="264"
+								stroke-dashoffset={264 - (currentProgress * 264) / 100}
+								transform="rotate(-90, 50, 50)"
+							/>
+						</svg>
 
-						<!-- Icon in center -->
+						<!-- Status icon in center -->
 						<div class="absolute inset-0 flex items-center justify-center">
 							{#if analysisComplete}
-								<svg class="h-12 w-12 text-primary-600" viewBox="0 0 24 24" fill="none">
+								<!-- Success checkmark -->
+								<svg class="h-12 w-12 text-green-500" viewBox="0 0 24 24" fill="none">
 									<path
 										d="M5 13l4 4L19 7"
 										stroke="currentColor"
@@ -660,7 +523,9 @@
 									/>
 								</svg>
 							{:else}
-								<svg class="h-12 w-12 text-primary-600" viewBox="0 0 24 24" fill="none">
+								<!-- Pulsing loading indicator -->
+								<div class="h-12 w-12 animate-ping rounded-full bg-blue-400 opacity-30"></div>
+								<svg class="absolute h-10 w-10 text-blue-500" viewBox="0 0 24 24" fill="none">
 									<path
 										d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 										stroke="currentColor"
@@ -677,21 +542,22 @@
 						</div>
 					</div>
 
+					<!-- Status Text -->
 					<h3 class="mb-2 text-center text-xl font-bold text-gray-800">
 						{#if analysisComplete}
-							{$i18n.forms.seotips.headline}
-							<span class="text-primary-600"
-								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
-							> abgeschlossen
+							{$i18n.forms.seotips.analysisComplete}
+							<span class="text-primary-600">
+								{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+							</span>
 						{:else}
-							{$i18n.forms.seotips.headline}
-							<span class="text-primary-600"
-								>{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</span
-							>
+							{$i18n.forms.seotips.analyzing}
+							<span class="text-primary-600">
+								{formattedUrl.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+							</span>
 						{/if}
 					</h3>
 
-					<!-- SEO Tips integrated within the loading box (always visible) -->
+					<!-- SEO Tips -->
 					{#if showSeoTips}
 						<div class="w-full">
 							<SeoTips minDisplayTime={8} isResponseReceived={analysisComplete} />
@@ -711,7 +577,7 @@
 		outline-offset: 1px;
 	}
 
-	/* Animation for the progress */
+	/* Animation for the progress circle */
 	@keyframes progress {
 		0% {
 			stroke-dashoffset: 264;
@@ -721,7 +587,7 @@
 		}
 	}
 
-	/* Animation for the analysis elements */
+	/* Animation for content transitions */
 	.analysis-in-progress,
 	.analysis-placeholder {
 		animation: fadeIn 0.5s ease-in-out;

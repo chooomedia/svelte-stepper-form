@@ -2,21 +2,28 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	// Props for the component
+	// Props with types
 	interface Props {
 		currentStep: number;
 		height?: string;
+		transitionDuration?: number;
+		transitionDelay?: number;
 	}
 
-	let { currentStep, height = '420px' } = $props<Props>();
+	let {
+		currentStep,
+		height = 'auto',
+		transitionDuration = 300,
+		transitionDelay = 150
+	} = $props<Props>();
 
-	// State management
+	// State and refs
 	let containerElement: HTMLDivElement;
 	let previousStep = $state(currentStep);
 	let contentHeight = $state(0);
 	let resizeObserver: ResizeObserver | null = null;
 
-	// Track height changes of content to adjust container height smoothly
+	// Track height changes of content
 	function setupResizeObserver() {
 		if (typeof ResizeObserver === 'undefined') return;
 
@@ -58,16 +65,23 @@
 </script>
 
 <div
-	class="form-container relative w-full h-[{contentHeight}px] min-h-[{height}]"
+	class="form-container transition-height relative w-full duration-300 ease-in-out"
+	style="height: {contentHeight ? `${contentHeight}px` : height}; min-height: {height};"
 	bind:this={containerElement}
 >
 	{#key currentStep}
 		<div
-			in:fade={{ duration: 300, delay: 150 }}
-			out:fade={{ duration: 150 }}
-			class="form-content absolute top-0 w-full pb-20"
+			in:fade={{ duration: transitionDuration, delay: transitionDelay }}
+			out:fade={{ duration: transitionDuration }}
+			class="form-content absolute top-0 w-full"
 		>
 			<slot />
 		</div>
 	{/key}
 </div>
+
+<style>
+	.transition-height {
+		transition: height 0.3s ease-in-out;
+	}
+</style>

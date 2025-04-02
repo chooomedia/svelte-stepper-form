@@ -1,19 +1,141 @@
+// src/lib/stores/stepperStore.ts - Improved version
 import { writable, derived } from 'svelte/store';
 import { FORM_STEPS, TOTAL_STEPS, last_step } from '$lib/schema';
 
-// Core stepper state
-export const currentStepIndex = writable(1);
-export const maxReachedStep = writable(1);
-export const stepValidity = writable<
-	Record<number, 'valid' | 'invalid' | 'incomplete' | 'untouched'>
->({
-	1: 'untouched'
-});
+// Define types for better code quality
+export type StepValidityStatus = 'valid' | 'invalid' | 'incomplete' | 'untouched';
 
-// Derived store for current step data
-export const currentStep = derived(currentStepIndex, ($currentStepIndex) => {
-	// Special case for step 12
-	if ($currentStepIndex > FORM_STEPS.length) {
+export interface StepStatus {
+	index: number;
+	isValid: boolean;
+	isIncomplete: boolean;
+	isInvalid: boolean;
+	isCurrent: boolean;
+	isReachable: boolean;
+}
+
+interface StepperState {
+	currentStepIndex: number;
+	maxReachedStep: number;
+	stepValidity: Record<number, StepValidityStatus>;
+}
+
+// Initial state
+const initialState: StepperState = {
+	currentStepIndex: 1,
+	maxReachedStep: 1,
+	stepValidity: {
+		1: 'untouched'
+	}
+};
+
+// Create the store
+function createStepperStore() {
+	const { subscribe, update, set } = writable<StepperState>(initialState);
+
+	// Return store with methods
+	return {
+		subscribe,
+
+		// Navigate to a specific step
+		goToStep: (step: number) => {
+			if (step < 1 || step > TOTAL_STEPS) return;
+
+			update((state) => {
+				// Update max reached step if necessary
+				const maxReachedStep = Math.max(state.maxReachedStep, step);
+
+				return {
+					...state,
+					currentStepIndex: step,
+					maxReachedStep
+				};
+			});
+		},
+
+		// Go to next step
+		nextStep: () => {
+			update((state) => {
+				const next = state.currentStepIndex + 1;
+
+				// Don't exceed total steps
+				if (next > TOTAL_STEPS) return state;
+
+				return {
+					...state,
+					currentStepIndex: next,
+					maxReachedStep: Math.max(state.maxReachedStep, next)
+				};
+			});
+		},
+
+		// Go to previous step
+		prevStep: () => {
+			update((state) => ({
+				...state,
+				currentStepIndex: Math.max(1, state.currentStepIndex - 1)
+			}));
+		},
+
+		// Mark a step with a specific status
+		markStep: (step: number, status: StepValidityStatus) => {
+			update((state) => ({
+				...state,
+				stepValidity: {
+					...state.stepValidity,
+					[step]: status
+				}
+			}));
+		},
+
+		// Convenience methods for specific states
+		markStepValid: (step: number) => {
+			update((state) => ({
+				...state,
+				stepValidity: {
+					...state.stepValidity,
+					[step]: 'valid'
+				}
+			}));
+		},
+
+		markStepInvalid: (step: number) => {
+			update((state) => ({
+				...state,
+				stepValidity: {
+					...state.stepValidity,
+					[step]: 'invalid'
+				}
+			}));
+		},
+
+		markStepIncomplete: (step: number) => {
+			update((state) => ({
+				...state,
+				stepValidity: {
+					...state.stepValidity,
+					[step]: 'incomplete'
+				}
+			}));
+		},
+
+		// Reset the stepper
+		reset: () => set(initialState)
+	};
+}
+
+// Create the core store
+export const stepperStore = createStepperStore();
+
+// Derived store for the current step
+export const currentStepIndex = derived(stepperStore, ($store) => $store.currentStepIndex);
+
+// Derived store for the current step details
+export const currentStep = derived(stepperStore, ($store) => {
+	const index = $store.currentStepIndex;
+
+	// Special case for step 12 (final step)
+	if (index > FORM_STEPS.length) {
 		return {
 			title: 'final',
 			description: 'Ergebnisse',
@@ -22,116 +144,31 @@ export const currentStep = derived(currentStepIndex, ($currentStepIndex) => {
 	}
 
 	// Normal case for steps 1-11
-	const index = Math.max(1, Math.min($currentStepIndex, FORM_STEPS.length));
-	return FORM_STEPS[index - 1];
+	const validIndex = Math.max(1, Math.min(index, FORM_STEPS.length));
+	return FORM_STEPS[validIndex - 1];
 });
 
-// Fix for the jumpToStep function
-export function jumpToStep(step: number) {
-	// Allow jumping to TOTAL_STEPS (12) even though FORM_STEPS.length is 11
+// Derived store for step statuses (for UI)
+export const stepStatuses = derived(stepperStore, ($store) => {
+	return FORM_STEPS.map((_, index) => {
+		const stepIndex = index + 1;
+
+		return {
+			index: stepIndex,
+			isValid: $store.stepValidity[stepIndex] === 'valid',
+			isIncomplete: $store.stepValidity[stepIndex] === 'incomplete',
+			isInvalid: $store.stepValidity[stepIndex] === 'invalid',
+			isCurrent: $store.currentStepIndex === stepIndex,
+			isReachable: stepIndex <= $store.maxReachedStep
+		};
+	});
+});
+
+// Helper function to jump to a specific step (for debugging/testing)
+export function jumpToStep(step: number): void {
 	if (step >= 1 && step <= TOTAL_STEPS) {
-		// Set currentStepIndex (writable) instead of trying to set currentStep (derived)
-		currentStepIndex.set(step);
-
-		// Update maxReachedStep to ensure the step is accessible
-		maxReachedStep.update((value) => Math.max(value, step));
-
-		console.log(`Jumping to step: ${step}`);
+		stepperStore.goToStep(step);
 	} else {
 		console.warn(`Invalid step number: ${step}. Valid range is 1-${TOTAL_STEPS}`);
 	}
-}
-
-// Step status for display
-export const stepStatuses = derived(
-	[currentStepIndex, stepValidity, maxReachedStep],
-	([$currentStepIndex, $stepValidity, $maxReachedStep]) => {
-		return FORM_STEPS.map((_, index) => ({
-			index: index + 1,
-			isValid: $stepValidity[index + 1] === 'valid',
-			isIncomplete: $stepValidity[index + 1] === 'incomplete',
-			isInvalid: $stepValidity[index + 1] === 'invalid',
-			isCurrent: $currentStepIndex === index + 1,
-			isReachable: index + 1 <= $maxReachedStep
-		}));
-	}
-);
-
-// Navigation functions
-export function goToStep(step: number) {
-	if (step < 1 || step > FORM_STEPS.length) return;
-	currentStepIndex.set(step);
-	maxReachedStep.update((value) => Math.max(value, step));
-}
-
-export function nextStep() {
-	currentStepIndex.update((step) => {
-		const next = step + 1;
-		// Allow advancing to TOTAL_STEPS (12) even though FORM_STEPS.length is 11
-		if (next <= TOTAL_STEPS) {
-			maxReachedStep.update((value) => Math.max(value, next));
-			return next;
-		}
-		return step;
-	});
-}
-
-export function prevStep() {
-	currentStepIndex.update((step) => Math.max(1, step - 1));
-}
-
-// Step marking functions
-export function markStepValid(step: number) {
-	stepValidity.update((validity) => ({
-		...validity,
-		[step]: 'valid'
-	}));
-}
-
-export function markStepInvalid(step: number) {
-	stepValidity.update((validity) => ({
-		...validity,
-		[step]: 'invalid'
-	}));
-}
-
-export function markStepIncomplete(step: number) {
-	stepValidity.update((validity) => ({
-		...validity,
-		[step]: 'incomplete'
-	}));
-}
-
-// Create a store with a readable interface and methods
-function createStepperStore() {
-	const { subscribe } = derived(
-		[currentStepIndex, currentStep, stepStatuses],
-		([$currentStepIndex, $currentStep, $stepStatuses]) => ({
-			current: {
-				index: $currentStepIndex,
-				...$currentStep
-			},
-			status: $stepStatuses
-		})
-	);
-
-	return {
-		subscribe,
-		goToStep,
-		nextStep,
-		prevStep,
-		markStepValid,
-		markStepInvalid,
-		markStepIncomplete
-	};
-}
-
-// Export the main store
-export const stepperStore = createStepperStore();
-
-// Reset function
-export function resetStepper() {
-	currentStepIndex.set(1);
-	maxReachedStep.set(1);
-	stepValidity.set({ 1: 'untouched' });
 }
