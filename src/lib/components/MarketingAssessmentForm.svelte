@@ -1,6 +1,6 @@
 <!-- src/lib/components/MarketingAssessmentForm.svelte -->
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import MultiStepForm from './steps/MultiStepForm.svelte';
 	import SelectOptionStep from './steps/SelectOptionStep.svelte';

@@ -3,7 +3,6 @@
 	import { fade } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
 	import MarketingAssessmentForm from '$lib/components/MarketingAssessmentForm.svelte';
-	import { browser } from '$app/environment';
 	import { stepperStore } from '$lib/stores/stepperStore';
 
 	// Props

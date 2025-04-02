@@ -17,20 +17,13 @@ export const load: PageServerLoad = async () => {
 	return { form };
 };
 
-export const actions: Actions = {
+export const actions = {
 	default: async ({ request }) => {
 		const form = await superValidate(request, last_step);
 
-		console.log('🔍 Validation errors:', form.errors);
-
 		if (!form.valid) return fail(400, { form });
 
-		const created = await mockCreateEntity(form.data);
-
-		if (!created) {
-			return message(form, 'Sorry, we could not process your assessment.', { status: 500 });
-		}
-
-		return message(form, 'Your assessment was completed successfully.');
+		// Mock-Implementierung
+		return message(form, 'Formular erfolgreich übermittelt');
 	}
 };

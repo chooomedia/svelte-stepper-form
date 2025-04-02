@@ -1,5 +1,5 @@
-<!-- src/lib/components/WebsiteUrlForm.svelte - Improved version -->
 <script lang="ts">
+	import { onMount, onDestroy } from 'svelte'; // Add onDestroy here
 	import { fade } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
@@ -8,7 +8,6 @@
 	import Button from './Button.svelte';
 	import { formStore } from '$lib/stores/formStore';
 	import { loadingStore } from '$lib/stores/loadingStore';
-
 	import { stepperStore } from '$lib/stores/stepperStore';
 
 	// Props
