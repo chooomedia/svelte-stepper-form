@@ -1,4 +1,3 @@
-// In routes/api/generate-client-token/+server.ts
 import { json } from '@sveltejs/kit';
 
 export async function GET() {

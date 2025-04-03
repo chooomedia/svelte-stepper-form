@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { FormData } from '$lib/schema';
-	import SeoTips from './SeoTips.svelte';
+	import SeoTips from '../SeoTips.svelte';
 	import { i18n } from '$lib/i18n';
 	import {
 		extractScoreFromResponse,

@@ -884,7 +884,7 @@ const de: Translation = {
 		breadcrumb: 'Marketing Assessment'
 	},
 	pricing: {
-		perDay: 'pro Tag',
+		perDay: 'Täglich',
 		features: {
 			websiteOptimization: 'Website-Optimierung',
 			basicSeo: 'Grundlegende SEO-Maßnahmen',

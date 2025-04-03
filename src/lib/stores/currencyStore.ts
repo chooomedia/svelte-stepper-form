@@ -12,6 +12,30 @@ interface CurrencyRate {
 	thousandsSeparator: string;
 }
 
+interface CurrencyStore {
+	subscribe: (fn: (value: string) => void) => () => void;
+	set: (value: string) => void;
+	setCurrency: (currencyCode: string) => void;
+	getRate: (targetCurrency?: string) => number;
+	convertPrice: (priceInEur: number, targetCurrency?: string) => number;
+	formatPrice: (
+		price: number,
+		options?: {
+			currencyCode?: string;
+			showSymbol?: boolean;
+			showCode?: boolean;
+		}
+	) => string;
+	getFormattedPrice: (
+		price: number,
+		options?: {
+			currencyCode?: string;
+			showSymbol?: boolean;
+			showCode?: boolean;
+		}
+	) => string;
+}
+
 // Default currency rates (as of knowledge cutoff)
 // In a production app, these would be fetched from an API
 const defaultRates: Record<string, CurrencyRate> = {
@@ -54,7 +78,7 @@ const defaultRates: Record<string, CurrencyRate> = {
 };
 
 // Create the currency store
-function createCurrencyStore() {
+function createCurrencyStore(): CurrencyStore {
 	// Current active currency
 	const { subscribe, set, update } = writable<string>('EUR');
 
@@ -107,6 +131,50 @@ function createCurrencyStore() {
 				showCode?: boolean;
 			}
 		): string => {
+			let currentCurrency = 'EUR';
+			subscribe((value) => {
+				currentCurrency = value;
+			})();
+
+			const currencyCode = options?.currencyCode || currentCurrency;
+			const showSymbol = options?.showSymbol !== false;
+			const showCode = options?.showCode || false;
+
+			const currencyInfo = defaultRates[currencyCode] || defaultRates.EUR;
+
+			// Format the number according to locale
+			const formattedNumber = price
+				.toFixed(currencyInfo.decimals)
+				.replace('.', currencyInfo.decimalSeparator);
+
+			// Add symbol based on position
+			let result = '';
+			if (currencyInfo.position === 'prefix' && showSymbol) {
+				result += currencyInfo.symbol;
+			}
+
+			result += formattedNumber;
+
+			if (currencyInfo.position === 'suffix' && showSymbol) {
+				result += currencyInfo.symbol;
+			}
+
+			if (showCode) {
+				result += ` ${currencyCode}`;
+			}
+
+			return result;
+		},
+		// Adding the missing getFormattedPrice method as an alias to formatPrice for backward compatibility
+		getFormattedPrice: (
+			price: number,
+			options?: {
+				currencyCode?: string;
+				showSymbol?: boolean;
+				showCode?: boolean;
+			}
+		): string => {
+			// Simply alias to formatPrice for backward compatibility
 			let currentCurrency = 'EUR';
 			subscribe((value) => {
 				currentCurrency = value;

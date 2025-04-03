@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { i18n } from '$lib/i18n';
-	import Icon from './Icon.svelte';
+	import Icon from '../Icon.svelte';
 
 	// Use $derived for reactive transformations
 	const profile = $derived($i18n.results.expertProfile);

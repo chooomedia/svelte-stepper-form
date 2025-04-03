@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import { i18n } from '$lib/i18n';
-	import Icon from './Icon.svelte';
+	import Icon from '../Icon.svelte';
 
 	// Component prop for the score
 	const { score = 50 } = $props<{

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import { i18n } from '$lib/i18n';
-	import Icon from './Icon.svelte';
+	import Icon from '../Icon.svelte';
 	import type { FormData } from '$lib/schema';
 
 	// Props

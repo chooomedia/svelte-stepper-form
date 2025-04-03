@@ -7,10 +7,10 @@
 	import VisibilityScore from './VisibilityScore.svelte';
 	import PerformanceChart from './PerformanceChart.svelte';
 	import PricingOptions from './PricingOptions.svelte';
-	import ExpertProfile from './ExpertProfile.svelte';
+	import ExpertProfile from './sections/ExpertSection.svelte';
 	import ProcessSteps from './ProcessSteps.svelte';
-	import ImprovementSection from './ImprovementSection.svelte';
-	import BenefitsSection from './BenefitsSection.svelte';
+	import ImprovementSection from './sections/ImprovementSection.svelte';
+	import BenefitsSection from './sections/BenefitsSection.svelte';
 	import { scoreStore, getFallbackAuditData, websiteScreenshot } from '$lib/utils/scoring';
 	import Icon from './Icon.svelte';
 

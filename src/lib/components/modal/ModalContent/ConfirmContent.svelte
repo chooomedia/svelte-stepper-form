@@ -1,4 +1,3 @@
-<!-- src/lib/components/modal/ModalContent/ConfirmContent.svelte -->
 <script lang="ts">
 	const {
 		message = 'Möchtest du wirklich fortfahren?',
@@ -24,11 +23,11 @@
 	</div>
 
 	<div class="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center sm:gap-4">
-		<button class="btn btn-outline hover:bg-primary-100 hover:text-secondary" onclick={onCancel}>
-			{cancelLabel}
-		</button>
-		<button class="btn btn-primary" onclick={onConfirm}>
+		<button class="btn btn-outline hover:bg-primary-100 hover:text-secondary" onclick={onConfirm}>
 			{confirmLabel}
+		</button>
+		<button class=" btn btn-primary" onclick={onCancel}>
+			{cancelLabel}
 		</button>
 	</div>
 </div>

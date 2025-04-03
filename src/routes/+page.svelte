@@ -6,10 +6,10 @@
 	import Button from '$lib/components/Button.svelte';
 	import ImageOption from '$lib/components/ImageOption.svelte';
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
-	import ContactForm from '$lib/components/ContactForm.svelte';
+	import ContactForm from '$lib/components/forms/ContactForm.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
 	import { scoreStore } from '$lib/utils/scoring';
-	import WebsiteUrlForm from '$lib/components/WebsiteUrlForm.svelte';
+	import WebsiteUrlForm from '$lib/components/forms/WebsiteUrlForm.svelte';
 	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
 	import { last_step, TOTAL_STEPS } from '$lib/schema';
 	import { i18n, getLocalizedLabel, getLocalizedDescription } from '$lib/i18n';

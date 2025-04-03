@@ -107,14 +107,25 @@
 	}
 
 	function handlePaymentTypeChange(type: string) {
-		paymentType = type;
-		calculatePricing(selectedPlan, type);
+		// Map translated strings to internal values if needed
+		if (type === $i18n.pricing.paymentOptions.monthly) {
+			paymentType = 'monatlich';
+		} else if (type === $i18n.pricing.paymentOptions.oneTime) {
+			paymentType = 'einmalig';
+		} else if (type === $i18n.pricing.paymentOptions.longTime) {
+			paymentType = 'longtime';
+		} else {
+			// It's already an internal type
+			paymentType = type;
+		}
+
+		calculatePricing(selectedPlan, paymentType);
 		onPlanSelect(selectedPlan, totalPrice);
 	}
 
 	// Function to open the payment modal
 	function openPaymentModal() {
-		// Stellen wir sicher, dass totalPrice eine Zahl ist
+		// Ensure totalPrice is a number
 		const numericPrice =
 			typeof totalPrice === 'number' ? totalPrice : parseFloat(totalPrice.toString()) || 0;
 
@@ -138,7 +149,7 @@
 			'details:',
 			details
 		);
-		// Hier können zusätzliche Verarbeitungsschritte nach erfolgreicher Zahlung erfolgen
+		// Additional processing after successful payment can go here
 	}
 
 	// Timer for discount
@@ -184,7 +195,7 @@
 
 		const observerOptions = { threshold: 0.2 };
 
-		// Erstelle einen Observer für jede Sektion
+		// Create an observer for each section
 		const observers = {
 			bonusBox: new IntersectionObserver((entries) => {
 				entries.forEach((entry) => {
@@ -214,7 +225,7 @@
 			}, observerOptions)
 		};
 
-		// Observer-Setup leicht verzögern, um sicherzustellen, dass die DOM-Elemente existieren
+		// Delay observer setup slightly to ensure DOM elements exist
 		setTimeout(() => {
 			const elements = {
 				bonusBox: document.querySelector('.bonus-box'),
@@ -222,7 +233,7 @@
 				discountBanner: document.querySelector('.discount-banner')
 			};
 
-			// Beobachte jedes Element, wenn es existiert
+			// Observe each element if it exists
 			Object.entries(elements).forEach(([key, element]) => {
 				if (element && key in observers) {
 					observers[key as keyof typeof observers].observe(element);
@@ -230,7 +241,7 @@
 			});
 		}, 500);
 
-		// Observer-Cleanup-Funktion zurückgeben
+		// Return cleanup function
 		return () => {
 			Object.values(observers).forEach((observer) => observer.disconnect());
 		};
@@ -358,26 +369,26 @@
 			<h4 class="mb-3 text-lg font-semibold text-gray-700">{$i18n.pricing.paymentOptions.title}</h4>
 			<div class="join rounded-lg border border-gray-200 shadow-md">
 				<button
-					class={`btn join-item ${paymentType === $i18n.pricing.paymentOptions.monthly ? 'btn-primary' : 'btn-ghost'}`}
+					class={`btn join-item ${paymentType === 'monatlich' ? 'btn-primary' : 'btn-ghost'}`}
 					onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.monthly)}
 					type="button"
 				>
 					{$i18n.pricing.paymentOptions.monthly}
 				</button>
 				<button
-					class={`btn join-item ${paymentType === $i18n.pricing.paymentOptions.oneTime ? 'btn-primary' : 'btn-ghost'}`}
+					class={`btn join-item ${paymentType === 'einmalig' ? 'btn-primary' : 'btn-ghost'}`}
 					onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.oneTime)}
 					type="button"
 				>
 					{$i18n.pricing.paymentOptions.oneTime}
 				</button>
 				<button
-					class={`btn join-item hidden md:block lg:block ${paymentType === $i18n.pricing.paymentOptions.longTime ? 'btn-primary' : 'btn-ghost'} relative`}
+					class={`btn join-item hidden md:block lg:block ${paymentType === 'longtime' ? 'btn-primary' : 'btn-ghost'} relative`}
 					onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.longTime)}
 					type="button"
 				>
 					<span>{$i18n.pricing.paymentOptions.longTime}</span>
-					{#if paymentType !== $i18n.pricing.paymentOptions.longTime}
+					{#if paymentType !== 'longtime'}
 						<span
 							class="absolute -right-1 -top-1 flex h-5 w-5 rotate-[12deg] animate-pulse items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
 						>
@@ -427,8 +438,8 @@
 							onchange={() => handlePlanChange(plan.name)}
 						/>
 						<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
-							{paymentType === 'longtime' && $i18n.planLabels.longTimeSuffix[plan.name]
-								? $i18n.planLabels.longTimeSuffix[plan.name]
+							{paymentType === 'longtime' && $i18n.pricing.planLabels.longTimeSuffix[plan.name]
+								? $i18n.pricing.planLabels.longTimeSuffix[plan.name]
 								: plan.name}
 						</label>
 					</div>
@@ -448,19 +459,19 @@
 
 						<span class="ml-1 text-3xl font-bold text-gray-900">
 							{currencyStore.formatPrice(
-								paymentType === $i18n.pricing.paymentOptions.monthly
+								paymentType === 'monatlich'
 									? plan.price
-									: paymentType === $i18n.pricing.paymentOptions.oneTime
+									: paymentType === 'einmalig'
 										? plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92
 										: plan.price * 30 * parseInt(plan.name.split('-')[0]) * longtimeYears * 0.8
 							)}
 						</span>
 						<span class="text-sm text-gray-500">
-							{paymentType === $i18n.pricing.paymentOptions.monthly
-								? plan.perDay
-								: paymentType === $i18n.pricing.paymentOptions.oneTime
-									? $i18n.pricing.paymentOptions.oneTime
-									: $i18n.pricing.paymentOptions.longTime}
+							{paymentType === 'monatlich'
+								? plan.perDay.split(' ')[0]
+								: paymentType === 'einmalig'
+									? $i18n.pricing.paymentOptions.oneTime.split(' ')[0]
+									: $i18n.pricing.paymentOptions.longTime.split(' ')[0]}
 						</span>
 					</div>
 
@@ -471,7 +482,7 @@
 								<span class="text-sm text-gray-700">{feature}</span>
 							</li>
 						{/each}
-						{#if paymentType === $i18n.pricing.paymentOptions.oneTime}
+						{#if paymentType === 'einmalig'}
 							<li class="flex items-start">
 								<Icon name="checkCircle" size={24} />
 								<span class="text-sm font-semibold text-gray-700"
@@ -484,7 +495,7 @@
 									>{$i18n.pricing.additionalBenefits.oneTime[1]}</span
 								>
 							</li>
-						{:else if paymentType === $i18n.pricing.paymentOptions.longTime}
+						{:else if paymentType === 'longtime'}
 							<li class="flex items-start">
 								<Icon name="checkCircle" size={24} />
 								<span class="text-sm font-semibold text-gray-700"
@@ -506,19 +517,19 @@
 						{/if}
 					</ul>
 
-					{#if paymentType === $i18n.pricing.paymentOptions.longTime}
+					{#if paymentType === 'longtime'}
 						{@const planMonths = parseInt(plan.name.split('-')[0]) || 1}
 						{@const planDays = planMonths * 30}
 						{@const fullPrice =
-							paymentType === $i18n.pricing.paymentOptions.oneTime
+							paymentType === 'einmalig'
 								? plan.price * planDays
-								: paymentType === $i18n.pricing.paymentOptions.longTime
+								: paymentType === 'longtime'
 									? plan.price * planDays * 5
 									: 0}
 						{@const discount =
-							paymentType === $i18n.pricing.paymentOptions.oneTime
+							paymentType === 'einmalig'
 								? fullPrice * 0.08
-								: paymentType === $i18n.pricing.paymentOptions.longTime
+								: paymentType === 'longtime'
 									? fullPrice * 0.2
 									: 0}
 						<div class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-2">
@@ -537,7 +548,7 @@
 					{/if}
 				</div>
 
-				{#if paymentType === $i18n.pricing.paymentOptions.longTime}
+				{#if paymentType === 'longtime'}
 					<!-- "Best Value" badge for longtime plans -->
 					<div
 						class="absolute -right-10 top-5 rotate-45 bg-red-600 px-10 py-1 text-center text-xs font-bold uppercase text-white shadow-md"
@@ -564,9 +575,9 @@
 				<span
 					class="relative inline-block transform transition-transform duration-300 group-hover:scale-105"
 				>
-					{paymentType === $i18n.pricing.paymentOptions.monthly
+					{paymentType === 'monatlich'
 						? $i18n.pricing.ctaButton.monthly
-						: paymentType === $i18n.pricing.paymentOptions.oneTime
+						: paymentType === 'einmalig'
 							? $i18n.pricing.ctaButton.oneTime
 							: $i18n.pricing.ctaButton.longTime} - {totalPrice.toFixed(2)}€
 				</span>
@@ -575,11 +586,11 @@
 					<span class="block text-sm font-normal"
 						>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€</span
 					>
-				{:else if paymentType === $i18n.pricing.paymentOptions.monthly && savingsAmount > 0}
+				{:else if paymentType === 'monatlich' && savingsAmount > 0}
 					<span class="block text-sm font-normal"
 						>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€!</span
 					>
-				{:else if paymentType === $i18n.pricing.paymentOptions.longTime && savingsAmount > 0}
+				{:else if paymentType === 'longtime' && savingsAmount > 0}
 					<span class="block text-sm font-normal"
 						>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€</span
 					>
