@@ -194,7 +194,7 @@
 				</header>
 
 				{#if subtitle}
-					<p id="modal-subtitle" class="mt-1 text-sm text-base-content/70">
+					<p id="modal-subtitle" class="sr-only mt-1 text-sm text-base-content/70">
 						{subtitle}
 					</p>
 				{/if}

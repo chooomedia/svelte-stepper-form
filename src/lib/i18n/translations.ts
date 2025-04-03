@@ -359,6 +359,16 @@ export interface Translation {
 	footer: {
 		copyright: string;
 	};
+	confirmModal: {
+		cancelPurchase: string;
+		extraDiscountOffer: string;
+		discountDetails: string;
+		oneTimeDiscount: string;
+		longtimeDiscount: string;
+		limitedTimeOffer: string;
+		confirmButton: string;
+		cancelButton: string;
+	};
 }
 
 // Deutsche (de)
@@ -988,6 +998,16 @@ const de: Translation = {
 	},
 	footer: {
 		copyright: 'Alle Rechte vorbehalten.'
+	},
+	confirmModal: {
+		cancelPurchase: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+		extraDiscountOffer: 'Exklusiv: 5% Rabatt zusätzlich bei Rückkehr zum Kaufvorgang!',
+		discountDetails: 'Wenn du jetzt zurückkehrst, erhältst du insgesamt:',
+		oneTimeDiscount: '13% Rabatt statt 8% bei Einmalzahlung',
+		longtimeDiscount: '25% Rabatt statt 20% bei Longtime-Zugang',
+		limitedTimeOffer: 'Diese Gelegenheit gilt nur für kurze Zeit!',
+		confirmButton: 'Ja, abbrechen',
+		cancelButton: 'Zurück zum Kaufvorgang'
 	}
 };
 
@@ -1510,7 +1530,7 @@ const en: Translation = {
 		breadcrumb: 'Marketing Assessment'
 	},
 	pricing: {
-		perDay: 'per day',
+		perDay: 'Daily',
 		features: {
 			websiteOptimization: 'Website Optimization',
 			basicSeo: 'Essential SEO Strategies',
@@ -1619,6 +1639,16 @@ const en: Translation = {
 	},
 	footer: {
 		copyright: 'All rights reserved.'
+	},
+	confirmModal: {
+		cancelPurchase: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+		extraDiscountOffer: 'Exklusiv: 5% Rabatt zusätzlich bei Rückkehr zum Kaufvorgang!',
+		discountDetails: 'Wenn du jetzt zurückkehrst, erhältst du insgesamt:',
+		oneTimeDiscount: '13% Rabatt statt 8% bei Einmalzahlung',
+		longtimeDiscount: '25% Rabatt statt 20% bei Longtime-Zugang',
+		limitedTimeOffer: 'Diese Gelegenheit gilt nur für kurze Zeit!',
+		confirmButton: 'Ja, abbrechen',
+		cancelButton: 'Zurück zum Kaufvorgang'
 	}
 };
 

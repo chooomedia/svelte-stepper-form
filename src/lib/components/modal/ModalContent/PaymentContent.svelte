@@ -15,6 +15,7 @@
 		selectedPlan = '3-MONATS-PLAN',
 		paymentType = 'monatlich',
 		totalPrice = 0,
+		showExtraDiscount = false,
 		onSuccess = () => {}
 	} = $props();
 
@@ -98,23 +99,35 @@
 			const script = document.createElement('script');
 			script.src = scriptUrl;
 			script.async = true;
+			script.id = 'paypal-script';
 
-			script.onload = () => {
-				console.log('PayPal SDK loaded successfully');
-				paypalSDKLoaded = true;
-				addTimer(() => {
+			// Create a promise to wait for script load
+			const scriptLoadPromise = new Promise<void>((resolve, reject) => {
+				script.onload = () => {
+					console.log('PayPal SDK loaded successfully');
+					paypalSDKLoaded = true;
+					resolve();
+				};
+
+				script.onerror = (err) => {
+					console.error('Error loading PayPal SDK:', err);
+					reject(new Error('Failed to load PayPal SDK'));
+				};
+			});
+
+			// Add script to DOM
+			document.head.appendChild(script);
+
+			// Wait for script to load
+			await scriptLoadPromise;
+
+			// Check if component is still mounted before rendering
+			const container = document.getElementById('paypal-button-container');
+			if (container) {
+				setTimeout(() => {
 					renderPayPalButtons();
 				}, 300);
-			};
-
-			script.onerror = (err) => {
-				console.error('Error loading PayPal SDK:', err);
-				modalStore.open('error', {
-					error: 'Fehler beim Laden des PayPal SDKs. Bitte versuche es später erneut.'
-				});
-			};
-
-			document.head.appendChild(script);
+			}
 		} catch (error) {
 			console.error('Failed to load PayPal SDK:', error);
 			modalStore.open('error', {

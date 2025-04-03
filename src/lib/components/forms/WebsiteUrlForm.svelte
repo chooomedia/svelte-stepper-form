@@ -15,6 +15,7 @@
 	import { currentStepIndex, stepperStore } from '$lib/stores/stepperStore';
 	import { scoreStore } from '$lib/utils/scoring';
 	import { websiteLoading } from '$lib/stores/loadingStore';
+	import Icon from '../Icon.svelte';
 	interface Props {
 		form: SuperValidated<FormData>;
 		errors: Record<string, string>;
@@ -648,30 +649,10 @@
 
 						<!-- Icon in center -->
 						<div class="absolute inset-0 flex items-center justify-center">
-							{#if analysisComplete}
-								<svg class="h-12 w-12 text-primary-600" viewBox="0 0 24 24" fill="none">
-									<path
-										d="M5 13l4 4L19 7"
-										stroke="currentColor"
-										stroke-width="3"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/>
-								</svg>
-							{:else}
-								<svg class="h-12 w-12 text-primary-600" viewBox="0 0 24 24" fill="none">
-									<path
-										d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-										stroke="currentColor"
-										stroke-width="1.5"
-									/>
-									<path
-										d="M12 8v4l3 3"
-										stroke="currentColor"
-										stroke-width="1.5"
-										stroke-linecap="round"
-									/>
-								</svg>
+							{#if !analysisComplete}
+								<div class="text-primary-600">
+									<Icon name="clock" size={48} />
+								</div>
 							{/if}
 						</div>
 					</div>

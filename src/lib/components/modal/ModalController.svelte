@@ -6,6 +6,7 @@
 	import SuccessContent from './ModalContent/SuccessContent.svelte';
 	import ErrorContent from './ModalContent/ErrorContent.svelte';
 	import ConfirmContent from './ModalContent/ConfirmContent.svelte';
+	import { i18n } from '$lib/i18n';
 
 	// Props (if needed to override store values)
 	export let onSuccess: (details: any) => void = () => {};
@@ -18,7 +19,99 @@
 		<Modal
 			isOpen={true}
 			onClose={() =>
-				modalStore.open('confirm', { message: 'Möchtest du den Kaufvorgang wirklich abbrechen?' })}
+				modalStore.open('confirm', {
+					message:
+						$i18n.confirmModal?.cancelPurchase || 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+					previousType: 'payment',
+					previousData: $modalStore.data
+				})}
+			title="Bezahlung abschließen"
+			size="xl"
+			type="default"
+			closeOnClickOutside={!$modalStore.data?.isProcessing}
+			closeOnEsc={!$modalStore.data?.isProcessing}
+		>
+			<PaymentContent
+				selectedPlan={$modalStore.data?.selectedPlan || '3-MONATS-PLAN'}
+				paymentType={$modalStore.data?.paymentType || 'einmalig'}
+				totalPrice={$modalStore.data?.totalPrice || 0}
+				showExtraDiscount={$modalStore.data?.showExtraDiscount || false}
+				onSuccess={(details) => {
+					// Store payment details in the modalStore before switching to success
+					const successData = {
+						details,
+						selectedPlan: $modalStore.data?.selectedPlan,
+						paymentType: $modalStore.data?.paymentType,
+						includeDonation: $modalStore.data?.includeDonation,
+						donationAmount: $modalStore.data?.donationAmount || 0,
+						customerName: details?.payer?.name?.given_name || '',
+						redirectUrl: $modalStore.data?.redirectUrl || ''
+					};
+
+					// Call the provided success callback
+					onSuccess(details);
+
+					// Open success modal with the payment data
+					modalStore.open('success', successData);
+				}}
+			/>
+		</Modal>
+		<Modal
+			isOpen={true}
+			onClose={() =>
+				modalStore.open('confirm', {
+					message: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+					previousType: 'payment',
+					previousData: $modalStore.data
+				})}
+			title="Bezahlung abschließen"
+			size="xl"
+			type="default"
+			closeOnClickOutside={!$modalStore.data?.isProcessing}
+			closeOnEsc={!$modalStore.data?.isProcessing}
+		>
+			<PaymentContent
+				selectedPlan={$modalStore.data?.selectedPlan || '3-MONATS-PLAN'}
+				paymentType={$modalStore.data?.paymentType || 'einmalig'}
+				totalPrice={$modalStore.data?.totalPrice || 0}
+				showExtraDiscount={$modalStore.data?.showExtraDiscount || false}
+				onSuccess={(details) => {
+					// Store payment details in the modalStore before switching to success
+					const successData = {
+						details,
+						selectedPlan: $modalStore.data?.selectedPlan,
+						paymentType: $modalStore.data?.paymentType,
+						includeDonation: $modalStore.data?.includeDonation,
+						donationAmount: $modalStore.data?.donationAmount || 0,
+						customerName: details?.payer?.name?.given_name || '',
+						redirectUrl: $modalStore.data?.redirectUrl || ''
+					};
+
+					// Call the provided success callback
+					onSuccess(details);
+
+					// Open success modal with the payment data
+					modalStore.open('success', successData);
+				}}
+			/>
+		</Modal>
+		<Modal
+			isOpen={true}
+			onClose={() =>
+				modalStore.open('confirm', {
+					message: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+					previousType: 'payment',
+					previousData: {
+						...$modalStore.data,
+						showExtraDiscount: true
+					},
+					onCancel: () => {
+						modalStore.open('payment', {
+							...$modalStore.data,
+							showExtraDiscount: true
+						});
+					}
+				})}
 			title="Bezahlung abschließen"
 			size="xl"
 			type="default"

@@ -1,23 +1,31 @@
-<!-- src/lib/components/modal/ModalContent/ErrorContent.svelte -->
 <script lang="ts">
+	import Icon from '$lib/components/Icon.svelte';
 	const { error = 'Ein Fehler ist aufgetreten', errorDetails = '', onRetry = 0 } = $props();
 </script>
 
 <div class="error-content text-center">
-	<div class="mb-6">
-		<svg
-			class="mx-auto h-14 w-14 text-red-500"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-		>
-			<path
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				stroke-width="2"
-				d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-			/>
-		</svg>
+	<div class="my-3 flex justify-center text-red-500">
+		<div class="relative mb-4 h-24 w-24">
+			<svg class="absolute inset-0" viewBox="0 0 100 100"
+				><circle
+					class="text-red-100"
+					stroke-width="4"
+					stroke="currentColor"
+					fill="transparent"
+					r="42"
+					cx="50"
+					cy="50"
+				></circle></svg
+			>
+			<div class="absolute inset-0 flex items-center justify-center">
+				<div class="h-16 w-16 animate-ping rounded-full bg-red-400 opacity-30"></div>
+			</div>
+			<div class="absolute inset-0 flex items-center justify-center">
+				<div class="text-red-600">
+					<Icon name="alertTriangle" size={64} />
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<p class="mb-6 text-lg text-gray-700">{error}</p>
@@ -45,6 +53,8 @@
 	</p>
 
 	<div class="mt-8 flex justify-center gap-4">
-		<button class="btn btn-outline" on:click={onRetry}> Erneut versuchen </button>
+		<button class="btn btn-outline hover:bg-primary-100 hover:text-secondary" onclick={onRetry}>
+			Erneut versuchen
+		</button>
 	</div>
 </div>
