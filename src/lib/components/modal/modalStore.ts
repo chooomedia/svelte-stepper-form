@@ -53,6 +53,10 @@ function createModalStore() {
 				if (!state.options.closable) return state;
 				return { ...state, isOpen: false };
 			});
+
+			setTimeout(() => {
+				set(initialState);
+			}, 300);
 		},
 
 		updateData: (data: any) => update((state) => ({ ...state, data })),

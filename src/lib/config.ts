@@ -4,8 +4,6 @@
 
 // PayPal SDK base URL
 export const PAYPAL_SCRIPT_BASE = 'https://www.paypal.com/sdk/js';
-
-// PayPal API URLs
 export const PAYPAL_API = {
 	SANDBOX: 'https://api-m.sandbox.paypal.com',
 	PRODUCTION: 'https://api-m.paypal.com'

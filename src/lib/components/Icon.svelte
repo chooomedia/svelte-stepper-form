@@ -2,25 +2,12 @@
 	export let name: string;
 	export let size: number = 24;
 	export let color: string = 'currentColor';
+	export let strokeWidth = '1';
 	export let secondaryColor: string = '';
 	export let className: string = '';
 	export let viewbox: string = '';
 	export let fill: string = '';
 	export let stroke: string = '';
-
-	interface ComplexIcon {
-		viewBox?: string;
-		content:
-			| string
-			| Array<{
-					type: 'path' | 'circle' | 'rect' | 'line' | 'polyline' | 'polygon' | 'g';
-					attrs: Record<string, string | number>;
-					children?: Array<{
-						type: string;
-						attrs: Record<string, string | number>;
-					}>;
-			  }>;
-	}
 
 	// Einfache Pfad-Icons
 	const pathIcons: Record<string, string> = {
@@ -75,114 +62,22 @@
 			'M12 3L1 9l11 6 9-4.9V17h2V9l-11-6zm0 12.5L4.24 9.74 2 11l10 5.5L22 11l-2.24-1.26L12 15.5zm6 2.5l-6 3-6-3v2.5l6 3 6-3V18z',
 		alertTriangle:
 			'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+		alert:
+			'M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z',
 		star: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'
-	};
-
-	// Komplexe Icons mit mehreren Elementen
-	const complexIcons: Record<string, ComplexIcon> = {
-		question: {
-			content: [
-				{
-					type: 'circle',
-					attrs: { cx: '12', cy: '12', r: '10', fill: 'none' }
-				},
-				{
-					type: 'path',
-					attrs: {
-						d: 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3',
-						strokeLinecap: 'round'
-					}
-				},
-				{
-					type: 'line',
-					attrs: { x1: '12', y1: '17', x2: '12.01', y2: '17', strokeLinecap: 'round' }
-				}
-			]
-		},
-		// Beispiel eines Icons mit einer Gruppe und verschachtelten Elementen
-		settings: {
-			content: [
-				{
-					type: 'path',
-					attrs: {
-						d: 'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z',
-						fill: 'none'
-					}
-				},
-				{
-					type: 'circle',
-					attrs: { cx: '12', cy: '12', r: '3', fill: 'none' }
-				}
-			]
-		},
-		// PayPal icon mit komplexer Darstellung
-		paypalComplex: {
-			viewBox: '0 0 24 24',
-			content: [
-				{
-					type: 'path',
-					attrs: {
-						d: 'M6.908 4.786A8.277 8.277 0 0 0 6.25 6.25c-1.389 3.472-1.333 10.5 9.25 10.5v3.75L21 15l-5.5-5.5v3.75c-5.806 0-7.139-3.083-6.167-6.167.306-.972 1.094-2.486 1.094-2.486 0 .195-1.75.195-3.519.189z',
-						fill: secondaryColor || '#002F87'
-					}
-				},
-				{
-					type: 'path',
-					attrs: {
-						d: 'M20.452 7.5h-3.866c-.34 0-.5.16-.63.3-.13.17-.24.44-.27.8L14.5 12.5h2.141l.31-1.89c.017-.09.077-.1.143-.1h1.456c.626 0 1.11-.63 1.11-1.28l.009-.21c.062-1.106-.532-1.52-1.217-1.52M17.337 9.75h-1.0l.037-.2c.027-.1.097-.1.157-.1h.7c.044 0 .23 0 .23.15 0 .15-.124.15-.124.15',
-						fill: secondaryColor || '#009BE0'
-					}
-				},
-				{
-					type: 'path',
-					attrs: {
-						d: 'M3.5 7.5v9h2v-4h2a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2h-4zm2.5 3h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1v2z',
-						fill: color
-					}
-				}
-			]
-		},
-		// Visa-Logo als komplexes Icon
-		visaComplex: {
-			viewBox: '0 0 24 24',
-			content: [
-				{
-					type: 'path',
-					attrs: {
-						d: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z',
-						fill: 'none'
-					}
-				},
-				{
-					type: 'path',
-					attrs: {
-						d: 'M9 13.5l2-7h2l-2 7h-2zm7 0l2-7h2l-2 7h-2zm-10 0l-2-7h2l2 7h-2z',
-						fill: secondaryColor || '#1434CB'
-					}
-				},
-				{
-					type: 'path',
-					attrs: {
-						d: 'M18.5 9.5h-1l-.5 2h2l-.5-2z',
-						fill: secondaryColor || '#1434CB'
-					}
-				}
-			]
-		}
 	};
 
 	// Bestimme das zu verwendende ViewBox
 	function getViewBox(iconName: string): string {
-		if (complexIcons[iconName]?.viewBox) {
-			return complexIcons[iconName].viewBox;
+		if (pathIcons[iconName]?.viewBox) {
+			return pathIcons[iconName].viewBox;
 		}
 		return '0 0 24 24'; // Standard-ViewBox
 	}
 
 	const shouldUseFill = fill !== '' || name === 'info' || name === 'lock';
-	const effectiveFill = fill || (shouldUseFill ? color : 'none');
+	const effectiveFill = fill || (shouldUseFill ? color : 'currentColor');
 	const effectiveStroke = stroke || (shouldUseFill ? 'none' : color);
-	const iconContent = pathIcons[name] || pathIcons.default;
 </script>
 
 <svg
@@ -192,9 +87,7 @@
 	viewBox={getViewBox(name)}
 	fill={effectiveFill || fill || color}
 	stroke={effectiveStroke}
-	stroke-width="1.5"
-	stroke-linecap="round"
-	stroke-linejoin="round"
+	stroke-width={strokeWidth}
 	class={className}
 	aria-hidden="true"
 >
@@ -204,72 +97,7 @@
 				<path d={pathData} />
 			{/each}
 		{:else}
-			<path fill-rule="evenodd" d={pathIcons[name]} />
-		{/if}
-	{:else if complexIcons[name]}
-		<!-- Komplexes Icon mit mehreren Elementen -->
-		{#if typeof complexIcons[name].content === 'string'}
-			{@html complexIcons[name].content}
-		{:else}
-			{#each complexIcons[name].content as element}
-				{#if element.type === 'path'}
-					<path
-						{...element.attrs}
-						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
-						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
-					/>
-				{:else if element.type === 'circle'}
-					<circle
-						{...element.attrs}
-						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
-						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
-					/>
-				{:else if element.type === 'rect'}
-					<rect
-						{...element.attrs}
-						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
-						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
-					/>
-				{:else if element.type === 'line'}
-					<line {...element.attrs} stroke={element.attrs.stroke || effectiveStroke} />
-				{:else if element.type === 'polyline'}
-					<polyline {...element.attrs} stroke={element.attrs.stroke || effectiveStroke} />
-				{:else if element.type === 'polygon'}
-					<polygon
-						{...element.attrs}
-						stroke={element.attrs.stroke || (element.attrs.fill ? undefined : effectiveStroke)}
-						fill={element.attrs.fill || (element.attrs.stroke ? 'none' : effectiveFill)}
-					/>
-				{:else if element.type === 'g'}
-					<g {...element.attrs}>
-						{#if element.children}
-							{#each element.children as child}
-								{#if child.type === 'path'}
-									<path
-										{...child.attrs}
-										stroke={child.attrs.stroke || (child.attrs.fill ? undefined : effectiveStroke)}
-										fill={child.attrs.fill || (child.attrs.stroke ? 'none' : effectiveFill)}
-									/>
-								{:else if child.type === 'circle'}
-									<circle
-										{...child.attrs}
-										stroke={child.attrs.stroke || (child.attrs.fill ? undefined : effectiveStroke)}
-										fill={child.attrs.fill || (child.attrs.stroke ? 'none' : effectiveFill)}
-									/>
-								{:else if child.type === 'rect'}
-									<rect
-										{...child.attrs}
-										stroke={child.attrs.stroke || (child.attrs.fill ? undefined : effectiveStroke)}
-										fill={child.attrs.fill || (child.attrs.stroke ? 'none' : effectiveFill)}
-									/>
-								{:else if child.type === 'line'}
-									<line {...child.attrs} stroke={child.attrs.stroke || effectiveStroke} />
-								{/if}
-							{/each}
-						{/if}
-					</g>
-				{/if}
-			{/each}
+			<path fill-rule="evenodd" clip-rule="evenodd" d={pathIcons[name]} />
 		{/if}
 	{:else}
 		<!-- Fallback Icon, wenn keine Übereinstimmung gefunden wurde -->

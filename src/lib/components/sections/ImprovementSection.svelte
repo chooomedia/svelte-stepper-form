@@ -34,7 +34,13 @@
 				<div
 					class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 text-primary-600"
 				>
-					<Icon name={improvement.icon} size={24} />
+					<Icon
+						name={improvement.icon}
+						size={24}
+						stroke="currentColor"
+						strokeWidth="2"
+						fill="none"
+					/>
 				</div>
 
 				<h3 class="mb-2 text-lg font-bold text-gray-900">{improvement.title}</h3>

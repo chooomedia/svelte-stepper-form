@@ -324,14 +324,21 @@
 		<!-- Stärken -->
 		<div class="p-6">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
-				<Icon name="check" size={24} className="mr-2" />
+				<Icon
+					name="check"
+					size={24}
+					className="mr-2"
+					stroke="currentColor"
+					strokeWidth="2"
+					fill="none"
+				/>
 				{$i18n.results.strengths.title}
 			</h3>
 			<ul class="space-y-3">
 				{#each [...(processedScore > 60 ? [$i18n.results.strengths.goodBasics, $i18n.results.strengths.regularContent] : processedScore > 40 ? [$i18n.results.strengths.understanding, $i18n.results.strengths.quickImprovement] : [$i18n.results.strengths.growthPotential, $i18n.results.strengths.visibilityGain]), formData?.visibility === 'social_media' ? $i18n.results.strengths.socialPresence : formData?.visibility === 'search_engines' ? $i18n.results.strengths.seoUnderstanding : $i18n.results.strengths.digitalTransformation] as strength, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<div class="mr-3 text-green-500">
-							<Icon name="check" size={20} />
+							<Icon name="check" size={20} stroke="currentColor" strokeWidth="2" fill="none" />
 						</div>
 						<span>{strength}</span>
 					</li>
@@ -342,14 +349,21 @@
 		<!-- Verbesserungspotenzial -->
 		<div class="p-6">
 			<h3 class="mb-4 flex items-center text-xl font-bold text-red-600">
-				<Icon name="closeX" size={24} className="mr-2" />
+				<Icon
+					name="closeX"
+					size={24}
+					className="mr-2"
+					stroke="currentColor"
+					strokeWidth="2"
+					fill="none"
+				/>
 				{$i18n.results.weaknesses.title}
 			</h3>
 			<ul class="space-y-3">
 				{#each [...(processedScore < 40 ? [$i18n.results.weaknesses.poorVisibility, $i18n.results.weaknesses.noStrategy, $i18n.results.weaknesses.poorOptimization] : processedScore < 60 ? [$i18n.results.weaknesses.limitedReach, $i18n.results.weaknesses.underdevelopedContent, $i18n.results.weaknesses.poorConversion] : [$i18n.results.weaknesses.contentDistribution, $i18n.results.weaknesses.competitorAnalysis, $i18n.results.weaknesses.conversionRate])] as weakness, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<div class="mr-3 text-red-500">
-							<Icon name="closeX" size={20} />
+							<Icon name="closeX" size={20} strokeWidth="2" />
 						</div>
 						<span>{weakness}</span>
 					</li>
@@ -396,7 +410,7 @@
 							<div
 								class="flex h-12 w-12 items-center justify-center rounded-md bg-primary-500 text-white"
 							>
-								<Icon name="check" size={26} />
+								<Icon name="check" size={24} stroke="currentColor" strokeWidth="3" fill="none" />
 							</div>
 						</div>
 						<div class="ml-4">
@@ -418,7 +432,7 @@
 								<div
 									class="flex h-12 w-12 items-center justify-center rounded-md bg-red-500 text-white"
 								>
-									<Icon name="closeX" size={26} />
+									<Icon name="closeX" strokeWidth="2" size={26} />
 								</div>
 							</div>
 							<div class="ml-4">

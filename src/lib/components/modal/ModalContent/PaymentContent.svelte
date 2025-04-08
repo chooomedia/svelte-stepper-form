@@ -1,14 +1,13 @@
-<!-- src/lib/components/modal/ModalContent/PaymentContent.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { modalStore } from '../modalStore';
 	import SecurityBadge from '../../SecurityBadge.svelte';
 	import Icon from '../../Icon.svelte';
-	import { calculateTax } from '$lib/utils/payment';
+	import { generateClientReference, getPlanDisplayName, calculateTax } from '$lib/utils/payment';
 	import { taxInfo } from '$lib/stores/taxStore';
-	import { PAYPAL_SCRIPT_BASE } from '$lib/config';
 	import { currencyStore } from '$lib/stores/currencyStore';
+	import { i18n, currentLocale } from '$lib/i18n';
 
 	// Props
 	const {
@@ -19,6 +18,14 @@
 		onSuccess = () => {}
 	} = $props();
 
+	// Store values accessed at the top level
+	// This fixes the invalid scoped subscription issue
+	const currentTaxRate = $derived($taxInfo.rate);
+	const currentVatText = $derived($taxInfo.vatText);
+	const currentCountry = $derived($taxInfo.country);
+	const currentCurrency = $derived($currencyStore);
+	const currentLanguage = $derived($currentLocale);
+
 	// State
 	let paymentMethod: 'paypal' | 'betterplace' = $state('paypal');
 	let isProcessing = $state(false);
@@ -26,18 +33,20 @@
 	let showVatTooltip = $state(false);
 	let showBetterplace = $state(false);
 	let paypalSDKLoaded = $state(false);
+	let paypalButtonsRendered = $state(false);
 	let timers: number[] = [];
 	let numericTotalPrice = $state(0);
 	let totalWithDonation = $state(0);
+	let paypalContainer: HTMLElement | null = $state(null);
 
-	const currentTax = $derived(calculateTax(totalPrice, $taxInfo.rate));
-	const currentVatText = $derived($taxInfo.vatText);
+	// Calculate values
+	const currentTax = $derived(calculateTax(totalPrice, currentTaxRate));
 	const discountPercentage = $derived(() => {
 		switch (paymentType) {
 			case 'einmalig':
-				return 8;
+				return showExtraDiscount ? 13 : 8;
 			case 'longtime':
-				return 20;
+				return showExtraDiscount ? 25 : 20;
 			default:
 				return 0;
 		}
@@ -50,13 +59,14 @@
 		{ icon: 'clock', text: 'Sofortiger Zugang' }
 	];
 
+	// Calculate numeric price once totalPrice changes
 	$effect(() => {
 		numericTotalPrice =
 			typeof totalPrice === 'number' ? totalPrice : parseFloat(String(totalPrice)) || 0;
 	});
 
+	// Calculate donation amount when includeDonation or price changes
 	$effect(() => {
-		// Berechnung mit gesichertem numerischen Wert
 		totalWithDonation = includeDonation
 			? numericTotalPrice + numericTotalPrice * 0.03
 			: numericTotalPrice;
@@ -74,30 +84,73 @@
 		timers = [];
 	}
 
-	// PayPal integration
-	async function loadPayPalSDK(): Promise<void> {
-		if (typeof window !== 'undefined' && typeof window.paypal !== 'undefined') {
-			paypalSDKLoaded = true;
-			return;
+	// Get PayPal config parameters
+	function getPayPalConfig(): string {
+		const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+		const isSandbox = import.meta.env.DEV;
+
+		// Get appropriate locale based on current language
+		const locale =
+			currentLanguage === 'de' ? 'de_DE' : currentLanguage === 'en' ? 'en_US' : 'de_DE';
+
+		// Valid country codes for PayPal
+		const validCountryCodes = [
+			'US',
+			'GB',
+			'DE',
+			'FR',
+			'IT',
+			'ES',
+			'CA',
+			'AU',
+			'AT',
+			'BE',
+			'CH',
+			'NL'
+		];
+
+		// Normalize country code
+		let countryCode;
+		if (currentCountry === 'UK' || currentCountry === 'EN') {
+			countryCode = 'GB';
+		} else if (validCountryCodes.includes(currentCountry)) {
+			countryCode = currentCountry;
+		} else {
+			// Default to Germany
+			countryCode = 'DE';
 		}
 
+		// Build params
+		const params: Record<string, string> = {
+			'client-id': clientId || 'test',
+			currency: currentCurrency || 'EUR',
+			locale: locale,
+			intent: 'capture',
+			components: 'buttons',
+			commit: 'true'
+		};
+
+		// Add buyer-country if valid
+		if (validCountryCodes.includes(countryCode)) {
+			params['buyer-country'] = countryCode;
+		}
+
+		// Development mode parameters
+		if (isSandbox) {
+			params['enable-funding'] = 'venmo';
+			params.debug = 'true';
+		}
+
+		return new URLSearchParams(params).toString();
+	}
+
+	// PayPal integration
+	async function loadPayPalSDK(): Promise<void> {
+		if (paypalSDKLoaded) return;
+
 		try {
-			// For development, use a simpler configuration
-			const isDev = import.meta.env.DEV;
-			let scriptUrl;
-
-			if (isDev) {
-				// Use minimal configuration for development
-				scriptUrl = `https://www.paypal.com/sdk/js?client-id=${import.meta.env.VITE_PAYPAL_CLIENT_ID}&currency=EUR&components=buttons`;
-			} else {
-				// Use full configuration for production
-				scriptUrl = `${PAYPAL_SCRIPT_BASE}?${getPayPalConfig()}`;
-			}
-
-			console.log('Loading PayPal SDK from:', scriptUrl);
-
 			const script = document.createElement('script');
-			script.src = scriptUrl;
+			script.src = `https://www.paypal.com/sdk/js?${getPayPalConfig()}`;
 			script.async = true;
 			script.id = 'paypal-script';
 
@@ -121,84 +174,14 @@
 			// Wait for script to load
 			await scriptLoadPromise;
 
-			// Check if component is still mounted before rendering
-			const container = document.getElementById('paypal-button-container');
-			if (container) {
-				setTimeout(() => {
-					renderPayPalButtons();
-				}, 300);
-			}
+			// Render buttons after script is loaded
+			renderPayPalButtons();
 		} catch (error) {
 			console.error('Failed to load PayPal SDK:', error);
 			modalStore.open('error', {
 				error: 'Fehler beim Laden des PayPal SDKs. Bitte versuche es später erneut.'
 			});
 		}
-	}
-
-	// Configure PayPal parameters
-	function getPayPalConfig(): string {
-		const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
-		const isSandbox = import.meta.env.DEV;
-
-		// Log the raw taxInfo for debugging
-		console.log('PayPal config - taxInfo:', JSON.stringify($taxInfo));
-		console.log('PayPal config - currencyStore:', $currencyStore);
-
-		// Get country code and ensure it's valid
-		const rawCountryCode = $taxInfo.country;
-		console.log('Raw country code from taxInfo:', rawCountryCode);
-
-		// Valid country codes for PayPal
-		const validCountryCodes = [
-			'US',
-			'GB',
-			'DE',
-			'FR',
-			'IT',
-			'ES',
-			'CA',
-			'AU',
-			'AT',
-			'BE',
-			'CH',
-			'NL'
-		];
-
-		// Normalize country code
-		let countryCode;
-		if (rawCountryCode === 'UK' || rawCountryCode === 'EN') {
-			countryCode = 'GB';
-		} else if (validCountryCodes.includes(rawCountryCode)) {
-			countryCode = rawCountryCode;
-		} else {
-			// Default to a safe country code
-			countryCode = 'DE';
-			console.warn(`Invalid country code: ${rawCountryCode}, using default: DE`);
-		}
-
-		// Build params without buyer-country for now
-		const params: Record<string, string> = {
-			'client-id': clientId || 'test',
-			currency: $currencyStore || 'EUR',
-			intent: 'capture',
-			locale: 'de_DE',
-			components: 'buttons',
-			commit: 'true'
-		};
-
-		// Development mode parameters
-		if (isSandbox) {
-			params['disable-funding'] = 'paylater,credit';
-			params['enable-funding'] = 'venmo';
-			params.debug = 'true';
-		}
-
-		// Log the final PayPal configuration URL
-		const configString = new URLSearchParams(params).toString();
-		console.log('PayPal config URL:', `${PAYPAL_SCRIPT_BASE}?${configString}`);
-
-		return configString;
 	}
 
 	function renderPayPalButtons(): void {
@@ -219,14 +202,18 @@
 		try {
 			window.paypal
 				.Buttons({
-					// Verbesserte createOrder-Funktion
+					// Create order with proper amount
 					createOrder: async (data: any, actions: any) => {
 						try {
 							isProcessing = true;
 							console.log('Creating PayPal order...');
 
-							// Validiere den Betrag
-							const amount = parseFloat(totalWithDonation.toFixed(2));
+							const amount = includeDonation ? totalWithDonation : numericTotalPrice;
+
+							// Generate a unique reference for this transaction
+							const clientReference = generateClientReference();
+
+							// Validate amount
 							if (isNaN(amount) || amount <= 0) {
 								console.error('Invalid amount:', amount);
 								isProcessing = false;
@@ -236,52 +223,30 @@
 								return null;
 							}
 
-							console.log('Creating order with amount:', amount);
-
-							// In development mode, use the mock payment function instead of loading PayPal SDK
-							if (import.meta.env.DEV) {
-								// Don't actually try to load PayPal in development mode
-								console.log('Development mode: Using mock payment instead of PayPal');
-								paypalSDKLoaded = true; // Pretend it's loaded
-								// Add a message or visual indicator in the UI
-								const container = document.getElementById('paypal-button-container');
-								if (container) {
-									container.innerHTML = `
-            <button class="btn btn-primary w-full" onclick="mockPaymentForTesting()">
-                Test Payment (Development Mode)
-            </button>
-            <p class="mt-2 text-xs text-gray-500">
-                PayPal integration disabled in development mode. Click to simulate payment.
-            </p>
-        `;
-								}
-							}
-
-							// Erstelle die Bestellung mit PayPal
+							// Create order with PayPal
 							const orderData = {
 								purchase_units: [
 									{
 										amount: {
-											value: amount.toString(),
-											currency_code: 'EUR'
+											value: amount.toFixed(2),
+											currency_code: currentCurrency || 'EUR'
 										},
-										description: selectedPlan
+										description: getPlanDisplayName(selectedPlan, paymentType),
+										custom_id: clientReference
 									}
 								],
 								application_context: {
-									shipping_preference: 'NO_SHIPPING'
+									shipping_preference: 'NO_SHIPPING',
+									user_action: 'PAY_NOW'
 								}
 							};
 
-							console.log('Order data:', orderData);
-							const result = await actions.order.create(orderData);
-							console.log('Order created successfully:', result);
-							return result;
+							console.log('Creating order with data:', orderData);
+							return actions.order.create(orderData);
 						} catch (error) {
 							console.error('Error in createOrder:', error);
 							isProcessing = false;
 
-							// Spezifische Fehlerbehandlung
 							let errorMessage = 'Fehler beim Erstellen der Bestellung. Bitte versuche es erneut.';
 
 							if (error instanceof Error) {
@@ -299,7 +264,7 @@
 						}
 					},
 
-					// Verbesserte onApprove-Funktion
+					// Handle approval and capture payment
 					onApprove: async (data: any, actions: any) => {
 						try {
 							console.log('Payment approved, order ID:', data.orderID);
@@ -313,8 +278,30 @@
 							const details = await actions.order.capture();
 							console.log('Order captured:', details);
 
+							// Calculate tax info using currentTaxRate from top level
+							const taxCalculation = calculateTax(numericTotalPrice, currentTaxRate);
+
+							// Prepare success data
+							const successData = {
+								details,
+								selectedPlan,
+								paymentType,
+								includeDonation,
+								donationAmount: includeDonation ? numericTotalPrice * 0.03 : 0,
+								customerName: details.payer?.name?.given_name || '',
+								redirectUrl: '/dashboard',
+								taxInfo: {
+									net: taxCalculation.net,
+									vat: taxCalculation.vat,
+									rate: taxCalculation.rate
+								}
+							};
+
 							// Call success callback with details
 							onSuccess(details);
+
+							// Open success modal
+							modalStore.open('success', successData);
 						} catch (error) {
 							console.error('Error capturing order:', error);
 							handlePaymentError(error);
@@ -324,8 +311,15 @@
 					onCancel: () => {
 						isProcessing = false;
 						console.log('Payment was cancelled');
-						modalStore.open('error', {
-							error: 'Die Zahlung wurde abgebrochen.'
+						modalStore.open('confirm', {
+							message: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+							previousType: 'payment',
+							previousData: {
+								selectedPlan,
+								paymentType,
+								totalPrice,
+								showExtraDiscount
+							}
 						});
 					},
 
@@ -334,7 +328,7 @@
 
 						let errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
 
-						// Erkennen der verschiedenen Fehlertypen
+						// Identify different error types
 						if (err.message === 'VALIDATION_ERROR') {
 							errorMessage = 'Bitte überprüfe deine Zahlungsdaten';
 						} else if (err.message?.includes('popup')) {
@@ -367,6 +361,8 @@
 						error: 'Fehler beim Rendern der PayPal-Schaltflächen. Bitte versuche es später erneut.'
 					});
 				});
+
+			paypalButtonsRendered = true;
 		} catch (error) {
 			console.error('Error setting up PayPal buttons:', error);
 			modalStore.open('error', {
@@ -400,11 +396,6 @@
 		} else {
 			showBetterplace = false;
 		}
-
-		// Re-render PayPal buttons with updated amount
-		addTimer(() => {
-			renderPayPalButtons();
-		}, 300);
 	}
 
 	// Handle payment method change
@@ -417,39 +408,31 @@
 		}
 	}
 
-	// Lifecycle hooks
-	onMount(() => {
-		loadPayPalSDK();
-	});
-
-	onDestroy(() => {
-		clearAllTimers();
-	});
-
+	// Function for development mode only - simulate a payment
 	function mockPaymentForTesting() {
 		isProcessing = true;
 
 		console.log('Simulating payment process for testing');
 
-		// Simuliere eine Verzögerung von 2 Sekunden
+		// Simulate a 2-second delay
 		setTimeout(() => {
 			isProcessing = false;
 
-			// Simuliere eine erfolgreiche Zahlung
+			// Simulate a successful payment
 			const mockPaymentDetails = {
 				id: 'DP-TEST-' + Math.random().toString(36).substring(2, 10),
 				status: 'COMPLETED',
 				payer: {
-					email_address: 'chooom@gmx.de',
+					email_address: 'test@example.com',
 					name: {
-						given_name: 'Siegfried',
-						surname: 'Freud'
+						given_name: 'Test',
+						surname: 'User'
 					}
 				},
 				purchase_units: [
 					{
 						amount: {
-							value: totalWithDonation.toFixed(2),
+							value: (includeDonation ? totalWithDonation : totalPrice).toFixed(2),
 							currency_code: 'EUR'
 						},
 						description: selectedPlan
@@ -458,10 +441,30 @@
 				create_time: new Date().toISOString()
 			};
 
-			// Rufe den Erfolgs-Callback mit den simulierten Daten auf
+			// Call the success callback with the simulated data
 			onSuccess(mockPaymentDetails);
 		}, 2000);
 	}
+
+	// Load PayPal SDK when component mounts
+	onMount(() => {
+		// Set a timeout to load PayPal SDK
+		const loadTimeout = addTimer(() => {
+			loadPayPalSDK().catch((error) => {
+				console.error('Error loading PayPal SDK:', error);
+			});
+		}, 500);
+
+		// Return cleanup function
+		return () => {
+			clearAllTimers();
+		};
+	});
+
+	// Clean up on component destroy
+	onDestroy(() => {
+		clearAllTimers();
+	});
 </script>
 
 <!-- Price Summary -->
@@ -487,14 +490,14 @@
 					{/if}
 					{#if includeDonation}
 						<p class="text-sm text-success" itemprop="donation">
-							inkl. {(totalPrice * 0.03).toFixed(2).replace('.', ',')}€ Spende
+							inkl. {(numericTotalPrice * 0.03).toFixed(2).replace('.', ',')}€ Spende
 						</p>
 					{/if}
 				</div>
 			</div>
 			<div class="text-right">
 				<p class="text-2xl font-bold">
-					{totalPrice.toFixed(2).replace('.', ',')}€
+					{numericTotalPrice.toFixed(2).replace('.', ',')}€
 				</p>
 
 				<!-- Tax info tooltip -->

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { ImageOption as ImageOptionType } from '$lib/schema';
-	import { getLocalizedLabel, getLocalizedDescription, currentLocale } from '$lib/i18n';
+	import { getLocalizedLabel, getLocalizedDescription, currentLocale, i18n } from '$lib/i18n';
+	import Icon from './Icon.svelte';
 
 	interface Props {
 		value?: string | string[];
@@ -155,14 +156,20 @@
 			<div class="mb-4 text-center text-xs text-gray-600">
 				<div class="font-medium text-primary-700">
 					{#if showCountdown && selectedValues.length > 0}
-						{selectionCount === 1 ? '1 Option' : `${selectionCount} Optionen`}
-						ausgewählt · weiter in
+						{selectedValues.length === 1
+							? `0 ${$i18n?.forms?.imageOption?.optionSelected || 'Option ausgewählt'}`
+							: `${selectedValues.length} ${$i18n?.forms?.imageOption?.optionsSelected || 'Optionen ausgewählt'}`}
+						· {$i18n?.forms?.imageOption?.continueIn || 'weiter in'}
 						<span class="font-bold">{countdownSeconds}</span>
-						{countdownSeconds === 1 ? 'Sekunde' : 'Sekunden'}
+						{countdownSeconds === 1
+							? $i18n?.forms?.imageOption?.second || 'Sekunde'
+							: $i18n?.forms?.imageOption?.seconds || 'Sekunden'}
 					{:else if maxSelections}
-						Du kannst bis zu {maxSelections} Optionen auswählen
+						{(
+							$i18n?.forms?.imageOption?.selectUpTo || 'Du kannst bis zu {max} Optionen auswählen'
+						).replace('{max}', maxSelections.toString())}
 					{:else}
-						Wähle alle passenden Optionen
+						{$i18n?.forms?.imageOption?.selectAllApplicable || 'Wähle alle passenden Optionen'}
 					{/if}
 				</div>
 			</div>
@@ -187,18 +194,7 @@
 						<div
 							class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary-500 text-secondary"
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-4 w-4"
-								viewBox="0 0 20 20"
-								fill="currentColor"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-									clip-rule="evenodd"
-								/>
-							</svg>
+							<Icon name="check" size={18} fill="none" strokeWidth="2" stroke="currentColor" />
 						</div>
 					{/if}
 

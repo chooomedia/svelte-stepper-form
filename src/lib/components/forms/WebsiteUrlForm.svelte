@@ -561,13 +561,9 @@
 					<div class="mt-5 flex flex-wrap gap-4 lg:my-2">
 						{#each features as feature}
 							<div class="flex items-start">
-								<svg class="mr-2 h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-										clip-rule="evenodd"
-									/>
-								</svg>
+								<span class="flex items-start gap-1 text-green-500">
+									<Icon name="checkCircle" size={24} stroke="none" />
+								</span>
 								<span class="text-sm text-gray-700">{$i18n.forms.checkpoints[feature]}</span>
 							</div>
 						{/each}

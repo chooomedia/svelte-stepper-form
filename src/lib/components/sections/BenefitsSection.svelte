@@ -84,14 +84,14 @@
 <div class="grid grid-cols-1 gap-8 md:grid-cols-2" in:fade={{ duration: 500, delay: 900 }}>
 	<div class="rounded-lg bg-primary-100 p-6 shadow-lg">
 		<h3 class="mb-4 flex items-center text-xl font-bold text-green-600">
-			<Icon name="checkCircle" size={24} className="mr-1" />
+			<Icon name="checkCircle" size={24} className="mr-1" stroke="none" />
 			{$i18n.results.benefits.title}
 		</h3>
 		<ul class="space-y-3">
 			{#each benefits as benefit, i}
 				<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 					<div class="text-green-600">
-						<Icon name="check" size={20} className="mr-2" />
+						<Icon name="checkCircle" size={24} className="mr-1" stroke="none" />
 					</div>
 					<span>{benefit}</span>
 				</li>

@@ -1,8 +1,8 @@
-<!-- src/lib/components/modal/Modal.svelte -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { modalStore, type ModalType } from './modalStore';
+	import { browser } from '$app/environment';
 
 	export type ModalSize =
 		| 'sm'
@@ -49,6 +49,8 @@
 	let dialogElement: HTMLDialogElement;
 	let isClosing = $state(false);
 	let transitionDuration = 300;
+	let focusableElements: HTMLElement[] = [];
+	let previousActiveElement: HTMLElement | null = null;
 
 	// Convert size string to CSS class
 	function getSizeClass(size: ModalSize): string {
@@ -80,7 +82,7 @@
 		}
 	}
 
-	// Handle modal close
+	// Handle modal close with animation
 	function handleClose() {
 		if (!closeOnClickOutside) return;
 		isClosing = true;
@@ -102,28 +104,18 @@
 		if (closeOnEsc && e.key === 'Escape' && isOpen && !isClosing) {
 			e.preventDefault();
 			handleClose();
+		} else if (e.key === 'Tab' && dialogElement && isOpen) {
+			trapFocus(e);
 		}
 	}
 
 	// Focus trap for accessibility
-	function trapFocus() {
-		if (!dialogElement || !isOpen) return;
+	function trapFocus(e?: KeyboardEvent) {
+		if (!dialogElement || !isOpen || !focusableElements.length) return;
 
-		const focusableElements = dialogElement.querySelectorAll(
-			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-		);
-
-		if (focusableElements.length === 0) return;
-
-		const firstElement = focusableElements[0] as HTMLElement;
-		const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
-		setTimeout(() => {
-			firstElement.focus();
-		}, transitionDuration + 50);
-
-		dialogElement.addEventListener('keydown', (e) => {
-			if (e.key !== 'Tab') return;
+		if (e) {
+			const firstElement = focusableElements[0];
+			const lastElement = focusableElements[focusableElements.length - 1];
 
 			if (e.shiftKey && document.activeElement === firstElement) {
 				e.preventDefault();
@@ -132,30 +124,82 @@
 				e.preventDefault();
 				firstElement.focus();
 			}
-		});
+		} else {
+			// Initial focus
+			setTimeout(() => {
+				focusableElements[0].focus();
+			}, 50);
+		}
+	}
+
+	// Update focusable elements
+	function updateFocusableElements() {
+		if (!dialogElement) return;
+
+		focusableElements = Array.from(
+			dialogElement.querySelectorAll(
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+			)
+		) as HTMLElement[];
+	}
+
+	// Set up modal when it opens
+	function setupModal() {
+		if (!dialogElement || !isOpen) return;
+
+		// Store current active element to restore focus later
+		if (browser && document.activeElement instanceof HTMLElement) {
+			previousActiveElement = document.activeElement;
+		}
+
+		// Show the modal
+		if (!dialogElement.open) {
+			dialogElement.showModal();
+		}
+
+		// Update focusable elements and set initial focus
+		setTimeout(() => {
+			updateFocusableElements();
+			trapFocus();
+		}, 50);
+	}
+
+	// Clean up modal when it closes
+	function cleanupModal() {
+		if (dialogElement?.open) {
+			dialogElement.close();
+		}
+
+		// Restore previous focus
+		if (previousActiveElement && browser) {
+			setTimeout(() => {
+				previousActiveElement?.focus();
+			}, 0);
+		}
 	}
 
 	// Set up event listeners
 	onMount(() => {
-		document.addEventListener('keydown', handleKeydown);
-		if (isOpen) trapFocus();
-		return () => document.removeEventListener('keydown', handleKeydown);
+		if (browser) {
+			document.addEventListener('keydown', handleKeydown);
+			setupModal();
+		}
 	});
 
 	// Clean up on destroy
 	onDestroy(() => {
-		document.removeEventListener('keydown', handleKeydown);
+		if (browser) {
+			document.removeEventListener('keydown', handleKeydown);
+			cleanupModal();
+		}
 	});
 
-	// Handle modal open/close state
+	// Handle modal open/close state changes
 	$effect(() => {
 		if (isOpen) {
-			if (dialogElement && !dialogElement.open) {
-				dialogElement.showModal();
-				trapFocus();
-			}
-		} else if (dialogElement && dialogElement.open) {
-			dialogElement.close();
+			setupModal();
+		} else {
+			cleanupModal();
 		}
 	});
 </script>
@@ -170,7 +214,7 @@
 >
 	<div
 		class="modal-box {getSizeClass(size)} p-0"
-		in:fade={{ duration: transitionDuration }}
+		in:scale={{ duration: transitionDuration, opacity: 0, start: 0.95 }}
 		out:fade={{ duration: transitionDuration * 0.75 }}
 	>
 		<!-- Header -->
@@ -182,8 +226,7 @@
 							{title}
 						</h3>
 					{:else}
-						<div></div>
-						<!-- Empty div to maintain flex layout -->
+						<div><!-- Empty div to maintain flex layout --></div>
 					{/if}
 
 					{#if showCloseButton}
@@ -194,7 +237,7 @@
 				</header>
 
 				{#if subtitle}
-					<p id="modal-subtitle" class="sr-only mt-1 text-sm text-base-content/70">
+					<p id="modal-subtitle" class="mt-1 text-sm text-base-content/70">
 						{subtitle}
 					</p>
 				{/if}
@@ -216,11 +259,43 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		z-index: 1000; /* Niedrigerer z-index für das Modal */
+		z-index: 1000;
+		border: none;
+		background: transparent;
+		padding: 0;
+		overflow: hidden;
 	}
 
 	.modal::backdrop {
-		z-index: 900; /* Noch niedrigerer z-index für den Backdrop */
+		background-color: rgba(0, 0, 0, 0.4);
+		backdrop-filter: blur(2px);
+		animation: backdropFadeIn 300ms ease forwards;
+	}
+
+	.modal.modal-open::backdrop {
+		animation: backdropFadeIn 300ms ease forwards;
+	}
+
+	.modal:not(.modal-open)::backdrop {
+		animation: backdropFadeOut 200ms ease forwards;
+	}
+
+	@keyframes backdropFadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes backdropFadeOut {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
 	}
 
 	.modal-center {
@@ -237,8 +312,13 @@
 		padding-bottom: 2rem;
 	}
 
-	/* Sicherstellen, dass der Backdrop hinter den Confetti ist */
-	dialog::backdrop {
-		background-color: rgba(0, 0, 0, 0.4);
+	.modal-box {
+		max-height: calc(100vh - 5rem);
+		overflow-y: auto;
+		background: white;
+		border-radius: 0.5rem;
+		box-shadow:
+			0 20px 25px -5px rgb(0 0 0 / 0.1),
+			0 8px 10px -6px rgb(0 0 0 / 0.1);
 	}
 </style>

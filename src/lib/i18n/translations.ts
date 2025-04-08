@@ -28,6 +28,15 @@ export interface Translation {
 			female: string;
 			diverse: string;
 		};
+		imageOption: {
+			optionsSelected: string;
+			optionSelected: string;
+			continueIn: string;
+			second: string;
+			seconds: string;
+			selectUpTo: string;
+			selectAllApplicable: string;
+		};
 		placeholders: Record<string, string>;
 		errors: Record<string, string>;
 		descriptions: Record<string, string> & { analyze: string };
@@ -410,6 +419,15 @@ const de: Translation = {
 			male: 'Herr',
 			female: 'Frau',
 			diverse: 'Divers'
+		},
+		imageOption: {
+			optionsSelected: 'Optionen ausgewählt',
+			optionSelected: 'Option ausgewählt',
+			continueIn: 'weiter in',
+			second: 'Sekunde',
+			seconds: 'Sekunden',
+			selectUpTo: 'Du kannst bis zu {max} Optionen auswählen',
+			selectAllApplicable: 'Wähle alle passenden Optionen'
 		},
 		placeholders: {
 			select: 'Bitte wählen',
@@ -898,7 +916,7 @@ const de: Translation = {
 		features: {
 			websiteOptimization: 'Website-Optimierung',
 			basicSeo: 'Grundlegende SEO-Maßnahmen',
-			monthlyContent: 'Content-Erstellung (1× pro Monat)',
+			monthlyContent: '1 × Content-Erstellung pro Monat',
 			performanceReport: 'Monatlicher Performance-Bericht',
 			allBasicFeatures: 'Alle Features des 1-Monats-Plans',
 			socialMedia: 'Social Media Management',
@@ -1050,6 +1068,15 @@ const en: Translation = {
 			male: 'Mr.',
 			female: 'Ms.',
 			diverse: 'Diverse'
+		},
+		imageOption: {
+			optionsSelected: 'options selected',
+			optionSelected: 'option selected',
+			continueIn: 'continue in',
+			second: 'second',
+			seconds: 'seconds',
+			selectUpTo: 'You can select up to {max} options',
+			selectAllApplicable: 'Select all applicable options'
 		},
 		placeholders: {
 			select: 'Please select',
@@ -1534,7 +1561,7 @@ const en: Translation = {
 		features: {
 			websiteOptimization: 'Website Optimization',
 			basicSeo: 'Essential SEO Strategies',
-			monthlyContent: 'Monthly Content Creation (1× per month)',
+			monthlyContent: '1 × Content Creation per month',
 			performanceReport: 'Monthly Performance Report',
 			allBasicFeatures: 'All Features from 1-Month Plan',
 			socialMedia: 'Social Media Management',
