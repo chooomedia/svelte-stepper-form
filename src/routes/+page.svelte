@@ -10,7 +10,6 @@
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
 	import { scoreStore } from '$lib/utils/scoring';
 	import WebsiteUrlForm from '$lib/components/forms/WebsiteUrlForm.svelte';
-	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
 	import { last_step, TOTAL_STEPS } from '$lib/schema';
 	import { i18n, getLocalizedLabel } from '$lib/i18n';
 
@@ -170,246 +169,245 @@
 			jumpToStep(debugStepNumber);
 		}
 	}
+
+	function formatUrl(url: string): string {
+		if (!url) return '';
+
+		// Remove protocol and www
+		return url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/+$/, ''); // Also remove trailing slashes
+	}
 </script>
 
-<div
-	class="form-container absolute mx-auto w-full"
-	itemscope
-	itemtype="https://schema.org/WebApplication"
->
-	<header>
-		<div
-			class={$currentStepIndex > 1 ? 'sr-only' : 'text-center'}
-			aria-hidden={$currentStepIndex > 1}
-		>
-			<h1 class="mb-6 text-5xl font-bold text-secondary-900" itemprop="name" id="assessment-title">
-				{$i18n.start.title}
-			</h1>
-
-			<p
-				class="mx-auto max-w-[33rem] text-base text-secondary-300"
-				itemprop="description"
-				id="assessment-description"
+<div class="form-container" itemscope itemtype="https://schema.org/WebApplication">
+	{#if $currentStepIndex === 1}
+		<header>
+			<div
+				class={$currentStepIndex > 1 ? 'sr-only' : 'text-center'}
+				aria-hidden={$currentStepIndex > 1}
 			>
-				{@html $i18n.start.text}
-			</p>
-			<!-- Page Meta -->
-			<PageMeta totalSteps={FORM_STEPS.length} />
-		</div>
-	</header>
+				<h1
+					class="mb-6 text-5xl font-bold text-secondary-900"
+					itemprop="name"
+					id="assessment-title"
+				>
+					{$i18n.start.title}
+				</h1>
+
+				<p
+					class="mx-auto max-w-[33rem] text-base text-secondary-300"
+					itemprop="description"
+					id="assessment-description"
+				>
+					{@html $i18n.start.text}
+				</p>
+				<!-- Page Meta -->
+				<PageMeta totalSteps={FORM_STEPS.length} />
+			</div>
+		</header>
+	{/if}
 
 	<!-- Step Content -->
-	<div class="form-wrapper">
-		<!-- Dynamic step content based on current step -->
-		<h2 class="mb-1 text-center text-xl font-semibold text-secondary-700">
-			{#if $currentStepIndex === 12}
-				{getLocalizedLabel(
-					FORM_STEPS[$currentStepIndex - 1].title,
-					$form[FORM_STEPS[$currentStepIndex - 1].title]
-				)}
-				{#if $formData?.company_url}
-					{$i18n.start.meta.rating.from}
-					<span class="text-primary-600">
-						{$formData.company_url.replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
-					</span>
-				{/if}
-			{:else}
-				<!-- Access the description through i18n system to ensure correct localization -->
-				{$i18n.schema.steps[FORM_STEPS[$currentStepIndex - 1]?.title]?.description ||
-					FORM_STEPS[$currentStepIndex - 1]?.description ||
-					''}
+
+	<!-- Dynamic step content based on current step -->
+	<h2 class="mb-1 text-center text-xl font-semibold text-secondary-700">
+		{#if $currentStepIndex === 12}
+			{$i18n.schema.steps.result?.description || 'Deine Website-Analyse für'}
+			{#if $formData?.company_url}
+				{$i18n.start.meta.rating.from}
+				<span class="text-primary-600">
+					{formatUrl($formData.company_url)}
+				</span>
 			{/if}
-		</h2>
-		{#key $currentStepIndex}
-			<div transition:fade={{ duration: 500 }} class="form-card">
-				<FormTransitioner currentStep={$currentStepIndex} height="40vh">
-					<!-- Step 1: Visibility -->
-					{#if $currentStepIndex === 1}
-						<ImageOption
-							value={$form.visibility}
-							options={formOptions.visibility}
-							error={$errors.visibility}
-							onSelect={(value) => handleImageOptionSelect('visibility', value)}
-							on:navigate={handleImageOptionNavigation}
-							fieldName="visibility"
-							multiple={true}
-							maxSelections={4}
-						/>
+		{:else}
+			{$i18n.schema.steps[FORM_STEPS[$currentStepIndex - 1]?.title]?.description || ''}
+		{/if}
+	</h2>
 
-						<!-- Step 2: Website URL -->
-					{:else if $currentStepIndex === 2}
-						<WebsiteUrlForm
-							{form}
-							error={$errors}
-							onAnalysisComplete={handleAnalysisComplete}
-							onAnalysisStart={handleAnalysisStart}
-							onAnalysisEnd={handleAnalysisEnd}
-							onclick={() => {
+	{#key $currentStepIndex}
+		<!-- Step 1: Visibility -->
+		{#if $currentStepIndex === 1}
+			<ImageOption
+				value={$form.visibility}
+				options={formOptions.visibility}
+				error={$errors.visibility}
+				onSelect={(value) => handleImageOptionSelect('visibility', value)}
+				on:navigate={handleImageOptionNavigation}
+				fieldName="visibility"
+				multiple={true}
+				maxSelections={4}
+			/>
+
+			<!-- Step 2: Website URL -->
+		{:else if $currentStepIndex === 2}
+			<WebsiteUrlForm
+				{form}
+				error={$errors}
+				onAnalysisComplete={handleAnalysisComplete}
+				onAnalysisStart={handleAnalysisStart}
+				onAnalysisEnd={handleAnalysisEnd}
+				onclick={() => {
+					stepperStore.markStepValid($currentStepIndex);
+					stepperStore.nextStep();
+				}}
+			/>
+
+			<!-- Step 3: Advertising Frequency -->
+		{:else if $currentStepIndex === 3}
+			<ImageOption
+				value={$form.advertising_frequency}
+				options={formOptions.advertising_frequency}
+				error={$errors.advertising_frequency}
+				onSelect={(value) => handleImageOptionSelect('advertising_frequency', value)}
+				fieldName="advertising_frequency"
+				multiple={false}
+			/>
+
+			<!-- Step 4: Goals -->
+		{:else if $currentStepIndex === 4}
+			<ImageOption
+				value={$form.goals}
+				options={formOptions.goals}
+				error={$errors.goals}
+				onSelect={(value) => handleImageOptionSelect('goals', value)}
+				fieldName="goals"
+				multiple={false}
+			/>
+
+			<!-- Step 5: Campaign Management -->
+		{:else if $currentStepIndex === 5}
+			<ImageOption
+				value={$form.campaign_management}
+				options={formOptions.campaign_management}
+				error={$errors.campaign_management}
+				onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
+				fieldName="campaign_management"
+				multiple={false}
+			/>
+
+			<!-- Step 6: Online Reviews -->
+		{:else if $currentStepIndex === 6}
+			<ImageOption
+				value={$form.online_reviews}
+				options={formOptions.online_reviews}
+				error={$errors.online_reviews}
+				onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
+				fieldName="online_reviews"
+				multiple={false}
+			/>
+
+			<!-- Step 7: Previous Campaigns -->
+		{:else if $currentStepIndex === 7}
+			<ImageOption
+				value={$form.previous_campaigns}
+				options={formOptions.previous_campaigns}
+				error={$errors.previous_campaigns}
+				onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
+				fieldName="previous_campaigns"
+				multiple={false}
+			/>
+
+			<!-- Step 8: Business Phase -->
+		{:else if $currentStepIndex === 8}
+			<ImageOption
+				value={$form.business_phase}
+				options={formOptions.business_phase}
+				error={$errors.business_phase}
+				onSelect={(value) => handleImageOptionSelect('business_phase', value)}
+				fieldName="business_phase"
+				multiple={false}
+			/>
+
+			<!-- Step 9: Implementation Time -->
+		{:else if $currentStepIndex === 9}
+			<ImageOption
+				value={$form.implementation_time}
+				options={formOptions.implementation_time}
+				error={$errors.implementation_time}
+				onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
+				fieldName="implementation_time"
+				multiple={false}
+			/>
+
+			<!-- Step 10: Company Form -->
+		{:else if $currentStepIndex === 10}
+			<ContactForm
+				{form}
+				error={$errors}
+				onValidation={(isValid) => {
+					contactFormValid = isValid;
+
+					// Wenn das Formular gültig ist, markiere diesen Schritt als abgeschlossen
+					if (isValid) {
+						stepperStore.markStepValid($currentStepIndex);
+					} else {
+						// Wenn nicht gültig, markiere als unvollständig
+						stepperStore.markStepIncomplete($currentStepIndex);
+					}
+				}}
+			/>
+
+			<!-- Step 12: Results -->
+		{:else if $currentStepIndex === 12 && last_step}
+			<ResultsPage
+				score={$calculatedScore}
+				formData={$formData}
+				auditData={$scoreStore?.auditData || null}
+				nextStep={() => stepperStore.goToStep(1)}
+				{restartAssessment}
+			/>
+			<!-- Fallback: Loading screen -->
+		{:else if $currentStepIndex === 11}
+			<WaitingScreen
+				autoAdvance={7}
+				nextStep={() => {
+					console.log('Moving to step 12');
+					stepperStore.markStepValid($currentStepIndex);
+					stepperStore.nextStep();
+				}}
+			/>
+		{/if}
+
+		<!-- Navigation Buttons (except for specific steps) -->
+		{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11, 12].includes($currentStepIndex)}
+			<div class="mt-8 flex justify-between">
+				<Button
+					label="Zurück"
+					type="button"
+					variant="primary"
+					disabled={$currentStepIndex === 1}
+					on:click={() => stepperStore.prevStep()}
+				/>
+
+				<Button
+					label={$currentStepIndex === 2 ? 'Überspringen' : 'Weiter'}
+					type="button"
+					variant="primary"
+					disabled={($currentStepIndex === 10 && !contactFormValid) ||
+						($currentStepIndex === 2 && isWebsiteAnalysisInProgress)}
+					on:click={() => {
+						// Für Schritt 10: Prüfen ob das Kontaktformular gültig ist
+						if ($currentStepIndex === 10) {
+							if (contactFormValid) {
 								stepperStore.markStepValid($currentStepIndex);
 								stepperStore.nextStep();
-							}}
-						/>
-
-						<!-- Step 3: Advertising Frequency -->
-					{:else if $currentStepIndex === 3}
-						<ImageOption
-							value={$form.advertising_frequency}
-							options={formOptions.advertising_frequency}
-							error={$errors.advertising_frequency}
-							onSelect={(value) => handleImageOptionSelect('advertising_frequency', value)}
-							fieldName="advertising_frequency"
-							multiple={false}
-						/>
-
-						<!-- Step 4: Goals -->
-					{:else if $currentStepIndex === 4}
-						<ImageOption
-							value={$form.goals}
-							options={formOptions.goals}
-							error={$errors.goals}
-							onSelect={(value) => handleImageOptionSelect('goals', value)}
-							fieldName="goals"
-							multiple={false}
-						/>
-
-						<!-- Step 5: Campaign Management -->
-					{:else if $currentStepIndex === 5}
-						<ImageOption
-							value={$form.campaign_management}
-							options={formOptions.campaign_management}
-							error={$errors.campaign_management}
-							onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
-							fieldName="campaign_management"
-							multiple={false}
-						/>
-
-						<!-- Step 6: Online Reviews -->
-					{:else if $currentStepIndex === 6}
-						<ImageOption
-							value={$form.online_reviews}
-							options={formOptions.online_reviews}
-							error={$errors.online_reviews}
-							onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
-							fieldName="online_reviews"
-							multiple={false}
-						/>
-
-						<!-- Step 7: Previous Campaigns -->
-					{:else if $currentStepIndex === 7}
-						<ImageOption
-							value={$form.previous_campaigns}
-							options={formOptions.previous_campaigns}
-							error={$errors.previous_campaigns}
-							onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
-							fieldName="previous_campaigns"
-							multiple={false}
-						/>
-
-						<!-- Step 8: Business Phase -->
-					{:else if $currentStepIndex === 8}
-						<ImageOption
-							value={$form.business_phase}
-							options={formOptions.business_phase}
-							error={$errors.business_phase}
-							onSelect={(value) => handleImageOptionSelect('business_phase', value)}
-							fieldName="business_phase"
-							multiple={false}
-						/>
-
-						<!-- Step 9: Implementation Time -->
-					{:else if $currentStepIndex === 9}
-						<ImageOption
-							value={$form.implementation_time}
-							options={formOptions.implementation_time}
-							error={$errors.implementation_time}
-							onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
-							fieldName="implementation_time"
-							multiple={false}
-						/>
-
-						<!-- Step 10: Company Form -->
-					{:else if $currentStepIndex === 10}
-						<ContactForm
-							{form}
-							error={$errors}
-							onValidation={(isValid) => {
-								contactFormValid = isValid;
-
-								// Wenn das Formular gültig ist, markiere diesen Schritt als abgeschlossen
-								if (isValid) {
-									stepperStore.markStepValid($currentStepIndex);
-								} else {
-									// Wenn nicht gültig, markiere als unvollständig
-									stepperStore.markStepIncomplete($currentStepIndex);
-								}
-							}}
-						/>
-
-						<!-- Step 12: Results -->
-					{:else if $currentStepIndex === 12 && last_step}
-						<ResultsPage
-							score={$calculatedScore}
-							formData={$formData}
-							auditData={$scoreStore?.auditData || null}
-							nextStep={() => stepperStore.goToStep(1)}
-							{restartAssessment}
-						/>
-						<!-- Fallback: Loading screen -->
-					{:else if $currentStepIndex === 11}
-						<WaitingScreen
-							autoAdvance={7}
-							nextStep={() => {
-								console.log('Moving to step 12');
-								stepperStore.markStepValid($currentStepIndex);
-								stepperStore.nextStep();
-							}}
-						/>
-					{/if}
-
-					<!-- Navigation Buttons (except for specific steps) -->
-					{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11, 12].includes($currentStepIndex)}
-						<div class="mt-8 flex justify-between">
-							<Button
-								label="Zurück"
-								type="button"
-								variant="primary"
-								disabled={$currentStepIndex === 1}
-								on:click={() => stepperStore.prevStep()}
-							/>
-
-							<Button
-								label={$currentStepIndex === 2 ? 'Überspringen' : 'Weiter'}
-								type="button"
-								variant="primary"
-								disabled={($currentStepIndex === 10 && !contactFormValid) ||
-									($currentStepIndex === 2 && isWebsiteAnalysisInProgress)}
-								on:click={() => {
-									// Für Schritt 10: Prüfen ob das Kontaktformular gültig ist
-									if ($currentStepIndex === 10) {
-										if (contactFormValid) {
-											stepperStore.markStepValid($currentStepIndex);
-											stepperStore.nextStep();
-										} else {
-											stepperStore.markStepIncomplete($currentStepIndex);
-										}
-									}
-									// Für Schritt 2: Einfach überspringen ohne Validierung
-									else if ($currentStepIndex === 2) {
-										stepperStore.nextStep();
-									}
-									// Für alle anderen Schritte: Normales Verhalten
-									else {
-										stepperStore.markStepValid($currentStepIndex);
-										stepperStore.nextStep();
-									}
-								}}
-							/>
-						</div>
-					{/if}
-				</FormTransitioner>
+							} else {
+								stepperStore.markStepIncomplete($currentStepIndex);
+							}
+						}
+						// Für Schritt 2: Einfach überspringen ohne Validierung
+						else if ($currentStepIndex === 2) {
+							stepperStore.nextStep();
+						}
+						// Für alle anderen Schritte: Normales Verhalten
+						else {
+							stepperStore.markStepValid($currentStepIndex);
+							stepperStore.nextStep();
+						}
+					}}
+				/>
 			</div>
-		{/key}
-	</div>
+		{/if}
+	{/key}
 </div>
 
 {#if isDev}

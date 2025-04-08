@@ -360,7 +360,7 @@
 				{$i18n.results.weaknesses.title}
 			</h3>
 			<ul class="space-y-3">
-				{#each [...(processedScore < 40 ? [$i18n.results.weaknesses.poorVisibility, $i18n.results.weaknesses.noStrategy, $i18n.results.weaknesses.poorOptimization] : processedScore < 60 ? [$i18n.results.weaknesses.limitedReach, $i18n.results.weaknesses.underdevelopedContent, $i18n.results.weaknesses.poorConversion] : [$i18n.results.weaknesses.contentDistribution, $i18n.results.weaknesses.competitorAnalysis, $i18n.results.weaknesses.conversionRate])] as weakness, i}
+				{#each [...(processedScore < 50 ? [$i18n.results.weaknesses.poorVisibility, $i18n.results.weaknesses.noStrategy, $i18n.results.weaknesses.poorOptimization] : processedScore < 60 ? [$i18n.results.weaknesses.limitedReach, $i18n.results.weaknesses.underdevelopedContent, $i18n.results.weaknesses.poorConversion] : [$i18n.results.weaknesses.contentDistribution, $i18n.results.weaknesses.competitorAnalysis, $i18n.results.weaknesses.conversionRate])] as weakness, i}
 					<li in:fly={{ y: 20, delay: 1000 + i * 100, duration: 400 }} class="flex items-start">
 						<div class="mr-3 text-red-500">
 							<Icon name="closeX" size={20} strokeWidth="2" />
@@ -559,7 +559,7 @@
 
 	<!-- Action Buttons -->
 	<div
-		class="mt-8 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
+		class="my-8 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
 	>
 		<button
 			class="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto"

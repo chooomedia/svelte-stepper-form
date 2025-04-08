@@ -1527,7 +1527,7 @@ const en: Translation = {
 				googlePartner: {
 					label: 'Google Partner',
 					value: '',
-					icon: 'star'
+					icon: 'google'
 				},
 				customers: {
 					label: 'Customers',

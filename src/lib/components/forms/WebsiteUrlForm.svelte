@@ -241,13 +241,6 @@
 			// Extract suggestions
 			if (dataObj.suggestions && Array.isArray(dataObj.suggestions)) {
 				processed.suggestions = dataObj.suggestions.slice(0, 3);
-			} else {
-				// Default suggestions if none available
-				processed.suggestions = [
-					'Meta-Beschreibungen für bessere Klickraten optimieren',
-					'Seitengeschwindigkeit verbessern',
-					'Mobilfreundlichkeit sicherstellen'
-				];
 			}
 
 			if (data.detailed_scores) {
@@ -489,9 +482,11 @@
 </script>
 
 <div class="website-url-form space-y-6">
-	<!-- Ansprechende Illustration im Stil des Beispiels -->
 	{#if !isLoading}
-		<div class="analysis-placeholder mb-6 shadow-custom" transition:fade={{ duration: 300 }}>
+		<div
+			class="analysis-placeholder animate-fade mb-6 shadow-custom"
+			transition:fade={{ duration: 300 }}
+		>
 			<div class="mx-auto mt-2 rounded-lg bg-white p-6 shadow-sm">
 				<div class="flex flex-col items-center">
 					<img src="/ui-mockup.svg" alt="Website Analysis Illustration" class="mb-4 h-32 w-auto" />
@@ -584,73 +579,20 @@
 				<div class="flex flex-col items-center">
 					<!-- Animated Progress Indicator - Only shows animation while not complete -->
 					<div class="relative mb-4 h-24 w-24">
-						<!-- Static completed circle when analysis is complete -->
-						{#if analysisComplete}
-							<svg class="absolute inset-0" viewBox="0 0 100 100">
-								<circle
-									class="text-primary-100"
-									stroke-width="4"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-								<circle
-									class="text-primary-500"
-									stroke-width="4"
-									stroke-dasharray="264"
-									stroke-dashoffset="0"
-									stroke-linecap="round"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-							</svg>
-						{:else}
-							<!-- Animated circle during loading -->
-							<svg class="absolute inset-0" viewBox="0 0 100 100">
-								<circle
-									class="text-primary-100"
-									stroke-width="4"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-								<circle
-									class="text-primary-500 transition-all duration-300 ease-in-out"
-									stroke-width="4"
-									stroke-dasharray="264"
-									stroke-dashoffset={264 - (currentProgress * 264) / 100}
-									stroke-linecap="round"
-									stroke="currentColor"
-									fill="transparent"
-									r="42"
-									cx="50"
-									cy="50"
-								/>
-							</svg>
-						{/if}
-
 						<!-- Pulse effect in center - only while loading -->
 						{#if !analysisComplete}
 							<div class="absolute inset-0 flex items-center justify-center">
+								<div class="h-16 w-16 rounded-full bg-primary-200"></div>
+							</div>
+							<div class="absolute inset-0 flex items-center justify-center">
 								<div class="h-16 w-16 animate-ping rounded-full bg-primary-400 opacity-30"></div>
 							</div>
-						{/if}
-
-						<!-- Icon in center -->
-						<div class="absolute inset-0 flex items-center justify-center">
-							{#if !analysisComplete}
+							<div class="absolute inset-0 flex items-center justify-center">
 								<div class="text-primary-600">
-									<Icon name="clock" size={48} />
+									<Icon name="clock" size={42} fill="none" stroke="currentColor" strokeWidth="2" />
 								</div>
-							{/if}
-						</div>
+							</div>
+						{/if}
 					</div>
 
 					<h3 class="mb-2 text-center text-xl font-bold text-gray-800">
@@ -678,39 +620,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	/* Improve focus styles for better accessibility */
-	input:focus,
-	button:focus {
-		outline: 2px solid rgba(59, 130, 246, 0.5);
-		outline-offset: 1px;
-	}
-
-	/* Animation for the progress */
-	@keyframes progress {
-		0% {
-			stroke-dashoffset: 264;
-		}
-		100% {
-			stroke-dashoffset: 0;
-		}
-	}
-
-	/* Animation for the analysis elements */
-	.analysis-in-progress,
-	.analysis-placeholder {
-		animation: fadeIn 0.5s ease-in-out;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-			transform: translateY(10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-</style>

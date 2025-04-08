@@ -215,14 +215,11 @@
 	</header>
 
 	<section
-		class="px-4 py-6 sm:px-6 lg:px-8"
-		style="min-height: calc(100vh - 102px);"
+		class="w-full px-4 py-6 sm:px-6 lg:max-w-6xl lg:px-8"
 		itemscope
 		itemtype="https://schema.org/WebPageElement"
 	>
-		<div class="relative w-full lg:max-w-6xl">
-			<slot />
-		</div>
+		<slot />
 	</section>
 
 	{#if !isIframe}
@@ -252,9 +249,5 @@
 		padding: 0 !important;
 		margin: 0 !important;
 		background: transparent !important;
-	}
-
-	:global(body) {
-		transition: height 0.3s ease;
 	}
 </style>
