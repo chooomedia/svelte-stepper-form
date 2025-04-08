@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fade, scale } from 'svelte/transition';
 	import { modalStore, type ModalType } from './modalStore';
 	import { browser } from '$app/environment';
+	import { i18n } from '$lib/i18n';
 
 	export type ModalSize =
 		| 'sm'
@@ -45,6 +46,25 @@
 		backdropBlur = true,
 		showCloseButton = true
 	} = $props<Props>();
+
+	// Generated title based on modal type
+	$effect(() => {
+		if (!title) {
+			if (type === 'payment') {
+				title = $i18n.modal.payment.title;
+				subtitle = $i18n.modal.payment.subtitle;
+			} else if (type === 'success') {
+				title = $i18n.modal.success.title;
+				subtitle = $i18n.modal.success.subtitle;
+			} else if (type === 'error') {
+				title = $i18n.modal.error.title;
+				subtitle = $i18n.modal.error.defaultMessage;
+			} else if (type === 'confirm') {
+				title = $i18n.modal.common.confirm;
+				subtitle = $i18n.modal.confirm.extraDiscountOffer;
+			}
+		}
+	});
 
 	let dialogElement: HTMLDialogElement;
 	let isClosing = $state(false);
@@ -230,7 +250,12 @@
 					{/if}
 
 					{#if showCloseButton}
-						<button type="button" class="btn-close" on:click={handleClose} aria-label="Schließen">
+						<button
+							type="button"
+							class="btn-close"
+							on:click={handleClose}
+							aria-label={$i18n.modal.common.close}
+						>
 							✕
 						</button>
 					{/if}

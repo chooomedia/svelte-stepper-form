@@ -15,6 +15,7 @@
 		paymentType = 'monatlich',
 		totalPrice = 0,
 		showExtraDiscount = false,
+		containerSelector = '#paypal-button-container',
 		onSuccess = () => {}
 	} = $props();
 
@@ -52,12 +53,12 @@
 		}
 	});
 
-	// Security options
-	const securityOptions = [
-		{ icon: 'lock', text: 'SSL Gesichert' },
-		{ icon: 'shield', text: 'Käuferschutz' },
-		{ icon: 'clock', text: 'Sofortiger Zugang' }
-	];
+	// Security options from i18n
+	const securityOptions = $derived([
+		{ icon: 'lock', text: $i18n.modal.payment.securityBadges.secure },
+		{ icon: 'shield', text: $i18n.modal.payment.securityBadges.protection },
+		{ icon: 'clock', text: $i18n.modal.payment.securityBadges.instant }
+	]);
 
 	// Calculate numeric price once totalPrice changes
 	$effect(() => {
@@ -179,7 +180,7 @@
 		} catch (error) {
 			console.error('Failed to load PayPal SDK:', error);
 			modalStore.open('error', {
-				error: 'Fehler beim Laden des PayPal SDKs. Bitte versuche es später erneut.'
+				error: $i18n.modal.payment.errors.general
 			});
 		}
 	}
@@ -218,7 +219,7 @@
 								console.error('Invalid amount:', amount);
 								isProcessing = false;
 								modalStore.open('error', {
-									error: 'Ungültiger Zahlungsbetrag. Bitte versuche es erneut.'
+									error: $i18n.modal.payment.errors.validation
 								});
 								return null;
 							}
@@ -247,15 +248,14 @@
 							console.error('Error in createOrder:', error);
 							isProcessing = false;
 
-							let errorMessage = 'Fehler beim Erstellen der Bestellung. Bitte versuche es erneut.';
+							let errorMessage = $i18n.modal.payment.errors.general;
 
 							if (error instanceof Error) {
 								if (
 									error.message.includes('INTERNAL_SERVER_ERROR') ||
 									error.message.includes('500')
 								) {
-									errorMessage =
-										'Der PayPal-Service ist vorübergehend nicht verfügbar. Bitte versuche es später erneut.';
+									errorMessage = $i18n.modal.payment.errors.server;
 								}
 							}
 
@@ -271,7 +271,7 @@
 							isProcessing = true;
 
 							if (!data.orderID) {
-								throw new Error('Keine Order-ID erhalten.');
+								throw new Error($i18n.modal.payment.errors.validation);
 							}
 
 							// Capture the funds
@@ -312,7 +312,7 @@
 						isProcessing = false;
 						console.log('Payment was cancelled');
 						modalStore.open('confirm', {
-							message: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+							message: $i18n.modal.confirm.cancelPurchase,
 							previousType: 'payment',
 							previousData: {
 								selectedPlan,
@@ -326,20 +326,18 @@
 					onError: (err: any) => {
 						console.error('PayPal error:', err);
 
-						let errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
+						let errorMessage = $i18n.modal.payment.errors.general;
 
 						// Identify different error types
 						if (err.message === 'VALIDATION_ERROR') {
-							errorMessage = 'Bitte überprüfe deine Zahlungsdaten';
+							errorMessage = $i18n.modal.payment.errors.validation;
 						} else if (err.message?.includes('popup')) {
-							errorMessage =
-								'Das PayPal-Fenster wurde blockiert. Bitte erlaube Popups für diese Seite.';
+							errorMessage = $i18n.modal.payment.errors.popup;
 						} else if (
 							err.message?.includes('500') ||
 							err.message?.includes('INTERNAL_SERVER_ERROR')
 						) {
-							errorMessage =
-								'Der PayPal-Service ist vorübergehend nicht verfügbar. Bitte versuche es später erneut oder wähle eine andere Zahlungsmethode.';
+							errorMessage = $i18n.modal.payment.errors.server;
 						}
 
 						handlePaymentError({ message: errorMessage });
@@ -358,7 +356,7 @@
 				.catch((err: any) => {
 					console.error('Error rendering PayPal buttons:', err);
 					modalStore.open('error', {
-						error: 'Fehler beim Rendern der PayPal-Schaltflächen. Bitte versuche es später erneut.'
+						error: $i18n.modal.payment.errors.general
 					});
 				});
 
@@ -366,7 +364,7 @@
 		} catch (error) {
 			console.error('Error setting up PayPal buttons:', error);
 			modalStore.open('error', {
-				error: 'Fehler beim Einrichten der PayPal-Schaltflächen. Bitte versuche es später erneut.'
+				error: $i18n.modal.payment.errors.general
 			});
 		}
 	}
@@ -376,7 +374,7 @@
 		console.error('Payment error:', error);
 		isProcessing = false;
 
-		let errorMessage = 'Die Zahlung konnte nicht verarbeitet werden. Bitte versuche es erneut.';
+		let errorMessage = $i18n.modal.payment.errors.general;
 
 		if (error instanceof Error) {
 			errorMessage = error.message;
@@ -469,7 +467,7 @@
 
 <!-- Price Summary -->
 <div class="card">
-	<div class="card-body mb-4 rounded-lg bg-base-200 p-4">
+	<div class="card-body mb-4 rounded-lg bg-primary-50 p-4">
 		<div class="flex items-center justify-between">
 			<div>
 				<h4 class="text-lg font-semibold" itemprop="name">
@@ -478,19 +476,19 @@
 				<div class="flex gap-1">
 					<p class="text-sm opacity-75">
 						{paymentType === 'monatlich'
-							? 'Monatliche Zahlung'
+							? $i18n.modal.payment.summary.monthly
 							: paymentType === 'einmalig'
-								? 'Einmalzahlung'
-								: 'Longtime-Zugang'}
+								? $i18n.modal.payment.summary.oneTime
+								: $i18n.modal.payment.summary.longtime}
 					</p>
 					{#if discountPercentage > 0}
 						<p class="text-sm text-error" itemprop="discount">
-							{discountPercentage}% Rabatt
+							{discountPercentage}% {$i18n.modal.payment.summary.discount}
 						</p>
 					{/if}
 					{#if includeDonation}
 						<p class="text-sm text-success" itemprop="donation">
-							inkl. {(numericTotalPrice * 0.03).toFixed(2).replace('.', ',')}€ Spende
+							{$i18n.modal.payment.summary.donation}
 						</p>
 					{/if}
 				</div>
@@ -515,7 +513,7 @@
 						type="button"
 					>
 						<Icon name="question" size={20} fill="none" stroke="currentColor" strokeWidth="1" />
-						<p itemprop="tax">inkl. {currentVatText}</p>
+						<p itemprop="tax">{$i18n.modal.payment.summary.tax}</p>
 					</button>
 				</div>
 			</div>
@@ -601,7 +599,7 @@
 						{/if}
 					</div>
 				</div>
-				<span class="ml-3 text-sm font-medium">3% Spende hinzufügen</span>
+				<span class="ml-3 text-sm font-medium">{$i18n.modal.payment.donationBox.title}</span>
 			</div>
 			<div class="ml-auto lg:pl-4">
 				<img src="/betterplace.svg" alt="Betterplace" class="h-4 lg:h-6" />
@@ -618,9 +616,7 @@
 			>
 				<div class="heart-icon animate-pulse text-2xl">❤️</div>
 				<p class="text-xs text-emerald-700">
-					Mit jedem Euro unterstützt Du direkt Umweltschutzprojekte.
-					<span class="font-semibold">93% Deiner Spende</span> fließt unmittelbar in nachhaltige Projekte
-					- nachweislich und transparent!
+					{$i18n.modal.payment.donationBox.description}
 				</p>
 			</div>
 		{/if}
@@ -652,10 +648,10 @@
 			onclick={mockPaymentForTesting}
 			disabled={isProcessing}
 		>
-			Test-Zahlung simulieren (nur für Entwicklung)
+			{$i18n.modal.payment.testButton}
 		</button>
 		<p class="mt-2 text-xs text-gray-500">
-			Dies ist nur für Testzwecke und simuliert eine erfolgreiche Zahlung.
+			{$i18n.modal.payment.testDescription}
 		</p>
 	</div>
 {/if}

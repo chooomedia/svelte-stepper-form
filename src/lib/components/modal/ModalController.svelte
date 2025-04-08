@@ -1,4 +1,3 @@
-<!-- src/lib/components/modal/ModalController.svelte -->
 <script lang="ts">
 	import { modalStore } from './modalStore';
 	import Modal from './Modal.svelte';
@@ -22,8 +21,7 @@
 	onClose={() => {
 		if (currentModalType === 'payment') {
 			modalStore.open('confirm', {
-				message:
-					$i18n.confirmModal?.cancelPurchase || 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+				message: $i18n.modal.confirm.cancelPurchase,
 				previousType: 'payment',
 				previousData: modalData
 			});
@@ -31,22 +29,6 @@
 			modalStore.close();
 		}
 	}}
-	title={currentModalType === 'payment'
-		? 'Bezahlung abschließen'
-		: currentModalType === 'success'
-			? 'Zahlung erfolgreich!'
-			: currentModalType === 'error'
-				? 'Zahlungsfehler'
-				: 'Bestätigung'}
-	subtitle={currentModalType === 'success'
-		? 'Vielen Dank für Deinen Kauf.'
-		: currentModalType === 'error'
-			? modalData?.error || 'Ein Fehler ist aufgetreten'
-			: ''}
-	type={currentModalType === 'error' || currentModalType === 'confirm' ? 'error' : 'default'}
-	size={currentModalType === 'success' ? '2xl' : 'xl'}
-	closeOnClickOutside={!(currentModalType === 'payment' && modalData?.isProcessing)}
-	closeOnEsc={!(currentModalType === 'payment' && modalData?.isProcessing)}
 >
 	{#if currentModalType === 'payment'}
 		<PaymentContent
@@ -85,7 +67,7 @@
 		/>
 	{:else if currentModalType === 'error'}
 		<ErrorContent
-			error={modalData?.error || 'Ein Fehler ist aufgetreten'}
+			error={modalData?.error || $i18n.modal.error.defaultMessage}
 			errorDetails={modalData?.errorDetails || ''}
 			onRetry={() => {
 				// Go back to payment modal
@@ -94,7 +76,7 @@
 		/>
 	{:else if currentModalType === 'confirm'}
 		<ConfirmContent
-			message={modalData?.message || 'Möchtest du wirklich fortfahren?'}
+			message={modalData?.message || $i18n.modal.confirm.cancelPurchase}
 			subMessage={modalData?.subMessage || ''}
 			onConfirm={() => {
 				// Execute confirm action if provided
@@ -113,8 +95,8 @@
 					modalStore.close();
 				}
 			}}
-			confirmLabel={modalData?.confirmLabel || 'Ja, fortfahren'}
-			cancelLabel={modalData?.cancelLabel || 'Abbrechen'}
+			confirmLabel={modalData?.confirmLabel || $i18n.modal.confirm.confirmButton}
+			cancelLabel={modalData?.cancelLabel || $i18n.modal.confirm.cancelButton}
 			previousType={modalData?.previousType}
 			previousData={modalData?.previousData}
 		/>

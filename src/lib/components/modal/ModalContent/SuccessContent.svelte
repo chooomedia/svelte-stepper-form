@@ -7,6 +7,7 @@
 	import { formatTime } from '$lib/utils/animation';
 	import Icon from '$lib/components/Icon.svelte';
 	import { celebrationConfetti } from '$lib/utils/confetti';
+	import { i18n } from '$lib/i18n';
 
 	// Props
 	const {
@@ -16,7 +17,6 @@
 		donationAmount = 0,
 		customerName = '',
 		redirectUrl = '',
-
 		onSuccess = () => {}
 	} = $props();
 
@@ -44,13 +44,6 @@
 		easing: cubicInOut
 	});
 
-	// Content
-	const nextSteps = [
-		'Überprüfe deine E-Mail für die Zahlungsbestätigung',
-		'Entdecke nützliche Ressourcen in deinem Dashboard',
-		'Lade ein Teammitglied ein für bessere Ergebnisse'
-	];
-
 	// Helper for animations
 	function addTimer(callback: () => void, delay: number) {
 		const id = setTimeout(callback, delay);
@@ -66,11 +59,7 @@
 	// Trigger confetti effect
 	function triggerConfetti() {
 		showConfetti = true;
-
-		// Hier würde die Confetti-Animation ausgelöst
-		// Diese Funktion sollte in $lib/utils/confetti.ts implementiert sein
-		// Beispiel: confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-
+		celebrationConfetti();
 		console.log('Confetti animation triggered');
 	}
 
@@ -221,10 +210,10 @@
 	{#if showMainMessage}
 		<div class="mb-8 text-center" in:fly={{ y: 30, duration: 600 }}>
 			<h3 class="mb-1 text-2xl font-bold text-gray-900">
-				🎉 Perfekt{customerName ? ', ' + customerName : ''}! Deine Bestellung ist erfolgreich
+				🎉 {$i18n.modal.success.mainMessage}{customerName ? ', ' + customerName : ''}!
 			</h3>
 			<p class="mt-2 text-lg text-gray-700">
-				Wir haben dein {selectedPlan} für dich freigeschaltet
+				{$i18n.modal.success.selectedPlan.replace('{plan}', selectedPlan)}
 			</p>
 		</div>
 	{/if}
@@ -233,19 +222,25 @@
 	{#if showPaymentDetails}
 		<div class="mx-auto mb-6 rounded-xl bg-white p-4 shadow-sm" in:fly={{ y: 20, duration: 500 }}>
 			<div class="flex items-center justify-between border-b border-gray-200 pb-3">
-				<span class="text-sm font-medium text-gray-500">Zahlungs-ID</span>
+				<span class="text-sm font-medium text-gray-500"
+					>{$i18n.modal.success.paymentDetails.id}</span
+				>
 				<span class="font-mono text-sm text-gray-700">
 					{paymentDetails?.id || 'DP-' + Math.random().toString(36).substr(2, 9)}
 				</span>
 			</div>
 			<div class="flex items-center justify-between py-3">
-				<span class="text-sm font-medium text-gray-500">Datum</span>
+				<span class="text-sm font-medium text-gray-500"
+					>{$i18n.modal.success.paymentDetails.date}</span
+				>
 				<span class="text-sm text-gray-700">{new Date().toLocaleDateString('de-DE')}</span>
 			</div>
 			<div class="flex items-center justify-between border-t border-gray-200 pt-3">
-				<span class="text-sm font-medium text-gray-500">Status</span>
+				<span class="text-sm font-medium text-gray-500"
+					>{$i18n.modal.success.paymentDetails.status}</span
+				>
 				<span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800"
-					>Bezahlt</span
+					>{$i18n.modal.success.paymentDetails.paid}</span
 				>
 			</div>
 		</div>
@@ -269,12 +264,14 @@
 						</div>
 					</div>
 					<div>
-						<h4 class="mb-1 font-semibold text-emerald-700">Impact bereit!</h4>
+						<h4 class="mb-1 font-semibold text-emerald-700">
+							{$i18n.modal.success.donation.title}
+						</h4>
 						<p class="text-sm text-emerald-700">
-							Deine großzügige Spende von <span class="font-mono font-bold">
-								{$animatedDonation.toFixed(2).replace('.', ',')}€
-							</span>
-							unterstützt wichtige Umweltprojekte. Zusammen bewirken wir Großes!
+							{$i18n.modal.success.donation.description.replace(
+								'{amount}',
+								$animatedDonation.toFixed(2).replace('.', ',')
+							)}
 						</p>
 					</div>
 				</div>
@@ -283,15 +280,17 @@
 				<div class="mt-3 flex justify-between gap-2 rounded-md bg-white p-3">
 					<div class="text-center">
 						<div class="text-lg font-bold text-emerald-600">93%</div>
-						<div class="text-xs text-gray-500">Direkte Hilfe</div>
+						<div class="text-xs text-gray-500">{$i18n.modal.success.donation.impact.direct}</div>
 					</div>
 					<div class="text-center">
 						<div class="text-lg font-bold text-emerald-600">5+</div>
-						<div class="text-xs text-gray-500">Projekte</div>
+						<div class="text-xs text-gray-500">{$i18n.modal.success.donation.impact.projects}</div>
 					</div>
 					<div class="text-center">
 						<div class="text-lg font-bold text-emerald-600">100%</div>
-						<div class="text-xs text-gray-500">Transparenz</div>
+						<div class="text-xs text-gray-500">
+							{$i18n.modal.success.donation.impact.transparency}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -304,9 +303,9 @@
 			class="mb-8 rounded-lg border border-primary-100 bg-blue-50 p-4"
 			in:fly={{ y: 20, duration: 500 }}
 		>
-			<h4 class="mb-3 font-medium text-primary-700">Deine nächsten Schritte:</h4>
+			<h4 class="mb-3 font-medium text-primary-700">{$i18n.modal.success.nextSteps.title}</h4>
 			<ul class="space-y-3">
-				{#each nextSteps as step, i}
+				{#each $i18n.modal.success.nextSteps.steps as step, i}
 					<li class="flex items-start" in:fly={{ x: -20, duration: 400, delay: 200 * i }}>
 						<div
 							class="mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary-200 text-xs font-bold text-primary-700"
@@ -323,23 +322,22 @@
 	<!-- Exclusive Upgrade Offer -->
 	{#if showUpgradeOffer}
 		<div
-			class="mb-8 overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg"
+			class="mb-8 overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 shadow-xl"
 			in:fly={{ y: 20, duration: 500 }}
 		>
 			<div class="relative p-5 text-white">
 				<!-- Limited Time Offer Badge -->
 				<div
-					class="absolute -right-9 top-4 rotate-45 bg-yellow-400 px-10 py-1 text-center text-xs font-bold uppercase text-gray-800 shadow-md"
+					class="absolute -right-10 top-5 rotate-45 bg-yellow-400 px-10 py-1 text-center text-xs font-bold uppercase text-gray-800 shadow-md"
 				>
-					Exklusiv
+					{$i18n.modal.success.upgradeOffer.exclusive}
 				</div>
 
 				<div class="flex flex-col items-center md:flex-row md:items-center">
 					<div class="mb-4 text-left md:mb-0 md:flex-1">
-						<h4 class="mb-1 text-lg font-bold">Erweitere dein Paket und spare 30%</h4>
+						<h4 class="mb-1 text-lg font-bold">{$i18n.modal.success.upgradeOffer.title}</h4>
 						<p class="text-sm text-indigo-100">
-							Nur für Neukunden: Füge jetzt Premium-Features hinzu und hebe dein Ergebnis auf das
-							nächste Level!
+							{$i18n.modal.success.upgradeOffer.subtitle}
 						</p>
 
 						<!-- Countdown Timer -->
@@ -352,7 +350,8 @@
 									d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 								/>
 							</svg>
-							Angebot endet in <span class="ml-1 font-mono">{formatTime($upsellSeconds)}</span>
+							{$i18n.modal.success.upgradeOffer.countdown}
+							<span class="ml-1 font-mono">{formatTime($upsellSeconds)}</span>
 						</div>
 					</div>
 
@@ -361,7 +360,7 @@
 							class="btn btn-sm bg-white px-4 font-bold text-indigo-600 transition-transform hover:scale-105 hover:bg-primary hover:shadow-lg"
 							on:click={() => trackEvent('upsell_clicked')}
 						>
-							Upgrade sichern
+							{$i18n.modal.success.upgradeOffer.button}
 						</button>
 					</div>
 				</div>
@@ -373,15 +372,16 @@
 	{#if showSupportInfo}
 		<div class="mb-6 text-center" in:fade={{ duration: 500 }}>
 			<p class="mb-2 text-sm text-gray-600">
-				Eine Bestätigung mit allen Details wurde an deine E-Mail-Adresse gesendet.
+				{$i18n.modal.success.support.confirmation}
 			</p>
 			<p class="text-sm text-gray-500">
-				Fragen? Kontaktiere unseren
+				{$i18n.modal.success.support.contact}
+
 				<a
 					href="mailto:support@digitalpusher.de"
 					class="font-medium text-primary-600 hover:underline"
 				>
-					Kundensupport
+					{$i18n.common.support}
 				</a>
 			</p>
 		</div>
@@ -395,7 +395,7 @@
 					class="btn btn-primary flex items-center justify-center gap-2"
 					on:click={redirectToDashboard}
 				>
-					<span>Zum Dashboard</span>
+					<span>{$i18n.modal.success.buttons.dashboard}</span>
 					<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
 						<path
 							fill-rule="evenodd"
@@ -410,7 +410,7 @@
 				on:click={() => trackEvent('share_clicked')}
 			>
 				<Icon name="share" size={20} />
-				Teilen
+				{$i18n.modal.success.buttons.share}
 			</button>
 		</div>
 	{/if}

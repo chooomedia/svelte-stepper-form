@@ -366,15 +366,98 @@ export interface Translation {
 	footer: {
 		copyright: string;
 	};
-	confirmModal: {
-		cancelPurchase: string;
-		extraDiscountOffer: string;
-		discountDetails: string;
-		oneTimeDiscount: string;
-		longtimeDiscount: string;
-		limitedTimeOffer: string;
-		confirmButton: string;
-		cancelButton: string;
+	modal: {
+		common: {
+			close: string;
+			cancel: string;
+			confirm: string;
+			back: string;
+		};
+		payment: {
+			title: string;
+			subtitle: string;
+			testButton: string;
+			testDescription: string;
+			summary: {
+				title: string;
+				monthly: string;
+				oneTime: string;
+				longtime: string;
+				discount: string;
+				donation: string;
+				tax: string;
+			};
+			securityBadges: {
+				secure: string;
+				protection: string;
+				instant: string;
+			};
+			donationBox: {
+				title: string;
+				description: string;
+			};
+			errors: {
+				general: string;
+				validation: string;
+				server: string;
+				timeout: string;
+			};
+		};
+		success: {
+			title: string;
+			subtitle: string;
+			paymentDetails: {
+				id: string;
+				date: string;
+				status: string;
+				paid: string;
+			};
+			donation: {
+				title: string;
+				description: string;
+				impact: {
+					direct: string;
+					projects: string;
+					transparency: string;
+				};
+			};
+			nextSteps: {
+				title: string;
+				steps: string[];
+			};
+			upgradeOffer: {
+				exclusive: string;
+				title: string;
+				subtitle: string;
+				countdown: string;
+				button: string;
+			};
+			support: {
+				confirmation: string;
+				contact: string;
+			};
+			buttons: {
+				dashboard: string;
+				share: string;
+			};
+		};
+		error: {
+			title: string;
+			defaultMessage: string;
+			details: string;
+			support: string;
+			retry: string;
+		};
+		confirm: {
+			cancelPurchase: string;
+			extraDiscountOffer: string;
+			discountDetails: string;
+			oneTimeDiscount: string;
+			longtimeDiscount: string;
+			limitedTimeOffer: string;
+			confirmButton: string;
+			cancelButton: string;
+		};
 	};
 }
 
@@ -1014,15 +1097,107 @@ const de: Translation = {
 	footer: {
 		copyright: 'Alle Rechte vorbehalten.'
 	},
-	confirmModal: {
-		cancelPurchase: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
-		extraDiscountOffer: 'Exklusiv: 5% Rabatt zusätzlich bei Rückkehr zum Kaufvorgang!',
-		discountDetails: 'Wenn du jetzt zurückkehrst, erhältst du insgesamt:',
-		oneTimeDiscount: '13% Rabatt statt 8% bei Einmalzahlung',
-		longtimeDiscount: '25% Rabatt statt 20% bei Longtime-Zugang',
-		limitedTimeOffer: 'Diese Gelegenheit gilt nur für kurze Zeit!',
-		confirmButton: 'Ja, abbrechen',
-		cancelButton: 'Zurück zum Kaufvorgang'
+	modal: {
+		common: {
+			close: 'Schließen',
+			cancel: 'Abbrechen',
+			confirm: 'Bestätigen',
+			back: 'Zurück'
+		},
+		payment: {
+			title: 'Bezahlung abschließen',
+			subtitle: 'Wähle Deine Zahlungsmethode',
+			testButton: 'Testzahlung',
+			testDescription: 'Testzahlung mit Sandbox-Account',
+			summary: {
+				title: 'Zusammenfassung',
+				monthly: 'Monatliche Zahlung',
+				oneTime: 'Einmalzahlung',
+				longtime: 'Longtime-Zugang',
+				discount: 'Rabatt',
+				donation: 'inkl. Spende',
+				tax: 'inkl. MwSt'
+			},
+			securityBadges: {
+				secure: 'SSL Gesichert',
+				protection: 'Käuferschutz',
+				instant: 'Sofortiger Zugang'
+			},
+			donationBox: {
+				title: '3% Spende hinzufügen',
+				description:
+					'Mit jedem Euro unterstützt Du direkt Umweltschutzprojekte. 93% Deiner Spende fließt unmittelbar in nachhaltige Projekte - nachweislich und transparent!'
+			},
+			errors: {
+				general: 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.',
+				validation: 'Bitte überprüfe deine Zahlungsdaten',
+				server:
+					'Der PayPal-Service ist vorübergehend nicht verfügbar. Bitte versuche es später erneut.',
+				timeout:
+					'Die Anfrage hat zu lange gedauert. Bitte überprüfe deine Internetverbindung und versuche es erneut.'
+			}
+		},
+		success: {
+			title: 'Zahlung erfolgreich!',
+			subtitle: 'Vielen Dank für Deinen Kauf.',
+			paymentDetails: {
+				id: 'Zahlungs-ID',
+				date: 'Datum',
+				status: 'Status',
+				paid: 'Bezahlt'
+			},
+			donation: {
+				title: 'Impact bereit!',
+				description:
+					'Deine großzügige Spende von {amount}€ unterstützt wichtige Umweltprojekte. Zusammen bewirken wir Großes!',
+				impact: {
+					direct: 'Direkte Hilfe',
+					projects: 'Projekte',
+					transparency: 'Transparenz'
+				}
+			},
+			nextSteps: {
+				title: 'Deine nächsten Schritte:',
+				steps: [
+					'Überprüfe deine E-Mail für die Zahlungsbestätigung',
+					'Entdecke nützliche Ressourcen in deinem Dashboard',
+					'Lade ein Teammitglied ein für bessere Ergebnisse'
+				]
+			},
+			upgradeOffer: {
+				exclusive: 'Exklusiv',
+				title: 'Erweitere dein Paket und spare 30%',
+				subtitle:
+					'Nur für Neukunden: Füge jetzt Premium-Features hinzu und hebe dein Ergebnis auf das nächste Level!',
+				countdown: 'Angebot endet in',
+				button: 'Upgrade sichern'
+			},
+			support: {
+				confirmation: 'Eine Bestätigung mit allen Details wurde an deine E-Mail-Adresse gesendet.',
+				contact: 'Fragen? Kontaktiere unseren Kundensupport'
+			},
+			buttons: {
+				dashboard: 'Zum Dashboard',
+				share: 'Teilen'
+			}
+		},
+		error: {
+			title: 'Zahlungsfehler',
+			defaultMessage: 'Ein Fehler ist aufgetreten',
+			details: 'Technische Details anzeigen',
+			support: 'Bei weiteren Problemen wende Dich bitte an unseren Kundensupport.',
+			retry: 'Erneut versuchen'
+		},
+		confirm: {
+			cancelPurchase: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
+			extraDiscountOffer: 'Exklusiv: 5% Rabatt zusätzlich bei Rückkehr zum Kaufvorgang!',
+			discountDetails: 'Wenn du jetzt zurückkehrst, erhältst du insgesamt:',
+			oneTimeDiscount: '13% Rabatt statt 8% bei Einmalzahlung',
+			longtimeDiscount: '25% Rabatt statt 20% bei Longtime-Zugang',
+			limitedTimeOffer: 'Diese Gelegenheit gilt nur für kurze Zeit!',
+			confirmButton: 'Ja, abbrechen',
+			cancelButton: 'Zurück zum Kaufvorgang'
+		}
 	}
 };
 
@@ -1644,6 +1819,7 @@ const en: Translation = {
 		trustBadges: ['Secure & Protected Payment', '30-Day Money-Back Guarantee'],
 		discountBanner: {
 			title: 'Longtime Access with 20% Mega Discount!',
+			discount: ' 20% Discount!',
 			description:
 				'Secure your 5-year growth accelerator NOW! One strategic investment, endless business potential. Skip monthly payments and future-proof your success!',
 			buttonText: 'Claim My Advantage!'
@@ -1663,15 +1839,105 @@ const en: Translation = {
 	footer: {
 		copyright: 'All rights reserved.'
 	},
-	confirmModal: {
-		cancelPurchase: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
-		extraDiscountOffer: 'Exklusiv: 5% Rabatt zusätzlich bei Rückkehr zum Kaufvorgang!',
-		discountDetails: 'Wenn du jetzt zurückkehrst, erhältst du insgesamt:',
-		oneTimeDiscount: '13% Rabatt statt 8% bei Einmalzahlung',
-		longtimeDiscount: '25% Rabatt statt 20% bei Longtime-Zugang',
-		limitedTimeOffer: 'Diese Gelegenheit gilt nur für kurze Zeit!',
-		confirmButton: 'Ja, abbrechen',
-		cancelButton: 'Zurück zum Kaufvorgang'
+	modal: {
+		common: {
+			close: 'Close',
+			cancel: 'Cancel',
+			confirm: 'Confirm',
+			back: 'Back'
+		},
+		payment: {
+			title: 'Complete Payment',
+			subtitle: 'Choose your payment method',
+			testButton: 'Test Payment',
+			testDescription: 'Test payment with Sandbox account',
+			summary: {
+				title: 'Summary',
+				monthly: 'Monthly Payment',
+				oneTime: 'One-time Payment',
+				longtime: 'Longtime Access',
+				discount: 'Discount',
+				donation: 'incl. Donation',
+				tax: 'incl. VAT'
+			},
+			securityBadges: {
+				secure: 'SSL Secured',
+				protection: 'Buyer Protection',
+				instant: 'Instant Access'
+			},
+			donationBox: {
+				title: 'Add 3% Donation',
+				description:
+					'With every euro, you directly support environmental projects. 93% of your donation goes directly to sustainable projects - verifiable and transparent!'
+			},
+			errors: {
+				general: 'An error occurred. Please try again later.',
+				validation: 'Please check your payment information',
+				server: 'The PayPal service is temporarily unavailable. Please try again later.',
+				timeout: 'The request took too long. Please check your internet connection and try again.'
+			}
+		},
+		success: {
+			title: 'Payment Successful!',
+			subtitle: 'Thank you for your purchase.',
+			paymentDetails: {
+				id: 'Payment ID',
+				date: 'Date',
+				status: 'Status',
+				paid: 'Paid'
+			},
+			donation: {
+				title: 'Impact Ready!',
+				description:
+					'Your generous donation of {amount}€ supports important environmental projects. Together we make a big difference!',
+				impact: {
+					direct: 'Direct Help',
+					projects: 'Projects',
+					transparency: 'Transparency'
+				}
+			},
+			nextSteps: {
+				title: 'Your next steps:',
+				steps: [
+					'Check your email for payment confirmation',
+					'Explore useful resources in your dashboard',
+					'Invite a team member for better results'
+				]
+			},
+			upgradeOffer: {
+				exclusive: 'Exclusive',
+				title: 'Expand your package and save 30%',
+				subtitle:
+					'For new customers only: Add premium features now and take your results to the next level!',
+				countdown: 'Offer ends in',
+				button: 'Secure Upgrade'
+			},
+			support: {
+				confirmation: 'A confirmation with all details has been sent to your email address.',
+				contact: 'Questions? Contact our customer support'
+			},
+			buttons: {
+				dashboard: 'To Dashboard',
+				share: 'Share'
+			}
+		},
+		error: {
+			title: 'Payment Error',
+			defaultMessage: 'An error occurred',
+			details: 'Show technical details',
+			support: 'If you continue to have problems, please contact our customer support.',
+			retry: 'Try again'
+		},
+		confirm: {
+			cancelPurchase: 'Do you really want to cancel the purchase process?',
+			extraDiscountOffer: 'Exclusive: Additional 5% discount when returning to checkout!',
+			discountDetails: 'If you return now, you will receive a total of:',
+			oneTimeDiscount: '13% discount instead of 8% for one-time payment',
+			longtimeDiscount: '25% discount instead of 20% for longtime access',
+			limitedTimeOffer: 'This opportunity is available for a limited time only!',
+			confirmButton: 'Yes, cancel',
+			cancelButton: 'Back to checkout'
+		}
 	}
 };
 
