@@ -454,11 +454,6 @@ export interface Translation {
 		};
 		confirm: {
 			cancelPurchase: string;
-			extraDiscountOffer: string;
-			discountDetails: string;
-			oneTimeDiscount: string;
-			longtimeDiscount: string;
-			limitedTimeOffer: string;
 			confirmButton: string;
 			cancelButton: string;
 		};
@@ -1198,11 +1193,6 @@ const de: Translation = {
 		},
 		confirm: {
 			cancelPurchase: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
-			extraDiscountOffer: 'Exklusiv: 5% Rabatt zusätzlich bei Rückkehr zum Kaufvorgang!',
-			discountDetails: 'Wenn du jetzt zurückkehrst, erhältst du insgesamt:',
-			oneTimeDiscount: '13% Rabatt statt 8% bei Einmalzahlung',
-			longtimeDiscount: '25% Rabatt statt 20% bei Longtime-Zugang',
-			limitedTimeOffer: 'Diese Gelegenheit gilt nur für kurze Zeit!',
 			confirmButton: 'Ja, abbrechen',
 			cancelButton: 'Zurück zum Kaufvorgang'
 		}
@@ -1942,11 +1932,6 @@ const en: Translation = {
 		},
 		confirm: {
 			cancelPurchase: 'Do you really want to cancel the purchase process?',
-			extraDiscountOffer: 'Exclusive: Additional 5% discount when returning to checkout!',
-			discountDetails: 'If you return now, you will receive a total of:',
-			oneTimeDiscount: '13% discount instead of 8% for one-time payment',
-			longtimeDiscount: '25% discount instead of 20% for longtime access',
-			limitedTimeOffer: 'This opportunity is available for a limited time only!',
 			confirmButton: 'Yes, cancel',
 			cancelButton: 'Back to checkout'
 		}
