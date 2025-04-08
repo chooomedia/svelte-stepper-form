@@ -187,7 +187,7 @@
 
 			<!-- Improved Stepper with proper store connections -->
 			{#if $currentStepIndex > 1}
-				<Stepper on:stepChange={handleStepChange} />
+				<Stepper on:stepChange={handleStepChange} exclude={11} />
 			{/if}
 		</div>
 		<!-- Breadcrumb Navigation für SEO -->

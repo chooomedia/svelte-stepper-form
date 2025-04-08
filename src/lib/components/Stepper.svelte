@@ -4,14 +4,41 @@
 	import { websiteLoading, formSubmitting } from '$lib/stores/loadingStore';
 	import { derived, get } from 'svelte/store';
 
+	// Neuer Parameter zum Ausschließen bestimmter Schritte (kann eine einzelne Zahl oder ein Array sein)
+	const { exclude = [] } = $props<{ exclude?: number | number[] }>();
+
+	// Umwandlung zu Array für einfachere Handhabung
+	const excludeArray = $derived(Array.isArray(exclude) ? exclude : exclude ? [exclude] : []);
+
 	// Create an event dispatcher for navigation events
 	const dispatch = createEventDispatcher();
+
+	// Gefilterte Schritte basierend auf exclude Parameter
+	const filteredStepStatuses = derived(stepStatuses, ($stepStatuses) =>
+		$stepStatuses.filter((status) => !excludeArray.includes(status.index))
+	);
 
 	// Berechnung des Fortschritts
 	const progressValue = derived(
 		[currentStepIndex, stepStatuses],
-		([$currentStepIndex, $stepStatuses]) =>
-			$stepStatuses.length > 1 ? (($currentStepIndex - 1) / ($stepStatuses.length - 1)) * 100 : 0
+		([$currentStepIndex, $stepStatuses]) => {
+			// Nur sichtbare Schritte zählen
+			const visibleSteps = $stepStatuses.filter((status) => !excludeArray.includes(status.index));
+
+			if (visibleSteps.length <= 1) return 0;
+
+			// Finde die Position des aktuellen Schritts in den sichtbaren Schritten
+			const currentStepPosition = visibleSteps.findIndex(
+				(status) => status.index >= $currentStepIndex
+			);
+
+			// Wenn der aktuelle Schritt nicht gefunden wurde oder der erste ist
+			if (currentStepPosition < 0) {
+				return 100; // Alle sichtbaren Schritte sind abgeschlossen
+			}
+
+			return (currentStepPosition / (visibleSteps.length - 1)) * 100;
+		}
 	);
 
 	// Get appropriate class for a step based on its status
@@ -51,10 +78,11 @@
 
 	// Handle step click with improved navigation
 	function handleStepClick(stepIndex: number) {
-		const status = get(stepStatuses)[stepIndex];
-		if (status && (status.isValid || status.isReachable)) {
-			goToStep(status.index);
-			dispatch('stepChange', { step: status.index });
+		// Aktualisiert: Wir nutzen den originalen Index aus filteredStepStatuses
+		const visibleStatus = get(filteredStepStatuses)[stepIndex];
+		if (visibleStatus && (visibleStatus.isValid || visibleStatus.isReachable)) {
+			goToStep(visibleStatus.index);
+			dispatch('stepChange', { step: visibleStatus.index });
 		}
 	}
 </script>
@@ -66,17 +94,17 @@
 
 		<!-- Progress indicator -->
 		<div
-			class="bg-primray-500 absolute top-1/2 h-0.5 origin-left transition-transform duration-300 ease-in-out"
+			class="absolute top-1/2 h-0.5 origin-left bg-primary-500 transition-transform duration-300 ease-in-out"
 			style="width: {$progressValue}%;"
 		></div>
 
-		<!-- Step indicators -->
-		{#each $stepStatuses as stepStatus, index}
+		<!-- Step indicators - Jetzt mit gefilterten Schritten -->
+		{#each $filteredStepStatuses as stepStatus, index}
 			<button
 				class={getStepClass(stepStatus)}
 				disabled={!stepStatus.isValid && !stepStatus.isReachable}
 				on:click={() => handleStepClick(index)}
-				aria-label="Schritt {stepStatus.index} von {$stepStatuses.length}"
+				aria-label="Schritt {stepStatus.index} von {$filteredStepStatuses.length}"
 				title={stepStatus.index === 2 && get(websiteLoading)
 					? 'Website wird analysiert...'
 					: stepStatus.index === 10 && get(formSubmitting)
