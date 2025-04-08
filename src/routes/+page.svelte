@@ -12,7 +12,7 @@
 	import WebsiteUrlForm from '$lib/components/forms/WebsiteUrlForm.svelte';
 	import FormTransitioner from '$lib/components/FormTransitioner.svelte';
 	import { last_step, TOTAL_STEPS } from '$lib/schema';
-	import { i18n, getLocalizedLabel, getLocalizedDescription } from '$lib/i18n';
+	import { i18n, getLocalizedLabel } from '$lib/i18n';
 
 	// Import stores
 	import {
@@ -214,10 +214,10 @@
 					</span>
 				{/if}
 			{:else}
-				{getLocalizedDescription(
-					FORM_STEPS[$currentStepIndex - 1].title,
-					$form[FORM_STEPS[$currentStepIndex - 1].title]
-				)}
+				<!-- Access the description through i18n system to ensure correct localization -->
+				{$i18n.schema.steps[FORM_STEPS[$currentStepIndex - 1]?.title]?.description ||
+					FORM_STEPS[$currentStepIndex - 1]?.description ||
+					''}
 			{/if}
 		</h2>
 		{#key $currentStepIndex}

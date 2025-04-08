@@ -32,7 +32,7 @@
 		navigate: { fieldName: string; values: string[] };
 	}>();
 
-	// Reaktive Zustände für Auswahl und Interaktion
+	// Verify the initialization logic
 	let selectedValues = $state<string[]>(
 		multiple && Array.isArray(value) ? value : multiple && typeof value === 'string' ? [value] : []
 	);
@@ -44,14 +44,14 @@
 	let selectionCount = $state(0);
 	let navigationTriggered = $state(false);
 
-	// Option-Auswahl-Handler
+	// Update selection and count when an option is clicked
 	function handleOptionSelect(optionValue: string): void {
 		// Timer zurücksetzen
 		resetTimers();
 
 		if (multiple) {
 			selectedValues = handleMultipleSelection(optionValue);
-			selectionCount = selectedValues.length;
+			selectionCount = selectedValues.length; // Make sure this gets updated
 
 			// Callback aufrufen
 			onSelect(selectedValues);
@@ -117,8 +117,13 @@
 			if (countdownSeconds <= 0) {
 				resetTimers();
 
+				// Force navigation if countdown reaches zero and we have selections
 				if (selectedValues.length > 0 && fieldName && !navigationTriggered) {
 					navigationTriggered = true;
+					console.log(
+						'Countdown reached zero - triggering navigation with values:',
+						selectedValues
+					);
 					triggerNavigation(selectedValues);
 				}
 			}
@@ -156,9 +161,11 @@
 			<div class="mb-4 text-center text-xs text-gray-600">
 				<div class="font-medium text-primary-700">
 					{#if showCountdown && selectedValues.length > 0}
-						{selectedValues.length === 1
-							? `0 ${$i18n?.forms?.imageOption?.optionSelected || 'Option ausgewählt'}`
-							: `${selectedValues.length} ${$i18n?.forms?.imageOption?.optionsSelected || 'Optionen ausgewählt'}`}
+						<!-- Directly subtract 1 from the count to fix the display issue -->
+						{Math.max(0, selectedValues.length - 1)}
+						{selectedValues.length - 1 === 1
+							? $i18n?.forms?.imageOption?.optionSelected || 'Option ausgewählt'
+							: $i18n?.forms?.imageOption?.optionsSelected || 'Optionen ausgewählt'}
 						· {$i18n?.forms?.imageOption?.continueIn || 'weiter in'}
 						<span class="font-bold">{countdownSeconds}</span>
 						{countdownSeconds === 1
