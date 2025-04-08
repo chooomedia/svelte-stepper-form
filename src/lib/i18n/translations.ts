@@ -13,6 +13,7 @@ export interface Translation {
 	};
 	common: {
 		next: string;
+		skip: string;
 		back: string;
 		submit: string;
 		loading: string;
@@ -29,8 +30,6 @@ export interface Translation {
 			diverse: string;
 		};
 		imageOption: {
-			optionsSelected: string;
-			optionSelected: string;
 			continueIn: string;
 			second: string;
 			seconds: string;
@@ -307,7 +306,6 @@ export interface Translation {
 		notWorking: string;
 		choosePlan: string;
 
-		// New detailed pricing options structure
 		header: {
 			title: string;
 			subtitle: string;
@@ -395,6 +393,7 @@ const de: Translation = {
 	},
 	common: {
 		next: 'Weiter',
+		skip: 'Überspringen',
 		back: 'Zurück',
 		submit: 'Absenden',
 		loading: 'Wird geladen...',
@@ -421,8 +420,6 @@ const de: Translation = {
 			diverse: 'Divers'
 		},
 		imageOption: {
-			optionsSelected: 'Optionen ausgewählt',
-			optionSelected: 'Option ausgewählt',
 			continueIn: 'weiter in',
 			second: 'Sekunde',
 			seconds: 'Sekunden',
@@ -1044,6 +1041,7 @@ const en: Translation = {
 	},
 	common: {
 		next: 'Next',
+		skip: 'Skip',
 		back: 'Back',
 		submit: 'Submit',
 		loading: 'Loading...',
@@ -1070,8 +1068,6 @@ const en: Translation = {
 			diverse: 'Diverse'
 		},
 		imageOption: {
-			optionsSelected: 'options selected',
-			optionSelected: 'option selected',
 			continueIn: 'continue in',
 			second: 'second',
 			seconds: 'seconds',

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import type { ImageOption as ImageOptionType } from '$lib/schema';
 	import { getLocalizedLabel, getLocalizedDescription, currentLocale, i18n } from '$lib/i18n';
 	import Icon from './Icon.svelte';
@@ -42,7 +41,6 @@
 	let showCountdown = $state(false);
 	let countdownSeconds = $state(countdownTime);
 	let countdownInterval: number | undefined;
-	let selectionCount = $state(0);
 	let navigationTriggered = $state(false);
 
 	// Update selection and count when an option is clicked
@@ -52,7 +50,6 @@
 
 		if (multiple) {
 			selectedValues = handleMultipleSelection(optionValue);
-			selectionCount = selectedValues.length; // Make sure this gets updated
 
 			// Callback aufrufen
 			onSelect(selectedValues);
@@ -161,12 +158,8 @@
 		<div class="mb-4 text-center text-xs text-gray-600">
 			<div class="font-medium text-primary-700">
 				{#if showCountdown && selectedValues.length > 0}
-					<!-- Directly subtract 1 from the count to fix the display issue -->
-					{Math.max(0, selectedValues.length - 1)}
-					{selectedValues.length - 1 === 1
-						? $i18n?.forms?.imageOption?.optionSelected || 'Option ausgewählt'
-						: $i18n?.forms?.imageOption?.optionsSelected || 'Optionen ausgewählt'}
-					· {$i18n?.forms?.imageOption?.continueIn || 'weiter in'}
+					<!-- Only show countdown without selection count -->
+					{$i18n?.forms?.imageOption?.continueIn || 'weiter in'}
 					<span class="font-bold">{countdownSeconds}</span>
 					{countdownSeconds === 1
 						? $i18n?.forms?.imageOption?.second || 'Sekunde'

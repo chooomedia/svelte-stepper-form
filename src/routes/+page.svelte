@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade, slide } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
 	import SuperDebug from 'sveltekit-superforms';
 	import PageMeta from '$lib/components/PageMeta.svelte';
@@ -11,7 +11,7 @@
 	import { scoreStore } from '$lib/utils/scoring';
 	import WebsiteUrlForm from '$lib/components/forms/WebsiteUrlForm.svelte';
 	import { last_step, TOTAL_STEPS } from '$lib/schema';
-	import { i18n, getLocalizedLabel } from '$lib/i18n';
+	import { i18n } from '$lib/i18n';
 
 	// Import stores
 	import {
@@ -52,6 +52,8 @@
 	let contactFormValid = $state(false);
 	let showDebugSidebar = $state(false);
 	let isWebsiteAnalysisInProgress = $state(false);
+	let isSkipButtonEnabled = $state(false);
+	let skipButtonTimer: number | undefined;
 
 	$effect(() => {
 		$formData = { ...$form };
@@ -65,12 +67,23 @@
 
 	function handleAnalysisStart() {
 		isWebsiteAnalysisInProgress = true;
-		console.log('Website analysis started');
+		isSkipButtonEnabled = false; // Reset button state
+
+		// Set a timer to enable the skip button after 30 seconds
+		if (skipButtonTimer) clearTimeout(skipButtonTimer);
+		skipButtonTimer = setTimeout(() => {
+			isSkipButtonEnabled = true;
+		}, 30000); // 30 seconds
 	}
 
 	function handleAnalysisEnd() {
 		isWebsiteAnalysisInProgress = false;
-		console.log('Website analysis completed');
+
+		// Clear the skip button timer if it exists
+		if (skipButtonTimer) {
+			clearTimeout(skipButtonTimer);
+			skipButtonTimer = undefined;
+		}
 	}
 
 	// Website analysis function
@@ -375,7 +388,7 @@
 		{#if ![1, 3, 4, 5, 6, 7, 8, 9, 11, 12].includes($currentStepIndex)}
 			<div class="mt-8 flex justify-between">
 				<Button
-					label="Zurück"
+					label={$i18n.common.back}
 					type="button"
 					variant="primary"
 					disabled={$currentStepIndex === 1}
@@ -383,11 +396,11 @@
 				/>
 
 				<Button
-					label={$currentStepIndex === 2 ? 'Überspringen' : 'Weiter'}
+					label={$currentStepIndex === 2 ? $i18n.common.skip : $i18n.common.next}
 					type="button"
 					variant="primary"
 					disabled={($currentStepIndex === 10 && !contactFormValid) ||
-						($currentStepIndex === 2 && isWebsiteAnalysisInProgress)}
+						($currentStepIndex === 2 && isWebsiteAnalysisInProgress && !isSkipButtonEnabled)}
 					on:click={() => {
 						// Für Schritt 10: Prüfen ob das Kontaktformular gültig ist
 						if ($currentStepIndex === 10) {
