@@ -84,8 +84,9 @@
 
 	// ARIA attributes for fields
 	function getAriaAttrs(fieldName: string, label: string) {
+		// Use a boolean for aria-invalid instead of string to match the expected type
 		return {
-			'aria-invalid': shouldShowError(fieldName) ? 'true' : 'false',
+			'aria-invalid': shouldShowError(fieldName),
 			'aria-describedby': shouldShowError(fieldName) ? `${fieldName}-error` : undefined,
 			'aria-label': label
 		};
@@ -253,26 +254,57 @@
 			{/if}
 		</div>
 
-		<!-- Privacy Agreement -->
-		<div class="form-group">
+		<!-- Privacy Agreement (Styled to match PaymentContent.svelte) -->
+		<div class="form-group space-y-4">
 			<div class="flex items-start">
 				<div class="flex h-5 items-center">
-					<input
-						type="checkbox"
-						id="privacy_agreement"
-						bind:checked={$form.privacy_agreement}
-						class="form-checkbox"
-						onblur={() => handleBlur('privacy_agreement')}
-						onchange={() => {
-							touchedFields.add('privacy_agreement');
-							validateField('privacy_agreement');
-							updateFormState();
-						}}
-						{...getAriaAttrs('privacy_agreement', $i18n.forms.placeholders.privacy_agreement)}
-					/>
+					<!-- Styled checkbox container -->
+					<div class="relative h-6 w-6">
+						<input
+							type="checkbox"
+							id="privacy_agreement"
+							bind:checked={$form.privacy_agreement}
+							class="hidden"
+							onblur={() => handleBlur('privacy_agreement')}
+							onchange={() => {
+								touchedFields.add('privacy_agreement');
+								validateField('privacy_agreement');
+								updateFormState();
+							}}
+							{...getAriaAttrs('privacy_agreement', $i18n.forms.placeholders.privacy_agreement)}
+						/>
+
+						<div
+							class="absolute inset-0 rounded-md border-2 {$form.privacy_agreement
+								? 'border-primary-500 bg-primary-500'
+								: 'border-gray-300 bg-white'} transition-all"
+							onclick={() => {
+								$form.privacy_agreement = !$form.privacy_agreement;
+								touchedFields.add('privacy_agreement');
+								validateField('privacy_agreement');
+								updateFormState();
+							}}
+						>
+							{#if $form.privacy_agreement}
+								<svg
+									class="absolute inset-0 m-auto h-4 w-4 text-white"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="3"
+										d="M5 13l4 4L19 7"
+									/>
+								</svg>
+							{/if}
+						</div>
+					</div>
 				</div>
 				<div class="ml-3 text-sm">
-					<label for="privacy_agreement" class="form-label">
+					<label for="privacy_agreement" class="form-label cursor-pointer">
 						{$i18n.forms.labels.privacy_agreement} *
 					</label>
 					<p class="text-gray-500">
@@ -288,17 +320,47 @@
 					{/if}
 				</div>
 			</div>
+
+			<!-- Marketing Consent (Styled to match PaymentContent.svelte) -->
 			<div class="flex items-start pt-4">
 				<div class="flex h-5 items-center">
-					<input
-						type="checkbox"
-						id="marketing_consent"
-						bind:checked={$form.marketing_consent}
-						class="form-checkbox"
-					/>
+					<!-- Styled checkbox container -->
+					<div class="relative h-6 w-6">
+						<input
+							type="checkbox"
+							id="marketing_consent"
+							bind:checked={$form.marketing_consent}
+							class="hidden"
+						/>
+						<!-- Styled checkbox appearance -->
+						<div
+							class="absolute inset-0 rounded-md border-2 {$form.marketing_consent
+								? 'border-primary-500 bg-primary-500'
+								: 'border-gray-300 bg-white'} transition-all"
+							onclick={() => {
+								$form.marketing_consent = !$form.marketing_consent;
+							}}
+						>
+							{#if $form.marketing_consent}
+								<svg
+									class="absolute inset-0 m-auto h-4 w-4 text-white"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="3"
+										d="M5 13l4 4L19 7"
+									/>
+								</svg>
+							{/if}
+						</div>
+					</div>
 				</div>
 				<div class="ml-3 text-sm">
-					<label for="marketing_consent" class="form-label">
+					<label for="marketing_consent" class="form-label cursor-pointer">
 						{$i18n.forms.labels.marketing_consent}
 					</label>
 					<p class="text-gray-500">
@@ -312,3 +374,10 @@
 		</div>
 	</form>
 {/key}
+
+<style>
+	/* Hover effect for the custom checkboxes */
+	.relative:hover .border-gray-300 {
+		@apply border-primary-400 bg-primary-50;
+	}
+</style>
