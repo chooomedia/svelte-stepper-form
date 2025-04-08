@@ -5,6 +5,7 @@
 	import { last_step } from '$lib/schema';
 	import { z } from 'zod';
 	import { i18n, currentLocale } from '$lib/i18n';
+	import Icon from '../Icon.svelte';
 
 	interface Props {
 		form: SuperValidated<FormData>;
@@ -90,29 +91,6 @@
 		};
 	}
 
-	// Validate all fields
-	function validateAllFields() {
-		formSubmissionAttempted = true;
-
-		try {
-			last_step.parse($form);
-			errors = {};
-			isFormValid = true;
-		} catch (error) {
-			if (error instanceof z.ZodError) {
-				error.errors.forEach((err) => {
-					const fieldName = err.path[0] as string;
-					errors[fieldName] = err.message;
-					touchedFields.add(fieldName);
-				});
-				isFormValid = false;
-			}
-		}
-
-		updateFormState();
-		return isFormValid;
-	}
-
 	// Effect to check form state when touched fields change
 	$effect(() => {
 		if (touchedFields.size > 0 || formSubmissionAttempted) {
@@ -125,27 +103,23 @@
 	<form method="POST" class="space-y-6" novalidate>
 		{#if showFormValidationOverview && formErrors.length > 0}
 			<div
-				class="mb-4 rounded-md bg-red-50 p-4"
+				class="mb-4 rounded-md bg-red-100 p-4"
 				transition:slide={{ duration: 300 }}
 				role="alert"
 				aria-labelledby="form-errors-heading"
 			>
-				<div class="flex">
+				<div class="align-center flex">
 					<div class="flex-shrink-0">
-						<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-							<path
-								fill-rule="evenodd"
-								d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-								clip-rule="evenodd"
-							/>
-						</svg>
+						<div class="h-5 w-5 rounded-full bg-red-500 text-white">
+							<Icon name="closeX" size={20} stroke="currentColor" />
+						</div>
 					</div>
 					<div class="ml-3">
 						<h3 id="form-errors-heading" class="text-sm font-medium text-red-800">
 							{$i18n.common.formErrorHeading}
 						</h3>
-						<div class="mt-2 text-sm text-red-700">
-							<ul class="list-disc space-y-1 pl-5">
+						<div class="text-sm text-red-700">
+							<ul>
 								{#each formErrors as error}
 									<li>{error}</li>
 								{/each}

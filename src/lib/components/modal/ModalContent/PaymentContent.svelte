@@ -514,7 +514,7 @@
 						aria-label="MwSt Info"
 						type="button"
 					>
-						<Icon name="question" size={20} color="currentColor" />
+						<Icon name="question" size={20} fill="none" stroke="currentColor" strokeWidth="1" />
 						<p itemprop="tax">inkl. {currentVatText}</p>
 					</button>
 				</div>
