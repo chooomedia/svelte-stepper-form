@@ -11,18 +11,16 @@
 
 	// Props
 	const {
-		selectedPlan = '3-MONATS-PLAN',
+		selectedPlan = '3-MONATS PLAN',
 		paymentType = 'monatlich',
 		totalPrice = 0,
 		showExtraDiscount = false,
-		containerSelector = '#paypal-button-container',
 		onSuccess = () => {}
 	} = $props();
 
 	// Store values accessed at the top level
 	// This fixes the invalid scoped subscription issue
 	const currentTaxRate = $derived($taxInfo.rate);
-	const currentVatText = $derived($taxInfo.vatText);
 	const currentCountry = $derived($taxInfo.country);
 	const currentCurrency = $derived($currencyStore);
 	const currentLanguage = $derived($currentLocale);
@@ -38,7 +36,6 @@
 	let timers: number[] = [];
 	let numericTotalPrice = $state(0);
 	let totalWithDonation = $state(0);
-	let paypalContainer: HTMLElement | null = $state(null);
 
 	// Calculate values
 	const currentTax = $derived(calculateTax(totalPrice, currentTaxRate));
@@ -481,14 +478,15 @@
 								? $i18n.modal.payment.summary.oneTime
 								: $i18n.modal.payment.summary.longtime}
 					</p>
-					{#if discountPercentage > 0}
+					{#if discountPercentage() < 0}
 						<p class="text-sm text-error" itemprop="discount">
 							{discountPercentage}% {$i18n.modal.payment.summary.discount}
 						</p>
 					{/if}
 					{#if includeDonation}
 						<p class="text-sm text-success" itemprop="donation">
-							{$i18n.modal.payment.summary.donation}
+							{$i18n.modal.payment.summary.donation}:
+							{(numericTotalPrice * 0.03).toFixed(2).replace('.', ',')}€
 						</p>
 					{/if}
 				</div>

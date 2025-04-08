@@ -38,11 +38,11 @@ export type PaymentType = 'monatlich' | 'einmalig' | 'longtime';
 export function getPlanDisplayName(planName: string, payType: PaymentType): string {
 	if (payType === 'longtime') {
 		switch (planName) {
-			case '1-MONATS-PLAN':
+			case '1-MONATS PLAN':
 				return 'BASIS LONGTIME-ZUGANG';
-			case '3-MONATS-PLAN':
+			case '3-MONATS PLAN':
 				return 'PREMIUM LONGTIME-ZUGANG';
-			case '6-MONATS-PLAN':
+			case '6-MONATS PLAN':
 				return 'BUSINESS LONGTIME-ZUGANG';
 			default:
 				return 'LONGTIME-ZUGANG';
@@ -109,7 +109,7 @@ export interface PayPalOrderDetails {
 /**
  * Payment plan type definitions
  */
-export type PaymentPlan = '1-MONATS-PLAN' | '3-MONATS-PLAN' | '6-MONATS-PLAN';
+export type PaymentPlan = '1-MONATS PLAN' | '3-MONATS PLAN' | '6-MONATS PLAN';
 
 /**
  * Formats currency values
@@ -154,11 +154,11 @@ export function parsePlanMeta(planName: PaymentPlan): PlanMeta {
  */
 export function getBasePriceForPlan(planName: PaymentPlan): number {
 	switch (planName) {
-		case '1-MONATS-PLAN':
+		case '1-MONATS PLAN':
 			return 1.98;
-		case '3-MONATS-PLAN':
+		case '3-MONATS PLAN':
 			return 3.98;
-		case '6-MONATS-PLAN':
+		case '6-MONATS PLAN':
 			return 6.98;
 		default:
 			return 1.98;

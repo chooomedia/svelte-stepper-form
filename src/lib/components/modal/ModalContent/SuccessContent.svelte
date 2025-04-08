@@ -12,7 +12,7 @@
 	// Props
 	const {
 		paymentDetails = {},
-		selectedPlan = '3-MONATS-PLAN',
+		selectedPlan = '3-MONATS PLAN',
 		paymentType = 'monatlich',
 		donationAmount = 0,
 		customerName = '',

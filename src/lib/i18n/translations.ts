@@ -330,10 +330,14 @@ export interface Translation {
 			hotLabel: string;
 		};
 		planLabels: {
+			oneTime: string;
+			oneMonth: string;
+			threeMonth: string;
+			sixMonth: string;
 			popular: string;
 			longTimeSuffix: {
-				'1-MONATS-PLAN': string;
-				'3-MONATS-PLAN': string;
+				'1-MONATS PLAN': string;
+				'3-MONATS PLAN': string;
 				BUSINESS: string;
 			};
 		};
@@ -998,12 +1002,12 @@ const de: Translation = {
 			basicSeo: 'Grundlegende SEO-Maßnahmen',
 			monthlyContent: '1 × Content-Erstellung pro Monat',
 			performanceReport: 'Monatlicher Performance-Bericht',
-			allBasicFeatures: 'Alle Features des 1-Monats-Plans',
+			allBasicFeatures: 'Alle Features des 1-Monats Plans',
 			socialMedia: 'Social Media Management',
 			weeklyContent: 'Wöchentliche Content-Erstellung',
 			keywordOptimization: 'Keyword-Optimierung',
 			competitorAnalysis: 'Detaillierte Konkurrenzanalyse',
-			allPremiumFeatures: 'Alle Features des 3-Monats-Plans',
+			allPremiumFeatures: 'Alle Features des 3-Monats Plans',
 			marketingStrategy: 'Umfassende Marketingstrategie',
 			dailyContent: 'Tägliche Content-Updates',
 			sem: 'Suchmaschinenmarketing (SEM)',
@@ -1057,10 +1061,14 @@ const de: Translation = {
 			hotLabel: 'HOT'
 		},
 		planLabels: {
+			oneTime: 'EINMALIG',
+			oneMonth: '1-MONATS PLAN',
+			threeMonth: '3-MONATS PLAN',
+			sixMonth: '6-MONATS PLAN',
 			popular: '★ AM BELIEBTESTEN',
 			longTimeSuffix: {
-				'1-MONATS-PLAN': 'BASIS LONGTIME',
-				'3-MONATS-PLAN': 'PREMIUM LONGTIME',
+				'1-MONATS PLAN': 'BASIS LONGTIME',
+				'3-MONATS PLAN': 'PREMIUM LONGTIME',
 				BUSINESS: 'BUSINESS LONGTIME'
 			}
 		},
@@ -1126,7 +1134,7 @@ const de: Translation = {
 			donationBox: {
 				title: '3% Spende hinzufügen',
 				description:
-					'Mit jedem Euro unterstützt Du direkt Umweltschutzprojekte. 93% Deiner Spende fließt unmittelbar in nachhaltige Projekte - nachweislich und transparent!'
+					'Mit Deiner Spende unterstützt Du direkt Umweltschutzprojekte. 93% Deiner Spende fließt unmittelbar in nachhaltige Projekte - nachweislich und transparent!'
 			},
 			errors: {
 				general: 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.',
@@ -1795,10 +1803,14 @@ const en: Translation = {
 			hotLabel: 'HOT'
 		},
 		planLabels: {
+			oneTime: 'ONE-TIME',
+			oneMonth: '1-MONTH PLAN',
+			threeMonth: '3-MONTH PLAN',
+			sixMonth: '6-MONTH PLAN',
 			popular: '★ MOST POPULAR',
 			longTimeSuffix: {
-				'1-MONATS-PLAN': 'BASIS LONGTIME',
-				'3-MONATS-PLAN': 'PREMIUM LONGTIME',
+				'1-MONATS PLAN': 'BASIS LONGTIME',
+				'3-MONATS PLAN': 'PREMIUM LONGTIME',
 				BUSINESS: 'BUSINESS LONGTIME'
 			}
 		},
@@ -1868,7 +1880,7 @@ const en: Translation = {
 			donationBox: {
 				title: 'Add 3% Donation',
 				description:
-					'With every euro, you directly support environmental projects. 93% of your donation goes directly to sustainable projects - verifiable and transparent!'
+					'With your donation, you directly support environmental projects. 93% of your donation goes directly to sustainable projects - verifiable and transparent!'
 			},
 			errors: {
 				general: 'An error occurred. Please try again later.',

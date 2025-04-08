@@ -32,7 +32,7 @@
 >
 	{#if currentModalType === 'payment'}
 		<PaymentContent
-			selectedPlan={modalData?.selectedPlan || '3-MONATS-PLAN'}
+			selectedPlan={modalData?.selectedPlan || '3-MONATS PLAN'}
 			paymentType={modalData?.paymentType || 'einmalig'}
 			totalPrice={modalData?.totalPrice || 0}
 			showExtraDiscount={modalData?.showExtraDiscount || false}

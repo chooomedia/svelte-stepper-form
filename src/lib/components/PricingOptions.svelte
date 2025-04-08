@@ -43,7 +43,7 @@
 	let displayLongtimeYears: number = $state(5); // But displayed as 10 years
 
 	// State for selected plan and payment type
-	let selectedPlan = $state('3-MONATS-PLAN'); // Default to the most popular option
+	let selectedPlan = $state('3-MONATS PLAN'); // Default to the most popular option
 	let paymentType = $state('monatlich'); // Default to monthly payment
 
 	// Animation visibility states

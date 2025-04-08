@@ -137,7 +137,7 @@
 	// Price plans based on score range
 	export const pricePlans = [
 		{
-			name: '1-MONATS-PLAN',
+			name: '1-MONATS PLAN',
 			price: 1.98,
 			originalPrice: 7.99,
 			perDay: $i18n.pricing.perDay,
@@ -150,7 +150,7 @@
 			]
 		},
 		{
-			name: '3-MONATS-PLAN',
+			name: '3-MONATS PLAN',
 			price: 3.98,
 			originalPrice: 10.99,
 			perDay: $i18n.pricing.perDay,
@@ -164,7 +164,7 @@
 			]
 		},
 		{
-			name: '6-MONATS-PLAN',
+			name: '6-MONATS PLAN',
 			price: 6.98,
 			originalPrice: 19.99,
 			perDay: $i18n.pricing.perDay,
