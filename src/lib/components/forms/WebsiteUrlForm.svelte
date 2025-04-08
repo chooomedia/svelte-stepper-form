@@ -487,7 +487,7 @@
 			class="analysis-placeholder animate-fade mb-6 shadow-custom"
 			transition:fade={{ duration: 300 }}
 		>
-			<div class="mx-auto mt-2 rounded-lg bg-white p-6 shadow-sm">
+			<div class="mx-auto rounded-lg bg-white p-6 shadow-sm">
 				<div class="flex flex-col items-center">
 					<img src="/ui-mockup.svg" alt="Website Analysis Illustration" class="mb-4 h-32 w-auto" />
 					<!-- Input Form (always visible) -->

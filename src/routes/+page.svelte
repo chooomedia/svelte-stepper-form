@@ -209,7 +209,11 @@
 	<!-- Step Content -->
 
 	<!-- Dynamic step content based on current step -->
-	<h2 class="mb-1 text-center text-xl font-semibold text-secondary-700">
+	<h2
+		class="{$currentStepIndex !== 1
+			? 'mb-6'
+			: ''} text-center text-xl font-semibold text-secondary-700"
+	>
 		{#if $currentStepIndex === 12}
 			{$i18n.schema.steps.result?.description || 'Deine Website-Analyse für'}
 			{#if $formData?.company_url}
