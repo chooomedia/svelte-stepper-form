@@ -1,7 +1,5 @@
-/**
- * Payment utility functions
- * @module utils/payment
- */
+// src/lib/utils/payment.ts
+import { PaymentType, PlanType, getDiscountPercentage, getPlanDisplayName } from '$lib/types/plans';
 
 /**
  * Generates a unique client reference ID
@@ -22,33 +20,6 @@ export function generateClientReference(): string {
 			: Math.random().toString(36).substring(2, 8);
 
 	return `dp-${year}${month}-${randomId}`;
-}
-
-/**
- * Payment type definitions
- */
-export type PaymentType = 'monatlich' | 'einmalig' | 'longtime';
-
-/**
- * Gets display name for a payment plan
- * @param {string} planName - Original plan name
- * @param {PaymentType} payType - Payment type
- * @returns {string} Localized display name
- */
-export function getPlanDisplayName(planName: string, payType: PaymentType): string {
-	if (payType === 'longtime') {
-		switch (planName) {
-			case '1-MONATS PLAN':
-				return 'BASIS LONGTIME-ZUGANG';
-			case '3-MONATS PLAN':
-				return 'PREMIUM LONGTIME-ZUGANG';
-			case '6-MONATS PLAN':
-				return 'BUSINESS LONGTIME-ZUGANG';
-			default:
-				return 'LONGTIME-ZUGANG';
-		}
-	}
-	return planName;
 }
 
 /**
@@ -107,9 +78,12 @@ export interface PayPalOrderDetails {
 }
 
 /**
- * Payment plan type definitions
+ * Subscription plan metadata
  */
-export type PaymentPlan = '1-MONATS PLAN' | '3-MONATS PLAN' | '6-MONATS PLAN';
+export interface PlanMeta {
+	months: number;
+	type: 'BASIS' | 'PREMIUM' | 'BUSINESS';
+}
 
 /**
  * Formats currency values
@@ -127,20 +101,12 @@ export function formatCurrency(amount: number, currency: string = 'EUR'): string
 }
 
 /**
- * Subscription plan metadata
- */
-export interface PlanMeta {
-	months: number;
-	type: 'BASIS' | 'PREMIUM' | 'BUSINESS';
-}
-
-/**
  * Extracts metadata from plan name
- * @param {PaymentPlan} planName - Plan name
+ * @param {PlanType} planType - Plan type
  * @returns {PlanMeta} Extracted metadata
  */
-export function parsePlanMeta(planName: PaymentPlan): PlanMeta {
-	const months = parseInt(planName.split('-')[0], 10);
+export function parsePlanMeta(planType: PlanType): PlanMeta {
+	const months = parseInt(planType.split('-')[0], 10);
 	return {
 		months,
 		type: months === 1 ? 'BASIS' : months === 3 ? 'PREMIUM' : 'BUSINESS'
@@ -149,16 +115,16 @@ export function parsePlanMeta(planName: PaymentPlan): PlanMeta {
 
 /**
  * Gets the base monthly price for a plan
- * @param {PaymentPlan} planName - Plan name
+ * @param {PlanType} planType - Plan type
  * @returns {number} Base monthly price
  */
-export function getBasePriceForPlan(planName: PaymentPlan): number {
-	switch (planName) {
-		case '1-MONATS PLAN':
+export function getBasePriceForPlan(planType: PlanType): number {
+	switch (planType) {
+		case PlanType.ONE_MONTH:
 			return 1.98;
-		case '3-MONATS PLAN':
+		case PlanType.THREE_MONTH:
 			return 3.98;
-		case '6-MONATS PLAN':
+		case PlanType.SIX_MONTH:
 			return 6.98;
 		default:
 			return 1.98;
@@ -167,25 +133,31 @@ export function getBasePriceForPlan(planName: PaymentPlan): number {
 
 /**
  * Calculates the full price for a plan based on payment type
- * @param {PaymentPlan} planName - Plan name
+ * @param {PlanType} planType - Plan type
  * @param {PaymentType} paymentType - Payment type
+ * @param {boolean} showExtraDiscount - Whether to show extra discount
  * @returns {number} Calculated price
  */
-export function calculateFullPrice(planName: PaymentPlan, paymentType: PaymentType): number {
-	const basePrice = getBasePriceForPlan(planName);
-	const months = parseInt(planName.split('-')[0], 10);
+export function calculateFullPrice(
+	planType: PlanType,
+	paymentType: PaymentType,
+	showExtraDiscount = false
+): number {
+	const basePrice = getBasePriceForPlan(planType);
+	const months = parseInt(planType.split('-')[0], 10);
+	const discountPercentage = getDiscountPercentage(paymentType, showExtraDiscount);
 
 	switch (paymentType) {
-		case 'monatlich':
+		case PaymentType.MONTHLY:
 			return basePrice;
-		case 'einmalig': {
+		case PaymentType.ONE_TIME: {
 			const fullPrice = basePrice * months;
-			const discount = fullPrice * 0.08; // 8% Rabatt
+			const discount = fullPrice * (discountPercentage / 100);
 			return fullPrice - discount;
 		}
-		case 'longtime': {
+		case PaymentType.LONGTIME: {
 			const fullPrice = basePrice * months * 5; // 5 Jahre
-			const discount = fullPrice * 0.2; // 20% Rabatt
+			const discount = fullPrice * (discountPercentage / 100);
 			return fullPrice - discount;
 		}
 		default:
@@ -200,11 +172,11 @@ export function calculateFullPrice(planName: PaymentPlan, paymentType: PaymentTy
  */
 export function getPaymentTypeIcon(paymentType: PaymentType): string {
 	switch (paymentType) {
-		case 'monatlich':
+		case PaymentType.MONTHLY:
 			return 'calendar';
-		case 'einmalig':
+		case PaymentType.ONE_TIME:
 			return 'credit-card';
-		case 'longtime':
+		case PaymentType.LONGTIME:
 			return 'infinity';
 		default:
 			return 'credit-card';

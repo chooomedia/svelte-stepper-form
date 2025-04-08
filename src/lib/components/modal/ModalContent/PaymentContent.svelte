@@ -4,15 +4,21 @@
 	import { modalStore } from '../modalStore';
 	import SecurityBadge from '../../SecurityBadge.svelte';
 	import Icon from '../../Icon.svelte';
-	import { generateClientReference, getPlanDisplayName, calculateTax } from '$lib/utils/payment';
+	import { generateClientReference, calculateTax } from '$lib/utils/payment';
+	import {
+		PaymentType,
+		PlanType,
+		getPlanDisplayName,
+		getDiscountPercentage
+	} from '$lib/types/plans';
 	import { taxInfo } from '$lib/stores/taxStore';
 	import { currencyStore } from '$lib/stores/currencyStore';
 	import { i18n, currentLocale } from '$lib/i18n';
 
 	// Props
 	const {
-		selectedPlan = '3-MONATS PLAN',
-		paymentType = 'monatlich',
+		selectedPlan = PlanType.THREE_MONTH,
+		paymentType = PaymentType.MONTHLY,
 		totalPrice = 0,
 		showExtraDiscount = false,
 		onSuccess = () => {}
@@ -39,16 +45,7 @@
 
 	// Calculate values
 	const currentTax = $derived(calculateTax(totalPrice, currentTaxRate));
-	const discountPercentage = $derived(() => {
-		switch (paymentType) {
-			case 'einmalig':
-				return showExtraDiscount ? 13 : 8;
-			case 'longtime':
-				return showExtraDiscount ? 25 : 20;
-			default:
-				return 0;
-		}
-	});
+	const discountPercentage = $derived(getDiscountPercentage(paymentType, showExtraDiscount));
 
 	// Security options from i18n
 	const securityOptions = $derived([
@@ -478,7 +475,7 @@
 								? $i18n.modal.payment.summary.oneTime
 								: $i18n.modal.payment.summary.longtime}
 					</p>
-					{#if discountPercentage() < 0}
+					{#if discountPercentage < 0}
 						<p class="text-sm text-error" itemprop="discount">
 							{discountPercentage}% {$i18n.modal.payment.summary.discount}
 						</p>

@@ -8,17 +8,20 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { celebrationConfetti } from '$lib/utils/confetti';
 	import { i18n } from '$lib/i18n';
+	import { PaymentType, PlanType, getPlanDisplayName } from '$lib/types/plans';
 
 	// Props
 	const {
 		paymentDetails = {},
-		selectedPlan = '3-MONATS PLAN',
-		paymentType = 'monatlich',
+		selectedPlan = PlanType.THREE_MONTH,
+		paymentType = PaymentType.MONTHLY,
 		donationAmount = 0,
 		customerName = '',
 		redirectUrl = '',
 		onSuccess = () => {}
 	} = $props();
+
+	const planDisplayName = $derived(getPlanDisplayName(selectedPlan, paymentType));
 
 	// State
 	let showCheckmark = $state(false);
@@ -32,7 +35,6 @@
 	let showActionButtons = $state(false);
 	let progress = $state(0);
 	let timers: number[] = [];
-
 	// Animation controllers
 	const upsellSeconds = tweened(0, {
 		duration: 1000,
@@ -164,6 +166,19 @@
 	onDestroy(() => {
 		clearAllTimers();
 	});
+
+	function getPaymentTypeText(): string {
+		switch (paymentType) {
+			case PaymentType.MONTHLY:
+				return $i18n.modal.payment.summary.monthly;
+			case PaymentType.ONE_TIME:
+				return $i18n.modal.payment.summary.oneTime;
+			case PaymentType.LONGTIME:
+				return $i18n.modal.payment.summary.longtime;
+			default:
+				return '';
+		}
+	}
 </script>
 
 <!-- Success Modal Content -->
@@ -213,7 +228,7 @@
 				🎉 {$i18n.modal.success.mainMessage}{customerName ? ', ' + customerName : ''}!
 			</h3>
 			<p class="mt-2 text-lg text-gray-700">
-				{$i18n.modal.success.selectedPlan.replace('{plan}', selectedPlan)}
+				{$i18n.modal.success.selectedPlan.replace('{plan}', planDisplayName)}
 			</p>
 		</div>
 	{/if}

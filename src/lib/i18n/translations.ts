@@ -1805,8 +1805,8 @@ const en: Translation = {
 		planLabels: {
 			oneTime: 'ONE-TIME',
 			oneMonth: '1-MONTH PLAN',
-			threeMonth: '3-MONTH PLAN',
-			sixMonth: '6-MONTH PLAN',
+			threeMonth: '3-MONTHS PLAN',
+			sixMonth: '6-MONTHS PLAN',
 			popular: '★ MOST POPULAR',
 			longTimeSuffix: {
 				'1-MONATS PLAN': 'BASIS LONGTIME',
@@ -1817,7 +1817,7 @@ const en: Translation = {
 		additionalBenefits: {
 			oneTime: ['8% Discount on Total Price', 'Zero Monthly Recurring Fees'],
 			longTime: [
-				'{years} Years of Unlimited Access',
+				'Years of Unlimited Access',
 				'Massive 20% Lifetime Discount',
 				'All Future Updates Included'
 			]

@@ -9,6 +9,12 @@
 	import Icon from './Icon.svelte';
 	import { i18n, currentLocale } from '$lib/i18n';
 	import { get } from 'svelte/store';
+	import {
+		PaymentType,
+		PlanType,
+		getDiscountPercentage,
+		getPaymentOptions
+	} from '$lib/types/plans';
 
 	interface Props {
 		score: number;
@@ -42,9 +48,9 @@
 	let longtimeYears: number = $state(5); // Longtime is calculated as 5 years
 	let displayLongtimeYears: number = $state(5); // But displayed as 10 years
 
-	// State for selected plan and payment type
-	let selectedPlan = $state('3-MONATS PLAN'); // Default to the most popular option
-	let paymentType = $state('monatlich'); // Default to monthly payment
+	// State for selected plan and payment type using enums
+	let selectedPlan = $state<PlanType>(PlanType.THREE_MONTH); // Default to most popular
+	let paymentType = $state<PaymentType>(PaymentType.MONTHLY); // Default to monthly payment
 
 	// Animation visibility states
 	let showBonusBox = $state(false);
@@ -65,8 +71,11 @@
 	const bonusBox = $derived($i18n.pricing.bonusBox);
 	const benefits = $derived(Object.values(bonusBox.benefits));
 
+	// Payment options array for iteration in the template
+	const paymentOptions = $derived(Object.values(getPaymentOptions()));
+
 	// Calculate pricing for a given plan and payment type
-	function calculatePricing(planName: string, paymentMethod: string) {
+	function calculatePricing(planName: PlanType, payMethod: PaymentType) {
 		const selectedPlanData = pricePlans.find((p) => p.name === planName);
 		if (!selectedPlanData) return;
 
@@ -81,44 +90,63 @@
 		monthlyPrice = Math.round(pricePerDay * 30 * 100) / 100;
 
 		// Total price based on payment type
-		if (paymentMethod === 'monatlich') {
+		if (payMethod === PaymentType.MONTHLY) {
 			totalPrice = monthlyPrice;
-		} else if (paymentMethod === 'einmalig') {
-			// Calculate one-time payment with 8% discount
-			const fullPrice = Math.round(pricePerDay * days * 100) / 100;
-			const discount = Math.round(fullPrice * 0.08 * 100) / 100;
-			discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
-			totalPrice = discountedPrice;
-			savingsAmount = discount;
-		} else if (paymentMethod === 'longtime') {
-			// Calculate longtime value (5 years calculation) with 20% discount
-			const fullPrice = (Math.round(pricePerDay * days * 100) / 100) * longtimeYears;
-			const discount = Math.round(fullPrice * 0.2 * 100) / 100;
-			discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
-			totalPrice = discountedPrice;
-			savingsAmount = discount;
+			savingsAmount = 0;
+		} else {
+			// Get the appropriate discount percentage
+			const discountPercent = getDiscountPercentage(payMethod) / 100;
+
+			if (payMethod === PaymentType.ONE_TIME) {
+				// Calculate one-time payment with appropriate discount
+				const fullPrice = Math.round(pricePerDay * days * 100) / 100;
+				const discount = Math.round(fullPrice * discountPercent * 100) / 100;
+				discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
+				totalPrice = discountedPrice;
+				savingsAmount = discount;
+			} else if (payMethod === PaymentType.LONGTIME) {
+				// Calculate longtime value with appropriate discount
+				const fullPrice = (Math.round(pricePerDay * days * 100) / 100) * longtimeYears;
+				const discount = Math.round(fullPrice * discountPercent * 100) / 100;
+				discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
+				totalPrice = discountedPrice;
+				savingsAmount = discount;
+			}
 		}
 	}
 
-	function handlePlanChange(plan: string) {
+	function handlePlanChange(plan: PlanType) {
 		selectedPlan = plan;
 		calculatePricing(plan, paymentType);
 		onPlanSelect(plan, totalPrice);
 	}
 
-	function handlePaymentTypeChange(type: string) {
-		// Map translated strings to internal values if needed
-		if (type === $i18n.pricing.paymentOptions.monthly) {
-			paymentType = 'monatlich';
-		} else if (type === $i18n.pricing.paymentOptions.oneTime) {
-			paymentType = 'einmalig';
-		} else if (type === $i18n.pricing.paymentOptions.longTime) {
-			paymentType = 'longtime';
+	function handlePaymentTypeChange(type: string | PaymentType) {
+		// Handle both string inputs from UI and direct PaymentType enum values
+		let newPaymentType: PaymentType;
+
+		// If it's already a PaymentType value
+		if (Object.values(PaymentType).includes(type as PaymentType)) {
+			newPaymentType = type as PaymentType;
 		} else {
-			// It's already an internal type
-			paymentType = type;
+			// Map translated strings to internal PaymentType values
+			switch (type) {
+				case $i18n.pricing.paymentOptions.monthly:
+					newPaymentType = PaymentType.MONTHLY;
+					break;
+				case $i18n.pricing.paymentOptions.oneTime:
+					newPaymentType = PaymentType.ONE_TIME;
+					break;
+				case $i18n.pricing.paymentOptions.longTime:
+					newPaymentType = PaymentType.LONGTIME;
+					break;
+				default:
+					// Fallback
+					newPaymentType = PaymentType.MONTHLY;
+			}
 		}
 
+		paymentType = newPaymentType;
 		calculatePricing(selectedPlan, paymentType);
 		onPlanSelect(selectedPlan, totalPrice);
 	}
@@ -270,6 +298,19 @@
 		}));
 	}
 
+	function getPaymentOptionText(type: PaymentType): string {
+		switch (type) {
+			case PaymentType.MONTHLY:
+				return $i18n.pricing.paymentOptions.monthly;
+			case PaymentType.ONE_TIME:
+				return $i18n.pricing.paymentOptions.oneTime;
+			case PaymentType.LONGTIME:
+				return $i18n.pricing.paymentOptions.longTime;
+			default:
+				return '';
+		}
+	}
+
 	const translationLabels = $derived($i18n.pricing || {});
 	const localizedPlans = $derived(getLocalizedPricePlans());
 
@@ -408,26 +449,28 @@
 				</h4>
 				<div class="join rounded-lg border border-gray-200 shadow-md">
 					<button
-						class={`btn join-item ${paymentType === 'monatlich' ? 'btn-primary' : 'btn-ghost'}`}
-						onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.monthly)}
+						class={`btn join-item ${paymentType === PaymentType.MONTHLY ? 'btn-primary' : 'btn-ghost'}`}
+						onclick={() => handlePaymentTypeChange(PaymentType.MONTHLY)}
 						type="button"
 					>
 						{$i18n.pricing.paymentOptions.monthly}
 					</button>
+
 					<button
-						class={`btn join-item ${paymentType === 'einmalig' ? 'btn-primary' : 'btn-ghost'}`}
-						onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.oneTime)}
+						class={`btn join-item ${paymentType === PaymentType.ONE_TIME ? 'btn-primary' : 'btn-ghost'}`}
+						onclick={() => handlePaymentTypeChange(PaymentType.ONE_TIME)}
 						type="button"
 					>
 						{$i18n.pricing.paymentOptions.oneTime}
 					</button>
+
 					<button
-						class={`btn join-item hidden md:block lg:block ${paymentType === 'longtime' ? 'btn-primary' : 'btn-ghost'} relative`}
-						onclick={() => handlePaymentTypeChange($i18n.pricing.paymentOptions.longTime)}
+						class={`btn join-item hidden md:block lg:block ${paymentType === PaymentType.LONGTIME ? 'btn-primary' : 'btn-ghost'} relative`}
+						onclick={() => handlePaymentTypeChange(PaymentType.LONGTIME)}
 						type="button"
 					>
 						<span>{$i18n.pricing.paymentOptions.longTime}</span>
-						{#if paymentType !== 'longtime'}
+						{#if paymentType !== PaymentType.LONGTIME}
 							<span
 								class="absolute -right-1 -top-1 flex h-5 w-5 rotate-[12deg] animate-pulse items-center justify-center rounded-full bg-red-500 text-[7px] text-white"
 							>

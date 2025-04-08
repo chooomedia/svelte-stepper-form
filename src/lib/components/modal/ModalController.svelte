@@ -6,6 +6,7 @@
 	import ErrorContent from './ModalContent/ErrorContent.svelte';
 	import ConfirmContent from './ModalContent/ConfirmContent.svelte';
 	import { i18n } from '$lib/i18n';
+	import { PaymentType, PlanType } from '$lib/types/plans';
 
 	// Props (if needed to override store values)
 	export let onSuccess: (details: any) => void = () => {};
@@ -32,8 +33,8 @@
 >
 	{#if currentModalType === 'payment'}
 		<PaymentContent
-			selectedPlan={modalData?.selectedPlan || '3-MONATS PLAN'}
-			paymentType={modalData?.paymentType || 'einmalig'}
+			selectedPlan={modalData?.selectedPlan || PlanType.THREE_MONTH}
+			paymentType={modalData?.paymentType || PaymentType.MONTHLY}
 			totalPrice={modalData?.totalPrice || 0}
 			showExtraDiscount={modalData?.showExtraDiscount || false}
 			containerSelector="#paypal-button-container"
