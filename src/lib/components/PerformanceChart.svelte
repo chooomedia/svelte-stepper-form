@@ -5,6 +5,7 @@
 	import Chart from 'chart.js/auto';
 	import { scoreStore } from '$lib/utils/scoring';
 	import { i18n } from '$lib/i18n';
+	import Icon from './Icon.svelte';
 
 	type Metric = {
 		label: string;
@@ -20,15 +21,13 @@
 		auditData?: any;
 		animateOnResultLoad?: boolean;
 		chartHeight?: string;
-		showImprovement?: boolean;
 	}
 
 	let {
 		score = 50,
 		auditData = null,
 		animateOnResultLoad = false,
-		chartHeight = '456px',
-		showImprovement = false
+		chartHeight = '456px'
 	} = $props<Props>();
 
 	// DOM references
@@ -49,15 +48,9 @@
 
 	// Labels für die Legende
 	const currentValueLabel = $derived($i18n.schema.metrics?.currentValue || 'Aktueller Wert');
-	const improvedValueLabel = $derived($i18n.schema.metrics?.improvedValue || 'Verbesserter Wert');
+	const improvedValueLabel = $derived($i18n.schema.metrics?.improvedValue || 'Nach Optimierung');
 	const averageLabel = $derived($i18n.schema.metrics?.average || 'Durchschnitt');
 	const optimalLabel = $derived($i18n.schema.metrics?.optimal || 'Optimalwert');
-	const hideImprovementLabel = $derived(
-		$i18n.schema.metrics?.hideImprovement || 'Verbesserungen ausblenden'
-	);
-	const showImprovementLabel = $derived(
-		$i18n.schema.metrics?.showImprovement || 'Verbesserungen anzeigen'
-	);
 
 	// State variables
 	let isAnimating = $state(true);
@@ -70,20 +63,12 @@
 	let improvedAverageValue = $state(0);
 	let needsRecalculation = $state(false);
 
-	// Synchronisieren des Props mit dem lokalen State
-	let showingImprovement = $state(false);
-
-	// Einmaliges Setzen des initialen Werts basierend auf dem Prop
-	$effect(() => {
-		showingImprovement = showImprovement;
-	});
-
 	// Animation control
 	const animationTween = tweened(1, { duration: 1500, easing: cubicOut });
 
 	// Subscribe to the score store for consistent data
 	onMount(() => {
-		console.log('PerformanceChart mounted with props:', { score, auditData, showImprovement });
+		console.log('PerformanceChart mounted with props:', { score, auditData });
 
 		const unsubscribe = scoreStore.subscribe((state) => {
 			console.log('ScoreStore updated:', state);
@@ -205,7 +190,7 @@
 							// Auch die verbesserten Werte anpassen - min. 20% besser, max. 95 Punkte
 							metric.improvedValue = Math.min(
 								95,
-								Math.round(metric.value * (1 + Math.random() * 0.3 + 0.2))
+								Math.round(metric.value * (1.2 + Math.random() * 0.3))
 							);
 						}
 					});
@@ -233,7 +218,7 @@
 								metric.value = metricValue;
 								metric.improvedValue = Math.min(
 									95,
-									Math.round(metricValue * (1 + Math.random() * 0.3 + 0.2))
+									Math.round(metricValue * (1.2 + Math.random() * 0.3))
 								);
 								console.log(`Updated ${metric.label} to ${metric.value} from lighthouse data`);
 							}
@@ -327,43 +312,10 @@
 		const chartConfig = {
 			type: 'line',
 			data: {
-				type: 'line',
-				data: {
-					labels: metrics.map((m) => m.label),
-					datasets: [
-						{
-							label: currentValueLabel,
-							data: metrics.map((m) => m.value * $animationTween),
-							borderColor: '#3B82F6',
-							backgroundColor: 'rgba(59, 130, 246, 0.1)',
-							tension: 0.3,
-							fill: true,
-							pointBackgroundColor: metrics.map((m) => m.color),
-							pointBorderColor: '#fff',
-							pointRadius: 5,
-							pointHoverRadius: 8
-						},
-						{
-							label: averageLabel,
-							data: metrics.map(() => averageValue),
-							borderColor: '#F59E0B',
-							borderDash: [5, 5],
-							borderWidth: 1.5,
-							pointRadius: 0
-						},
-						{
-							label: optimalLabel,
-							data: metrics.map(() => 95),
-							borderColor: '#10B981',
-							borderDash: [3, 3],
-							borderWidth: 1.5,
-							pointRadius: 0
-						}
-					]
-				},
+				labels: metrics.map((m) => m.label),
 				datasets: [
 					{
-						label: $i18n.schema.metrics.currentValue,
+						label: currentValueLabel,
 						data: metrics.map((m) => m.value * $animationTween),
 						borderColor: '#3B82F6',
 						backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -375,7 +327,19 @@
 						pointHoverRadius: 8
 					},
 					{
-						label: $i18n.schema.metrics.average,
+						label: improvedValueLabel,
+						data: metrics.map((m) => m.improvedValue * $animationTween),
+						borderColor: '#8B5CF6', // Purple color for improvement
+						backgroundColor: 'rgba(139, 92, 246, 0.1)',
+						tension: 0.3,
+						fill: true,
+						pointBackgroundColor: '#8B5CF6',
+						pointBorderColor: '#fff',
+						pointRadius: 4,
+						pointHoverRadius: 6
+					},
+					{
+						label: averageLabel,
 						data: metrics.map(() => averageValue),
 						borderColor: '#F59E0B',
 						borderDash: [5, 5],
@@ -383,7 +347,7 @@
 						pointRadius: 0
 					},
 					{
-						label: $i18n.schema.metrics.optimal,
+						label: optimalLabel,
 						data: metrics.map(() => 95),
 						borderColor: '#10B981',
 						borderDash: [3, 3],
@@ -430,22 +394,6 @@
 			}
 		};
 
-		// Add improved values dataset if showImprovement is true
-		if (showingImprovement) {
-			chartConfig.data.datasets.splice(1, 0, {
-				label: improvedValueLabel,
-				data: metrics.map((m) => m.improvedValue * $animationTween),
-				borderColor: '#8B5CF6', // Purple color for improvement
-				backgroundColor: 'rgba(139, 92, 246, 0.1)',
-				tension: 0.3,
-				fill: true,
-				pointBackgroundColor: '#8B5CF6',
-				pointBorderColor: '#fff',
-				pointRadius: 4,
-				pointHoverRadius: 6
-			});
-		}
-
 		// Create the chart
 		chart = new Chart(ctx, chartConfig);
 		chartLoaded = true;
@@ -478,55 +426,18 @@
 		chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
 		chart.data.datasets[0].pointBackgroundColor = metrics.map((m) => m.color);
 
-		// Update improved values if showing improvement
-		if (showingImprovement && chart.data.datasets.length > 1) {
-			// Check if the second dataset is the improvement dataset
-			if (chart.data.datasets[1].label === $i18n.schema.metrics.improvedValue) {
-				chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
-			}
+		// Update improved values dataset
+		if (chart.data.datasets.length > 1) {
+			chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
 		}
 
-		// Update average line (will be at index 1 or 2 depending on improvement visibility)
-		const avgDatasetIndex = showingImprovement ? 2 : 1;
+		// Update average line
+		const avgDatasetIndex = 2;
 		if (chart.data.datasets[avgDatasetIndex]) {
 			chart.data.datasets[avgDatasetIndex].data = metrics.map(() => averageValue);
 		}
 
 		chart.update('none');
-	}
-
-	function toggleImprovementView(show: boolean): void {
-		// Nur aktualisieren, wenn sich der Wert tatsächlich ändert
-		if (showingImprovement === show) return;
-
-		showingImprovement = show;
-
-		// Sicherstellen, dass ein Chart existiert
-		if (!chart) return;
-
-		if (showingImprovement) {
-			// Add improvement dataset zwischen dem aktuellen Datensatz und der Durchschnittslinie
-			chart.data.datasets.splice(1, 0, {
-				label: $i18n.schema.metrics.improvedValue,
-				data: metrics.map((m) => m.improvedValue * $animationTween),
-				borderColor: '#8B5CF6', // Violett für verbesserter Wert
-				backgroundColor: 'rgba(139, 92, 246, 0.1)',
-				tension: 0.3,
-				fill: true,
-				pointBackgroundColor: '#8B5CF6',
-				pointBorderColor: '#fff',
-				pointRadius: 4,
-				pointHoverRadius: 6
-			});
-		} else {
-			// Entferne den Verbesserungs-Datensatz
-			chart.data.datasets = chart.data.datasets.filter(
-				(dataset) => dataset.label !== $i18n.schema.metrics.improvedValue
-			);
-		}
-
-		// Chart aktualisieren
-		chart.update();
 	}
 
 	// Animation sequence
@@ -548,11 +459,9 @@
 		if (chart && metrics.length) {
 			chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
 
-			// Update improved values if showing
-			if (showingImprovement && chart.data.datasets.length > 1) {
-				if (chart.data.datasets[1].label === $i18n.schema.metrics.improvedValue) {
-					chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
-				}
+			// Update improved values
+			if (chart.data.datasets.length > 1) {
+				chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
 			}
 
 			chart.update('none');
@@ -572,22 +481,18 @@
 		// Create a local copy to avoid reactivity issues
 		const currentScore = score;
 		const currentAuditData = auditData;
-		const currentShowImprovement = showImprovement;
 
 		console.log('Props changed, recalculating', {
 			currentScore,
-			currentAuditData,
-			currentShowImprovement
+			currentAuditData
 		});
 
 		// Only update if we have meaningful changes
 		if (
 			effectiveScore !== currentScore ||
-			JSON.stringify(currentAuditData) !== JSON.stringify(storeData) ||
-			showingImprovement !== currentShowImprovement
+			JSON.stringify(currentAuditData) !== JSON.stringify(storeData)
 		) {
 			effectiveScore = currentScore;
-			showingImprovement = currentShowImprovement;
 
 			// Don't call calculateMetrics() here as it may trigger another effect
 			// Just set a flag and handle the calculation in a separate effect
@@ -634,7 +539,7 @@
 <div class="performance-chart relative p-6">
 	<!-- Custom legend above the chart -->
 	<div class="mb-4 flex flex-wrap items-center justify-center gap-6">
-		{#each showingImprovement ? [currentValueLabel, improvedValueLabel, averageLabel, optimalLabel] : [currentValueLabel, averageLabel, optimalLabel] as legendItem, i}
+		{#each [currentValueLabel, improvedValueLabel, averageLabel, optimalLabel] as legendItem, i}
 			<div
 				class="flex cursor-pointer items-center transition-opacity hover:opacity-75"
 				on:mouseenter={() => {
@@ -661,10 +566,10 @@
 				{#if i === 0}
 					<div class="mr-2 h-3 w-8 rounded-sm bg-blue-500 opacity-50"></div>
 					<span class="text-sm text-gray-600">{currentValueLabel}</span>
-				{:else if i === 1 && showingImprovement}
+				{:else if i === 1}
 					<div class="mr-2 h-3 w-8 rounded-sm bg-purple-500 opacity-50"></div>
 					<span class="text-sm text-gray-600">{improvedValueLabel}</span>
-				{:else if (i === 1 && !showingImprovement) || (i === 2 && showingImprovement)}
+				{:else if i === 2}
 					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-yellow-500"></div>
 					<span class="text-sm text-gray-600">{averageLabel} ({Math.round(averageValue)})</span>
 				{:else}
@@ -673,32 +578,6 @@
 				{/if}
 			</div>
 		{/each}
-	</div>
-
-	<!-- Toggle improvement view button -->
-	<div class="mb-4 flex justify-center">
-		<button
-			class="flex items-center rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-800 transition-colors hover:bg-primary-200 {showingImprovement
-				? 'bg-primary-200'
-				: ''}"
-			on:click={() => toggleImprovementView(!showingImprovement)}
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				class="mr-2 h-4 w-4"
-				viewBox="0 0 20 20"
-				fill="currentColor"
-			>
-				<path
-					fill-rule="evenodd"
-					d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-					clip-rule="evenodd"
-				/>
-			</svg>
-			{showingImprovement
-				? $i18n.schema.metrics.hideImprovement
-				: $i18n.schema.metrics.showImprovement}
-		</button>
 	</div>
 
 	<div class="chart-container w-full" style="height: {chartHeight};" bind:this={chartContainer}>
@@ -714,7 +593,10 @@
 				on:mouseenter={() => {
 					if (chart) {
 						// Finde den entsprechenden Datenpunkt im Chart
-						chart.setActiveElements([{ datasetIndex: 0, index: i }]);
+						chart.setActiveElements([
+							{ datasetIndex: 0, index: i },
+							{ datasetIndex: 1, index: i }
+						]);
 
 						// Aktiviere den Tooltip für diesen Punkt
 						const meta = chart.getDatasetMeta(0);
@@ -738,49 +620,36 @@
 					}
 				}}
 			>
-				<div class="flex items-baseline justify-between">
-					<span class="text-xl font-bold text-gray-900">
-						{Math.round(metric.value * $animationTween)}
-					</span>
-					<span class="ml-1 text-sm text-gray-500">/ 100</span>
-
-					{#if showingImprovement}
-						<span class="ml-1 flex items-center text-sm font-medium text-purple-600">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="mr-1 h-3 w-3"
-								viewBox="0 0 20 20"
-								fill="currentColor"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-									clip-rule="evenodd"
-								/>
-							</svg>
-							{Math.round(metric.improvedValue * $animationTween)}
+				<div class="flex flex-col">
+					<div class="mb-2 flex items-baseline justify-between">
+						<span class="text-xl font-bold text-gray-900">
+							{Math.round(metric.value * $animationTween)}
 						</span>
-					{/if}
-				</div>
+						<span class="ml-1 text-sm text-gray-500">/ 100</span>
+					</div>
 
-				<div class="mt-2">
 					<!-- Current Value Progress -->
-					<div class="h-2 rounded-full bg-gray-100">
+					<div class="h-2 w-full rounded-full bg-gray-100">
 						<div
 							class="h-2 rounded-full transition-all duration-500"
 							style="width: {metric.value * $animationTween}%; background-color: {metric.color}"
-						/>
+						></div>
 					</div>
 
-					<!-- Improved Value Progress (if showing) -->
-					{#if showingImprovement}
-						<div class="mt-1 h-2 rounded-full bg-gray-100">
-							<div
-								class="h-2 rounded-full bg-purple-500 transition-all duration-500"
-								style="width: {metric.improvedValue * $animationTween}%;"
-							/>
-						</div>
-					{/if}
+					<div class="mt-2 flex items-baseline justify-between">
+						<span class="ml-1 flex items-center text-sm font-medium text-purple-600">
+							<Icon name="improvement" size={20} stroke="none" />
+							{Math.round(metric.improvedValue * $animationTween)}
+						</span>
+					</div>
+
+					<!-- Improved Value Progress -->
+					<div class="mt-1 h-2 rounded-full bg-gray-100">
+						<div
+							class="h-2 rounded-full bg-purple-500 transition-all duration-500"
+							style="width: {metric.improvedValue * $animationTween}%;"
+						></div>
+					</div>
 				</div>
 			</div>
 		{/each}
@@ -792,7 +661,7 @@
 			<div
 				class="spinner h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
 			></div>
-			<p class="mt-4 text-lg text-gray-600">Lade Diagramm...</p>
+			<p class="mt-4 text-lg text-gray-600">Loading...</p>
 		</div>
 	{/if}
 </div>

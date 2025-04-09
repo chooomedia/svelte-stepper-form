@@ -394,7 +394,7 @@
 
 	<!-- Add after PricingOptions component -->
 	<div
-		class="my-16 overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-8 shadow-lg"
+		class="my-16 overflow-hidden rounded-xl bg-gradient-to-br from-primary-50 to-gray-100 p-8 shadow-lg"
 		in:fade={{ duration: 500, delay: 1200 }}
 	>
 		<div class="mx-auto max-w-7xl">
