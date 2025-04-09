@@ -47,10 +47,10 @@
 	const securityLabel = $derived($i18n.schema.metrics?.security?.label || 'Sicherheit');
 
 	// Labels für die Legende
-	const currentValueLabel = $derived($i18n.schema.metrics?.currentValue || 'Aktueller Wert');
+	const currentValueLabel = $derived($i18n.schema.metrics?.currentValue || 'Aktuell');
 	const improvedValueLabel = $derived($i18n.schema.metrics?.improvedValue || 'Nach Optimierung');
 	const averageLabel = $derived($i18n.schema.metrics?.average || 'Durchschnitt');
-	const optimalLabel = $derived($i18n.schema.metrics?.optimal || 'Optimalwert');
+	const optimalLabel = $derived($i18n.schema.metrics?.optimal || 'Optimal');
 
 	// State variables
 	let isAnimating = $state(true);
@@ -62,9 +62,34 @@
 	let averageValue = $state(0);
 	let improvedAverageValue = $state(0);
 	let needsRecalculation = $state(false);
+	let scoreColor = $state(getScoreColor(score)); // Dynamische Farbe basierend auf Score
 
 	// Animation control
 	const animationTween = tweened(1, { duration: 1500, easing: cubicOut });
+
+	// Diese Funktion sollte genau der Funktion in VisibilityScore.svelte entsprechen
+	function getScoreColor(scoreValue: number): string {
+		// Funktion zur dynamischen Bestimmung der Farbe basierend auf dem Score
+		if (scoreValue >= 80) return '#16a34a'; // Green
+		if (scoreValue >= 60) return '#eab308'; // Yellow
+		if (scoreValue >= 40) return '#f97316'; // Orange
+		return '#dc2626'; // Red
+	}
+
+	// Chart colors dynamically based on score
+	$effect(() => {
+		// Update scoreColor whenever effectiveScore changes
+		scoreColor = getScoreColor(effectiveScore);
+	});
+
+	// Chart colors object with reactive value
+	const chartColors = $derived({
+		current: scoreColor, // Dynamische Farbe basierend auf Score
+		improved: '#8B5CF6', // Purple for improved data
+		average: '#F59E0B', // Amber/Orange
+		optimal: '#002B2F', // Secondary color for optimal line
+		pointBorder: '#FFFFFF'
+	});
 
 	// Subscribe to the score store for consistent data
 	onMount(() => {
@@ -317,31 +342,31 @@
 					{
 						label: currentValueLabel,
 						data: metrics.map((m) => m.value * $animationTween),
-						borderColor: '#3B82F6',
-						backgroundColor: 'rgba(59, 130, 246, 0.1)',
-						tension: 0.3,
+						borderColor: chartColors.current,
+						backgroundColor: `${chartColors.current}50`, // 20% opacity
+						tension: 0.5,
 						fill: true,
 						pointBackgroundColor: metrics.map((m) => m.color),
-						pointBorderColor: '#fff',
+						pointBorderColor: chartColors.pointBorder,
 						pointRadius: 5,
 						pointHoverRadius: 8
 					},
 					{
 						label: improvedValueLabel,
 						data: metrics.map((m) => m.improvedValue * $animationTween),
-						borderColor: '#8B5CF6', // Purple color for improvement
-						backgroundColor: 'rgba(139, 92, 246, 0.1)',
-						tension: 0.3,
+						borderColor: chartColors.improved,
+						backgroundColor: `${chartColors.improved}50`, // 20% opacity
+						tension: 0.5,
 						fill: true,
-						pointBackgroundColor: '#8B5CF6',
-						pointBorderColor: '#fff',
+						pointBackgroundColor: chartColors.improved,
+						pointBorderColor: chartColors.pointBorder,
 						pointRadius: 4,
 						pointHoverRadius: 6
 					},
 					{
 						label: averageLabel,
 						data: metrics.map(() => averageValue),
-						borderColor: '#F59E0B',
+						borderColor: chartColors.average,
 						borderDash: [5, 5],
 						borderWidth: 1.5,
 						pointRadius: 0
@@ -349,7 +374,7 @@
 					{
 						label: optimalLabel,
 						data: metrics.map(() => 95),
-						borderColor: '#10B981',
+						borderColor: chartColors.optimal,
 						borderDash: [3, 3],
 						borderWidth: 1.5,
 						pointRadius: 0
@@ -381,7 +406,7 @@
 						borderColor: '#4B5563',
 						callbacks: {
 							label: (ctx) => {
-								const value = ctx.parsed.y;
+								const value = parseFloat(ctx.parsed.y.toFixed(2));
 								const label = ctx.dataset.label || '';
 								const benchmark = getBenchmarkValue(ctx.label);
 								const comparison = value > benchmark ? 'über' : value < benchmark ? 'unter' : 'im';
@@ -425,6 +450,10 @@
 		chart.data.labels = metrics.map((m) => m.label);
 		chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
 		chart.data.datasets[0].pointBackgroundColor = metrics.map((m) => m.color);
+
+		// Update chart colors when effectiveScore changes
+		chart.data.datasets[0].borderColor = chartColors.current;
+		chart.data.datasets[0].backgroundColor = `${chartColors.current}20`;
 
 		// Update improved values dataset
 		if (chart.data.datasets.length > 1) {
@@ -538,10 +567,10 @@
 
 <div class="performance-chart relative p-6">
 	<!-- Custom legend above the chart -->
-	<div class="mb-4 flex flex-wrap items-center justify-center gap-6">
+	<div class="mb-2 flex flex-wrap items-center justify-center gap-2">
 		{#each [currentValueLabel, improvedValueLabel, averageLabel, optimalLabel] as legendItem, i}
 			<div
-				class="flex cursor-pointer items-center transition-opacity hover:opacity-75"
+				class="flex cursor-pointer items-center rounded-md px-2 py-1 transition-all duration-300 hover:scale-105 hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-primary-500"
 				on:mouseenter={() => {
 					if (chart) {
 						// Verstecke alle Linien außer der entsprechenden Linie
@@ -562,19 +591,24 @@
 						chart.update();
 					}
 				}}
+				role="button"
+				tabindex="0"
 			>
 				{#if i === 0}
-					<div class="mr-2 h-3 w-8 rounded-sm bg-blue-500 opacity-50"></div>
-					<span class="text-sm text-gray-600">{currentValueLabel}</span>
+					<div
+						class="mr-2 h-3 w-8 rounded-sm opacity-70"
+						style="background-color: {scoreColor}"
+					></div>
+					<span class="text-[11px] text-gray-700">{currentValueLabel}</span>
 				{:else if i === 1}
-					<div class="mr-2 h-3 w-8 rounded-sm bg-purple-500 opacity-50"></div>
-					<span class="text-sm text-gray-600">{improvedValueLabel}</span>
+					<div class="mr-2 h-3 w-8 rounded-sm bg-purple-500 opacity-70"></div>
+					<span class="text-[11px] text-gray-700">{improvedValueLabel}</span>
 				{:else if i === 2}
 					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-yellow-500"></div>
-					<span class="text-sm text-gray-600">{averageLabel} ({Math.round(averageValue)})</span>
+					<span class="text-[11px] text-gray-700">{averageLabel} ({Math.round(averageValue)})</span>
 				{:else}
-					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-green-500"></div>
-					<span class="text-sm text-gray-600">{optimalLabel} (95)</span>
+					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-secondary"></div>
+					<span class="text-[11px] text-gray-700">{optimalLabel} (95)</span>
 				{/if}
 			</div>
 		{/each}
@@ -585,10 +619,10 @@
 	</div>
 
 	<!-- Metric Indicators -->
-	<div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+	<div class="mt-1 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 		{#each metrics as metric, i}
 			<div
-				class="group relative cursor-pointer rounded-md border border-gray-200 bg-white p-2 transition-all hover:shadow-md"
+				class="group relative cursor-pointer rounded-md border border-gray-200 bg-white p-2 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500"
 				style="border-top: 3px solid {metric.color};"
 				on:mouseenter={() => {
 					if (chart) {
@@ -619,6 +653,11 @@
 						chart.update();
 					}
 				}}
+				tabindex="0"
+				role="button"
+				aria-label="{metric.label}: {Math.round(metric.value)}/100, nach Optimierung: {Math.round(
+					metric.improvedValue
+				)}/100"
 			>
 				<div class="flex flex-col">
 					<div class="mb-2 flex items-baseline justify-between">
@@ -638,7 +677,7 @@
 
 					<div class="mt-2 flex items-baseline justify-between">
 						<span class="ml-1 flex items-center text-sm font-medium text-purple-600">
-							<Icon name="improvement" size={20} stroke="none" />
+							<Icon name="improvement" size={16} className="mr-1" stroke="none" />
 							{Math.round(metric.improvedValue * $animationTween)}
 						</span>
 					</div>
@@ -659,7 +698,7 @@
 	{#if !chartLoaded}
 		<div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90">
 			<div
-				class="spinner h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
+				class="spinner h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"
 			></div>
 			<p class="mt-4 text-lg text-gray-600">Loading...</p>
 		</div>
@@ -677,18 +716,9 @@
 		padding: 4px 8px;
 	}
 
-	/* Animation for improved value indicator */
-	@keyframes pulse {
-		0%,
-		100% {
-			opacity: 0.7;
-		}
-		50% {
-			opacity: 1;
-		}
-	}
-
-	.improvement-indicator {
-		animation: pulse 2s infinite;
+	/* Keyboard focus styles */
+	div[role='button']:focus-visible {
+		outline: 2px solid #6bd0d9;
+		outline-offset: 2px;
 	}
 </style>

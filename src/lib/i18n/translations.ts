@@ -761,12 +761,10 @@ const de: Translation = {
 				label: 'Sicherheit',
 				description: 'Schutz vor Bedrohungen'
 			},
-			currentValue: 'Aktueller Wert',
+			currentValue: 'Aktuell',
 			improvedValue: 'Nach Optimierung',
 			average: 'Durchschnitt',
-			optimal: 'Optimalwert',
-			showImprovement: 'Verbesserungen anzeigen',
-			hideImprovement: 'Verbesserungen ausblenden'
+			optimal: 'Optimal'
 		}
 	},
 	results: {
@@ -1500,12 +1498,10 @@ const en: Translation = {
 				label: 'Security',
 				description: 'Protection against threats'
 			},
-			currentValue: 'Current Value',
+			currentValue: 'Current',
 			improvedValue: 'After Optimization',
 			average: 'Average',
-			optimal: 'Optimal Value',
-			showImprovement: 'Show Improvements',
-			hideImprovement: 'Hide Improvements'
+			optimal: 'Optimal'
 		}
 	},
 	results: {

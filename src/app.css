@@ -79,6 +79,10 @@ body {
         @apply p-[1.3rem] lg:p-6;
     }
 
+    .chart-boxes {
+        @apply relative cursor-pointer rounded-md border border-gray-200 bg-white p-2 transition-all hover:shadow-md;
+    }
+
     .animate-bouncing {
         animation: badge-attention 2s infinite;
         transform-origin: center;
