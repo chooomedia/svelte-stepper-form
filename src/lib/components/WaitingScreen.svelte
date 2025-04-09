@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { i18n } from '$lib/i18n';
 
 	const { autoAdvance = 7, nextStep } = $props<{
 		autoAdvance?: number;
@@ -46,8 +47,10 @@
 
 <div class="waiting-screen flex flex-col items-center justify-center space-y-4 p-8">
 	<div class="spinner animate-spin"></div>
-	<p class="text-lg text-gray-600">Angaben werden analysieren - Bitte habe einen Moment Geduld.</p>
+	<p class="text-lg text-gray-600">
+		{$i18n.waitingScreen.title}
+	</p>
 	<p class="text-sm text-gray-500">
-		Weiterleitung in {remainingTime} Sekunden
+		{$i18n.waitingScreen.redirect.replace('{remainingTime}', remainingTime.toString())}
 	</p>
 </div>

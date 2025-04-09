@@ -458,6 +458,10 @@ export interface Translation {
 			cancelButton: string;
 		};
 	};
+	waitingScreen: {
+		title: string;
+		redirect: string;
+	};
 }
 
 // Deutsche (de)
@@ -884,7 +888,7 @@ const de: Translation = {
 					},
 					{
 						title: 'Content-Marketing',
-						description: 'Hochwertige Inhalte, die Ihre Expertise zeigen und Kunden überzeugen.',
+						description: 'Hochwertige Inhalte, die Deine Expertise zeigen und Kunden überzeugen.',
 						icon: 'edit',
 						underScore: 80
 					}
@@ -1037,7 +1041,7 @@ const de: Translation = {
 			tag: 'EXKLUSIV-BONUS',
 			title: 'Hochwertiger Blogartikel GRATIS',
 			description:
-				'Bei Buchung innerhalb der Aktionszeit erhältst Du einen maßgeschneiderten, SEO-optimierten Blogartikel für Dein Unternehmen – perfekt angepasst, um Deine Reichweite sofort zu steigern!',
+				'Bei Buchung innerhalb der Aktionszeit erhältst Du einen maßgeschneiderten, SEO-optimierten Blogartikel für Dein Unternehmen – perfekt angepasst, um Deine Reichweite längerfristig zu steigern!',
 			benefits: [
 				'Individuell auf Dein Unternehmen zugeschnitten',
 				'SEO-optimiert für mehr Sichtbarkeit',
@@ -1194,6 +1198,10 @@ const de: Translation = {
 			confirmButton: 'Ja, abbrechen',
 			cancelButton: 'Zurück zum Kaufvorgang'
 		}
+	},
+	waitingScreen: {
+		title: 'Deine Angaben werden analysiert - Bitte habe einen Moment Geduld.',
+		redirect: 'Dein Ergebniss in {remainingTime} Sekunden'
 	}
 };
 
@@ -1772,7 +1780,7 @@ const en: Translation = {
 			tag: 'EXCLUSIVE BONUS',
 			title: 'FREE High-Impact Blog Article',
 			description:
-				'Book within our promotional window and receive a custom, SEO-optimized blog post designed to dramatically boost your online visibility and reach!',
+				'Book within our promotional window and receive a custom, SEO-optimized blog post designed to dramatically boost your online visibility and reach for longer time!',
 			benefits: [
 				'Tailored exclusively to your business DNA',
 				'SEO-engineered for maximum visibility',
@@ -1931,6 +1939,10 @@ const en: Translation = {
 			confirmButton: 'Yes, cancel',
 			cancelButton: 'Back to checkout'
 		}
+	},
+	waitingScreen: {
+		title: 'Your details are being analysed - please be patient for a moment.',
+		redirect: 'Your result in {remainingTime} seconds'
 	}
 };
 
