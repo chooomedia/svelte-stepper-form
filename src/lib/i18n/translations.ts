@@ -410,7 +410,9 @@ export interface Translation {
 		success: {
 			title: string;
 			subtitle: string;
+			modalInfo: string;
 			paymentDetails: {
+				plan: string;
 				id: string;
 				date: string;
 				status: string;
@@ -1144,8 +1146,10 @@ const de: Translation = {
 		},
 		success: {
 			title: 'Zahlung erfolgreich!',
-			subtitle: 'Vielen Dank für Deinen Kauf.',
+			subtitle: 'Vielen Dank für Deinen Kauf',
+			modalInfo: 'Bitte schließe dieses Fenster nicht, um den Vorgang abzuschließen.',
 			paymentDetails: {
+				plan: 'Service',
 				id: 'Zahlungs-ID',
 				date: 'Datum',
 				status: 'Status',
@@ -1201,7 +1205,7 @@ const de: Translation = {
 	},
 	waitingScreen: {
 		title: 'Deine Angaben werden analysiert - Bitte habe einen Moment Geduld.',
-		redirect: 'Dein Ergebniss in {remainingTime} Sekunden'
+		redirect: 'Dein Ergebniss in {remainingTime}'
 	}
 };
 
@@ -1885,8 +1889,10 @@ const en: Translation = {
 		},
 		success: {
 			title: 'Payment Successful!',
-			subtitle: 'Thank you for your purchase.',
+			subtitle: 'Thank you for your purchase',
+			modalInfo: 'Please do not close this window, it will show you the next steps.',
 			paymentDetails: {
+				plan: 'Service',
 				id: 'Payment ID',
 				date: 'Date',
 				status: 'Status',
@@ -1942,7 +1948,7 @@ const en: Translation = {
 	},
 	waitingScreen: {
 		title: 'Your details are being analysed - please be patient for a moment.',
-		redirect: 'Your result in {remainingTime} seconds'
+		redirect: 'Your result in {remainingTime}'
 	}
 };
 

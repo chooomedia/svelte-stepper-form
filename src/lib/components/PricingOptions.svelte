@@ -15,6 +15,7 @@
 		getDiscountPercentage,
 		getPaymentOptions
 	} from '$lib/types/plans';
+	import Countdown from '$lib/components/Countdown.svelte';
 
 	interface Props {
 		score: number;
@@ -70,6 +71,7 @@
 
 	const bonusBox = $derived($i18n.pricing.bonusBox);
 	const benefits = $derived(Object.values(bonusBox.benefits));
+	const discountDuration = 3600;
 
 	// Payment options array for iteration in the template
 	const paymentOptions = $derived(Object.values(getPaymentOptions()));
@@ -298,19 +300,6 @@
 		}));
 	}
 
-	function getPaymentOptionText(type: PaymentType): string {
-		switch (type) {
-			case PaymentType.MONTHLY:
-				return $i18n.pricing.paymentOptions.monthly;
-			case PaymentType.ONE_TIME:
-				return $i18n.pricing.paymentOptions.oneTime;
-			case PaymentType.LONGTIME:
-				return $i18n.pricing.paymentOptions.longTime;
-			default:
-				return '';
-		}
-	}
-
 	const translationLabels = $derived($i18n.pricing || {});
 	const localizedPlans = $derived(getLocalizedPricePlans());
 
@@ -350,46 +339,56 @@
 		</div>
 
 		<!-- Countdown Timer -->
-		<div
-			class="mb-6 rounded-lg bg-gradient-to-r from-red-50 to-red-100 p-4 shadow-md"
-			in:fade={{ duration: 300, delay: 300 }}
-		>
+		<div class="mb-6 rounded-lg bg-gradient-to-r from-red-50 to-red-100 p-4 shadow-md">
 			<div class="flex flex-col items-center justify-between md:flex-row">
 				<div class="mb-2 flex items-center space-x-2 md:mb-0">
 					<span class="text-red-600">
 						<Icon name="clock" size={24} stroke="currentColor" strokeWidth="2" fill="none" />
 					</span>
 					<div>
-						<span class="text-lg font-bold text-red-600"> {$i18n.pricing.countdown.title}</span>
-						<span class="text-gray-700"> {$i18n.pricing.countdown.subtitle}</span>
+						<span class="text-lg font-bold text-red-600">{$i18n.pricing.countdown.title}</span>
+						<span class="text-gray-700">{$i18n.pricing.countdown.subtitle}</span>
 					</div>
 				</div>
-				<div class="flex space-x-2">
+
+				<div class="flex items-center space-x-2">
+					<!-- Stunden -->
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
 					>
-						{hours.toString().padStart(2, '0')}
+						<Countdown
+							duration={discountDuration}
+							textClass="text-white"
+							size="large"
+							onComplete={() => {
+								// Aktion nach Ablauf des Angebots
+							}}
+						/>
 					</div>
 					<span class="text-xl font-bold text-red-600">:</span>
+					<!-- Minuten -->
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
 					>
-						{minutes.toString().padStart(2, '0')}
+						<span>00</span>
 					</div>
 					<span class="text-xl font-bold text-red-600">:</span>
+					<!-- Sekunden -->
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
 					>
-						{seconds.toString().padStart(2, '0')}
+						<span>00</span>
 					</div>
 				</div>
 			</div>
-			<div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
-				<div
-					class="h-full rounded-full bg-red-500 transition-all duration-1000"
-					style="width: {((60 - minutes) / 60) * 100}%"
-				></div>
-			</div>
+
+			<!-- Fortschrittsbalken -->
+			<Countdown
+				duration={discountDuration}
+				textClass="hidden"
+				showProgressBar={true}
+				progressBarColor="bg-red-500"
+			/>
 		</div>
 
 		<!-- Bonus-Box für Aktionsangebot -->

@@ -1,3 +1,4 @@
+<!-- src/lib/components/modal/ModalController.svelte -->
 <script lang="ts">
 	import { modalStore } from './modalStore';
 	import Modal from './Modal.svelte';
@@ -14,6 +15,45 @@
 	// We'll use a single variable to control which content to show
 	$: currentModalType = $modalStore.type;
 	$: modalData = $modalStore.data;
+
+	// Get title and subtitle based on current modal type
+	$: modalTitle = getModalTitle(currentModalType);
+	$: modalSubtitle = getModalSubtitle(currentModalType);
+
+	// Functions to get appropriate titles/subtitles
+	function getModalTitle(type: string | null): string {
+		if (!type) return '';
+
+		switch (type) {
+			case 'payment':
+				return $i18n.modal.payment.title;
+			case 'success':
+				return $i18n.modal.success.title;
+			case 'error':
+				return $i18n.modal.error.title;
+			case 'confirm':
+				return $i18n.modal.common.confirm;
+			default:
+				return '';
+		}
+	}
+
+	function getModalSubtitle(type: string | null): string {
+		if (!type) return '';
+
+		switch (type) {
+			case 'payment':
+				return $i18n.modal.payment.subtitle;
+			case 'success':
+				return $i18n.modal.success.modalInfo;
+			case 'error':
+				return $i18n.modal.error.defaultMessage;
+			case 'confirm':
+				return modalData?.message || $i18n.modal.confirm.cancelPurchase;
+			default:
+				return '';
+		}
+	}
 </script>
 
 <!-- Single Modal Controller with dynamic content -->
@@ -30,6 +70,9 @@
 			modalStore.close();
 		}
 	}}
+	type={currentModalType}
+	title={modalTitle}
+	subtitle={modalSubtitle}
 >
 	{#if currentModalType === 'payment'}
 		<PaymentContent

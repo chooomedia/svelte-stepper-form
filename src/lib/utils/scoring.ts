@@ -2,7 +2,6 @@
 import { writable, derived } from 'svelte/store';
 import type { FormData } from '$lib/schema';
 import { formOptions } from '$lib/schema';
-import { set } from 'zod';
 
 // Define the type for analysis data
 interface AnalysisData {
@@ -178,6 +177,10 @@ export function extractScreenshot(data: any): string | null {
 		// Second format: nested under lighthouse_report
 		if (data.lighthouse_report?.audits?.['final-screenshot']?.details?.data) {
 			return data.lighthouse_report.audits['final-screenshot'].details.data;
+		}
+
+		if (data.info?.screenshot) {
+			return data.info?.screenshot;
 		}
 
 		// Third format: In case of an array response

@@ -3,6 +3,7 @@
 	import type { ImageOption as ImageOptionType } from '$lib/schema';
 	import { getLocalizedLabel, getLocalizedDescription, currentLocale, i18n } from '$lib/i18n';
 	import Icon from './Icon.svelte';
+	import Countdown from '$lib/components/Countdown.svelte';
 
 	interface Props {
 		value?: string | string[];
@@ -39,14 +40,23 @@
 
 	// Countdown und Navigationszustände
 	let showCountdown = $state(false);
-	let countdownSeconds = $state(countdownTime);
-	let countdownInterval: number | undefined;
 	let navigationTriggered = $state(false);
+
+	// Use a direct DOM reference with Svelte 5 instead of binding to 'this'
+	let countdownElement: (HTMLElement & { reset?: () => void }) | null = null;
+
+	// A trigger to create a new countdown instance when needed
+	let countdownKey = $state(0);
 
 	// Update selection and count when an option is clicked
 	function handleOptionSelect(optionValue: string): void {
-		// Timer zurücksetzen
-		resetTimers();
+		// Reset countdown if it exists
+		if (countdownElement && typeof countdownElement.reset === 'function') {
+			countdownElement.reset();
+		} else {
+			// If reset function isn't available, force a new countdown instance
+			countdownKey += 1;
+		}
 
 		if (multiple) {
 			selectedValues = handleMultipleSelection(optionValue);
@@ -56,7 +66,7 @@
 
 			// Countdown starten, wenn Optionen ausgewählt
 			if (selectedValues.length > 0) {
-				startCountdown();
+				showCountdown = true;
 			} else {
 				showCountdown = false;
 			}
@@ -87,6 +97,14 @@
 		}
 	}
 
+	function handleTimeoutComplete() {
+		if (selectedValues.length > 0 && fieldName && !navigationTriggered) {
+			navigationTriggered = true;
+			console.log('Countdown reached zero - triggering navigation with values:', selectedValues);
+			triggerNavigation(selectedValues);
+		}
+	}
+
 	// Navigation auslösen
 	function triggerNavigation(values: string[]) {
 		setTimeout(() => {
@@ -100,47 +118,6 @@
 			);
 		}, 100);
 	}
-
-	// Countdown-Funktionen
-	function startCountdown() {
-		countdownSeconds = countdownTime;
-		showCountdown = true;
-		navigationTriggered = false;
-
-		resetTimers();
-
-		countdownInterval = setInterval(() => {
-			countdownSeconds--;
-
-			if (countdownSeconds <= 0) {
-				resetTimers();
-
-				// Force navigation if countdown reaches zero and we have selections
-				if (selectedValues.length > 0 && fieldName && !navigationTriggered) {
-					navigationTriggered = true;
-					console.log(
-						'Countdown reached zero - triggering navigation with values:',
-						selectedValues
-					);
-					triggerNavigation(selectedValues);
-				}
-			}
-		}, 1000);
-	}
-
-	function resetTimers() {
-		if (countdownInterval) {
-			clearInterval(countdownInterval);
-			countdownInterval = undefined;
-		}
-	}
-
-	// Aufräumen bei Komponentenzerstörung
-	$effect(() => {
-		return () => {
-			resetTimers();
-		};
-	});
 
 	// Sprachänderung reaktiv machen
 	$effect(() => {
@@ -158,12 +135,19 @@
 		<div class="mb-4 text-center text-xs text-gray-600">
 			<div class="font-medium text-primary-700">
 				{#if showCountdown && selectedValues.length > 0}
-					<!-- Only show countdown without selection count -->
-					{$i18n?.forms?.imageOption?.continueIn || 'weiter in'}
-					<span class="font-bold">{countdownSeconds}</span>
-					{countdownSeconds === 1
-						? $i18n?.forms?.imageOption?.second || 'Sekunde'
-						: $i18n?.forms?.imageOption?.seconds || 'Sekunden'}
+					<!-- Use key to force re-creation when needed -->
+					{#key countdownKey}
+						<Countdown
+							bind:this={countdownElement}
+							duration={countdownTime}
+							beforeText={$i18n?.forms?.imageOption?.continueIn || 'weiter in'}
+							singularText={$i18n?.forms?.imageOption?.second || 'Sekunde'}
+							pluralText={$i18n?.forms?.imageOption?.seconds || 'Sekunden'}
+							textClass="text-xs text-primary-700"
+							onComplete={handleTimeoutComplete}
+							on:reset={() => console.log('Countdown reset')}
+						/>
+					{/key}
 				{:else if maxSelections}
 					{(
 						$i18n?.forms?.imageOption?.selectUpTo || 'Du kannst bis zu {max} Optionen auswählen'

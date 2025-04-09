@@ -47,25 +47,6 @@
 		showCloseButton = true
 	} = $props<Props>();
 
-	// Generated title based on modal type
-	$effect(() => {
-		if (!title) {
-			if (type === 'payment') {
-				title = $i18n.modal.payment.title;
-				subtitle = $i18n.modal.payment.subtitle;
-			} else if (type === 'success') {
-				title = $i18n.modal.success.title;
-				subtitle = $i18n.modal.success.subtitle;
-			} else if (type === 'error') {
-				title = $i18n.modal.error.title;
-				subtitle = $i18n.modal.error.defaultMessage;
-			} else if (type === 'confirm') {
-				title = $i18n.modal.common.confirm;
-				subtitle = $i18n.modal.confirm.extraDiscountOffer;
-			}
-		}
-	});
-
 	let dialogElement: HTMLDialogElement;
 	let isClosing = $state(false);
 	let transitionDuration = 300;
@@ -246,7 +227,7 @@
 							{title}
 						</h3>
 					{:else}
-						<div><!-- Empty div to maintain flex layout --></div>
+						<div></div>
 					{/if}
 
 					{#if showCloseButton}

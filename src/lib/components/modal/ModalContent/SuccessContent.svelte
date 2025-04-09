@@ -4,11 +4,11 @@
 	import { fade, fly, scale } from 'svelte/transition';
 	import { tweened } from 'svelte/motion';
 	import { cubicInOut, cubicOut } from 'svelte/easing';
-	import { formatTime } from '$lib/utils/animation';
 	import Icon from '$lib/components/Icon.svelte';
 	import { celebrationConfetti } from '$lib/utils/confetti';
 	import { i18n } from '$lib/i18n';
 	import { PaymentType, PlanType, getPlanDisplayName } from '$lib/types/plans';
+	import Countdown from '$lib/components/Countdown.svelte';
 
 	// Props
 	const {
@@ -35,6 +35,15 @@
 	let showActionButtons = $state(false);
 	let progress = $state(0);
 	let timers: number[] = [];
+
+	const offerDuration = 1800;
+
+	function formatTime(seconds: number): string {
+		const mins = Math.floor(seconds / 60);
+		const secs = Math.floor(seconds % 60);
+		return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+	}
+
 	// Animation controllers
 	const upsellSeconds = tweened(0, {
 		duration: 1000,
@@ -225,18 +234,24 @@
 	{#if showMainMessage}
 		<div class="mb-8 text-center" in:fly={{ y: 30, duration: 600 }}>
 			<h3 class="mb-1 text-2xl font-bold text-gray-900">
-				🎉 {$i18n.modal.success.mainMessage}{customerName ? ', ' + customerName : ''}!
+				🎉 {$i18n.modal.success.subtitle}{customerName ? ', ' + customerName : ''}
 			</h3>
-			<p class="mt-2 text-lg text-gray-700">
-				{$i18n.modal.success.selectedPlan.replace('{plan}', planDisplayName)}
-			</p>
+			<p class="mt-2 text-lg text-gray-700"></p>
 		</div>
 	{/if}
 
 	<!-- Payment Details -->
 	{#if showPaymentDetails}
-		<div class="mx-auto mb-6 rounded-xl bg-white p-4 shadow-sm" in:fly={{ y: 20, duration: 500 }}>
+		<div class="mx-auto mb-6 rounded-xl bg-gray-50 p-4 shadow-sm" in:fly={{ y: 20, duration: 500 }}>
 			<div class="flex items-center justify-between border-b border-gray-200 pb-3">
+				<span class="text-sm font-medium text-gray-500"
+					>{$i18n.modal.success.paymentDetails.plan}</span
+				>
+				<span class="font-mono text-sm text-gray-700">
+					{planDisplayName}
+				</span>
+			</div>
+			<div class="flex items-center justify-between border-b border-gray-200 py-3">
 				<span class="text-sm font-medium text-gray-500"
 					>{$i18n.modal.success.paymentDetails.id}</span
 				>
@@ -365,8 +380,16 @@
 									d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 								/>
 							</svg>
-							{$i18n.modal.success.upgradeOffer.countdown}
-							<span class="ml-1 font-mono">{formatTime($upsellSeconds)}</span>
+
+							<Countdown
+								duration={offerDuration}
+								beforeText={$i18n.modal.success.upgradeOffer.countdown + ' '}
+								textClass="ml-1 font-mono"
+								size="small"
+								onComplete={() => {
+									// Aktion nach Ablauf des Angebots
+								}}
+							/>
 						</div>
 					</div>
 

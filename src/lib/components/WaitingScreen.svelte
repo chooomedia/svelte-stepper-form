@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { i18n } from '$lib/i18n';
+	import Countdown from '$lib/components/Countdown.svelte';
 
 	const { autoAdvance = 7, nextStep } = $props<{
 		autoAdvance?: number;
@@ -10,7 +11,7 @@
 	let remainingTime = $state(autoAdvance);
 	let intervalId: number | undefined;
 	let timeoutId: number | undefined;
-	let stepTriggered = $state(false); // Changed to reactive state
+	let stepTriggered = $state(false);
 
 	function safeNextStep() {
 		if (!stepTriggered) {
@@ -51,6 +52,11 @@
 		{$i18n.waitingScreen.title}
 	</p>
 	<p class="text-sm text-gray-500">
-		{$i18n.waitingScreen.redirect.replace('{remainingTime}', remainingTime.toString())}
+		<Countdown
+			duration={autoAdvance}
+			beforeText={$i18n.waitingScreen.redirect.replace('{remainingTime}', '')}
+			onComplete={safeNextStep}
+			textClass="text-gray-500"
+		/>
 	</p>
 </div>
