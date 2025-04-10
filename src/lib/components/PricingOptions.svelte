@@ -69,6 +69,13 @@
 		{ name: 'PayPal', icon: '/paypal.svg', alt: 'PayPal' }
 	];
 
+	// Formatiert die Zeit für den Countdown
+	function formatTime(seconds: number): string {
+		const mins = Math.floor(seconds / 60);
+		const secs = Math.floor(seconds % 60);
+		return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+	}
+
 	const bonusBox = $derived($i18n.pricing.bonusBox);
 	const benefits = $derived(Object.values(bonusBox.benefits));
 	const discountDuration = 3600;
@@ -351,33 +358,23 @@
 					</div>
 				</div>
 
-				<div class="flex items-center space-x-2">
-					<!-- Stunden -->
+				<div class="flex space-x-2">
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
 					>
-						<Countdown
-							duration={discountDuration}
-							textClass="text-white"
-							size="large"
-							onComplete={() => {
-								// Aktion nach Ablauf des Angebots
-							}}
-						/>
+						{hours.toString().padStart(2, '0')}
 					</div>
 					<span class="text-xl font-bold text-red-600">:</span>
-					<!-- Minuten -->
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
 					>
-						<span>00</span>
+						{minutes.toString().padStart(2, '0')}
 					</div>
 					<span class="text-xl font-bold text-red-600">:</span>
-					<!-- Sekunden -->
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 font-mono text-xl font-bold text-white"
 					>
-						<span>00</span>
+						{seconds.toString().padStart(2, '0')}
 					</div>
 				</div>
 			</div>
@@ -564,14 +561,14 @@
 								</li>
 							{/each}
 							{#if paymentType === 'einmalig'}
-								<li class="flex items-start">
-									<Icon name="checkCircle" size={24} />
+								<li class="flex items-start text-primary">
+									<Icon name="checkCircle" size={24} stroke="none" />
 									<span class="text-sm font-semibold text-gray-700"
 										>{$i18n.pricing.additionalBenefits.oneTime[0]}</span
 									>
 								</li>
-								<li class="flex items-start">
-									<Icon name="checkCircle" size={24} />
+								<li class="flex items-start text-primary">
+									<Icon name="checkCircle" size={24} stroke="none" />
 									<span class="text-sm font-semibold text-gray-700"
 										>{$i18n.pricing.additionalBenefits.oneTime[1]}</span
 									>
@@ -625,8 +622,9 @@
 									<span class=" text-yellow-500">
 										<Icon name="alert" size={24} stroke="none" />
 									</span>
-									Spare <span class="mx-1 font-bold text-green-600">{discount.toFixed(2)}€</span>
-									mit dieser Option!
+									{$i18n.pricing.additionalBenefits.savings}
+									<span class="mx-1 font-bold text-green-600">{discount.toFixed(2)}€</span>
+									{$i18n.pricing.additionalBenefits.savingsOption}
 								</p>
 							</div>
 						{/if}
@@ -648,37 +646,51 @@
 		<div class="mt-8 text-center" in:fade={{ duration: 300, delay: 500 }}>
 			<div class="relative">
 				<button
-					class="order-button relative inline-flex cursor-pointer flex-col items-center justify-center rounded-lg bg-primary-600 px-8 py-4 text-lg font-bold text-secondary shadow-lg transition-all duration-300 hover:bg-primary-700 hover:shadow-xl"
+					class="order-button relative inline-flex cursor-pointer flex-col items-center justify-center rounded-lg px-8 py-4 text-lg font-bold shadow-lg transition-all duration-300
+            {!selectedPlan
+						? 'cursor-not-allowed bg-gray-300 text-gray-500'
+						: 'bg-primary-600 text-secondary hover:bg-primary-700 hover:shadow-xl'}"
 					onclick={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						openPaymentModal();
+						if (selectedPlan) {
+							openPaymentModal();
+						}
 					}}
 					type="button"
+					disabled={!selectedPlan}
 				>
 					<span
-						class="relative inline-block transform transition-transform duration-300 group-hover:scale-105"
+						class="relative inline-block transform transition-transform duration-300
+                {selectedPlan ? 'group-hover:scale-105' : ''}"
 					>
-						{paymentType === 'monatlich'
-							? $i18n.pricing.ctaButton.monthly
-							: paymentType === 'einmalig'
-								? $i18n.pricing.ctaButton.oneTime
-								: $i18n.pricing.ctaButton.longTime} - {totalPrice.toFixed(2)}€
-					</span>
+						{#if selectedPlan}
+							{paymentType === 'monatlich'
+								? $i18n.pricing.ctaButton.monthly
+								: paymentType === 'einmalig'
+									? $i18n.pricing.ctaButton.oneTime
+									: $i18n.pricing.ctaButton.longTime} - {totalPrice.toFixed(2)}€
 
-					{#if paymentType === 'einmalig' && savingsAmount > 0}
-						<span class="block text-sm font-normal"
-							>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€</span
-						>
-					{:else if paymentType === 'monatlich' && savingsAmount > 0}
-						<span class="block text-sm font-normal"
-							>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€!</span
-						>
-					{:else if paymentType === 'longtime' && savingsAmount > 0}
-						<span class="block text-sm font-normal"
-							>{$i18n.pricing.savings} {savingsAmount.toFixed(2)}€</span
-						>
-					{/if}
+							{#if paymentType === 'einmalig' && savingsAmount > 0}
+								<span class="block text-sm font-normal">
+									{$i18n.pricing.savings}
+									{savingsAmount.toFixed(2)}€
+								</span>
+							{:else if paymentType === 'monatlich' && savingsAmount > 0}
+								<span class="block text-sm font-normal">
+									{$i18n.pricing.savings}
+									{savingsAmount.toFixed(2)}€!
+								</span>
+							{:else if paymentType === 'longtime' && savingsAmount > 0}
+								<span class="block text-sm font-normal">
+									{$i18n.pricing.savings}
+									{savingsAmount.toFixed(2)}€
+								</span>
+							{/if}
+						{:else}
+							{$i18n.pricing.ctaButton.selectPlan}
+						{/if}
+					</span>
 				</button>
 			</div>
 		</div>

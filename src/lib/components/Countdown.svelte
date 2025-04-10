@@ -72,12 +72,6 @@
 		}
 	}
 
-	// Function to stop countdown
-	function stopCountdown() {
-		clearInterval(intervalId);
-		dispatch('stop');
-	}
-
 	// Size classes for different display options
 	const sizeClasses = {
 		small: 'text-xs',

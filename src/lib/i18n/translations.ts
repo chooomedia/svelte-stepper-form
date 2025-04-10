@@ -344,11 +344,14 @@ export interface Translation {
 		additionalBenefits: {
 			oneTime: string[];
 			longTime: string[];
+			savings: string;
+			savingsOption: string;
 		};
 		ctaButton: {
 			monthly: string;
 			oneTime: string;
 			longTime: string;
+			selectPlan: string;
 		};
 		savings: string;
 		trustBadges: string[];
@@ -417,6 +420,10 @@ export interface Translation {
 				date: string;
 				status: string;
 				paid: string;
+			};
+			shareContent: {
+				title: string;
+				text: string;
 			};
 			donation: {
 				title: string;
@@ -1073,12 +1080,15 @@ const de: Translation = {
 		},
 		additionalBenefits: {
 			oneTime: ['8% Rabatt auf Gesamtpreis', 'Keine monatlichen Gebühren'],
-			longTime: ['{years} Jahre Zugang', 'Massiver 20% Rabatt', 'Alle zukünftigen Updates']
+			longTime: ['Jahre Zugang', 'Massiver 20% Rabatt', 'Alle zukünftigen Updates'],
+			savings: 'Spare',
+			savingsOption: 'mit dieser Option!'
 		},
 		ctaButton: {
 			monthly: 'PLAN ABONNIEREN',
 			oneTime: 'JETZT KAUFEN',
-			longTime: 'LONGTIME ZUGANG SICHERN'
+			longTime: 'LONGTIME ZUGANG SICHERN',
+			selectPlan: 'Plan auswählen'
 		},
 		savings: 'Du sparst',
 		trustBadges: ['Sicher & geschützt bezahlen', '30 Tage Geld-zurück-Garantie'],
@@ -1155,6 +1165,10 @@ const de: Translation = {
 				status: 'Status',
 				paid: 'Bezahlt'
 			},
+			shareContent: {
+				title: 'Mein Erfolg mit Digital Pusher',
+				text: 'Ich habe gerade meinen Onlinemarketing-Plan bei Digital Pusher aktiviert und bin auf dem Weg zu mehr Sichtbarkeit und Erfolg! 🚀 #DigitalMarketing'
+			},
 			donation: {
 				title: 'Impact bereit!',
 				description:
@@ -1169,7 +1183,7 @@ const de: Translation = {
 				title: 'Deine nächsten Schritte:',
 				steps: [
 					'Überprüfe deine E-Mail für die Zahlungsbestätigung',
-					'Entdecke nützliche Ressourcen in deinem Dashboard',
+					'Wähle einen Termin für die persönliche Beratung',
 					'Lade ein Teammitglied ein für bessere Ergebnisse'
 				]
 			},
@@ -1818,12 +1832,15 @@ const en: Translation = {
 				'Years of Unlimited Access',
 				'Massive 20% Lifetime Discount',
 				'All Future Updates Included'
-			]
+			],
+			savings: 'Save',
+			savingsOption: 'with this option!'
 		},
 		ctaButton: {
 			monthly: 'SUBSCRIBE NOW',
 			oneTime: 'SECURE MY PLAN',
-			longTime: 'LOCK IN LONGTIME ACCESS'
+			longTime: 'LOCK IN LONGTIME ACCESS',
+			selectPlan: 'Choose Plan auswählen'
 		},
 		savings: 'You save',
 		trustBadges: ['Secure & Protected Payment', '30-Day Money-Back Guarantee'],
@@ -1898,6 +1915,10 @@ const en: Translation = {
 				status: 'Status',
 				paid: 'Paid'
 			},
+			shareContent: {
+				title: 'My success with Digital Pusher',
+				text: 'I just activated my onlinemarketing-plan at Digital Pusher and Im on my way to more visibility and success! 🚀 #DigitalMarketing'
+			},
 			donation: {
 				title: 'Impact Ready!',
 				description:
@@ -1912,8 +1933,8 @@ const en: Translation = {
 				title: 'Your next steps:',
 				steps: [
 					'Check your email for payment confirmation',
-					'Explore useful resources in your dashboard',
-					'Invite a team member for better results'
+					'Schedule a personal consultation appointment',
+					'Explore useful resources in your dashboard'
 				]
 			},
 			upgradeOffer: {

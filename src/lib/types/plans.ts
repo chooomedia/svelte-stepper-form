@@ -75,13 +75,13 @@ export function getPlanDisplayName(planType: PlanType, paymentType: PaymentType)
 	if (paymentType === PaymentType.LONGTIME) {
 		switch (planType) {
 			case PlanType.ONE_MONTH:
-				return 'BASIS LONGTIME-ZUGANG';
+				return 'BASIS LONGTIME';
 			case PlanType.THREE_MONTH:
-				return 'PREMIUM LONGTIME-ZUGANG';
+				return 'PREMIUM LONGTIME';
 			case PlanType.SIX_MONTH:
-				return 'BUSINESS LONGTIME-ZUGANG';
+				return 'BUSINESS LONGTIME';
 			default:
-				return 'LONGTIME-ZUGANG';
+				return 'LONGTIME';
 		}
 	}
 	return planType;

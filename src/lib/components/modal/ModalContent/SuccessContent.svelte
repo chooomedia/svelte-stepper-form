@@ -4,11 +4,12 @@
 	import { fade, fly, scale } from 'svelte/transition';
 	import { tweened } from 'svelte/motion';
 	import { cubicInOut, cubicOut } from 'svelte/easing';
-	import Icon from '$lib/components/Icon.svelte';
 	import { celebrationConfetti } from '$lib/utils/confetti';
 	import { i18n } from '$lib/i18n';
 	import { PaymentType, PlanType, getPlanDisplayName } from '$lib/types/plans';
 	import Countdown from '$lib/components/Countdown.svelte';
+	import { shareContent } from '$lib/utils/sharing';
+	import ShareButton from '$lib/components/ShareButton.svelte';
 
 	// Props
 	const {
@@ -37,12 +38,6 @@
 	let timers: number[] = [];
 
 	const offerDuration = 1800;
-
-	function formatTime(seconds: number): string {
-		const mins = Math.floor(seconds / 60);
-		const secs = Math.floor(seconds % 60);
-		return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-	}
 
 	// Animation controllers
 	const upsellSeconds = tweened(0, {
@@ -176,16 +171,13 @@
 		clearAllTimers();
 	});
 
-	function getPaymentTypeText(): string {
-		switch (paymentType) {
-			case PaymentType.MONTHLY:
-				return $i18n.modal.payment.summary.monthly;
-			case PaymentType.ONE_TIME:
-				return $i18n.modal.payment.summary.oneTime;
-			case PaymentType.LONGTIME:
-				return $i18n.modal.payment.summary.longtime;
-			default:
-				return '';
+	function trackShareOption(platform: string, success: boolean) {
+		if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+			window.gtag('event', 'share_option_clicked', {
+				event_category: 'success_modal',
+				event_label: platform,
+				value: success ? 1 : 0
+			});
 		}
 	}
 </script>
@@ -427,7 +419,10 @@
 
 	<!-- Action Buttons -->
 	{#if showActionButtons}
-		<div class="mt-8 flex flex-row justify-center gap-4" in:scale={{ duration: 400 }}>
+		<div
+			class="mt-8 flex flex-col items-center justify-center gap-4 lg:flex-row"
+			in:scale={{ duration: 400 }}
+		>
 			{#if redirectUrl}
 				<button
 					class="btn btn-primary flex items-center justify-center gap-2"
@@ -443,13 +438,13 @@
 					</svg>
 				</button>
 			{/if}
-			<button
-				class="btn btn-outline flex items-center justify-center gap-2 hover:bg-secondary-900"
-				on:click={() => trackEvent('share_clicked')}
-			>
-				<Icon name="share" size={20} />
-				{$i18n.modal.success.buttons.share}
-			</button>
+			<ShareButton
+				title={`${$i18n.modal.success.title} ${customerName ? `- ${customerName}` : ''}`}
+				text={planDisplayName}
+				hashtags={['DigitalPusher', 'Marketing', 'Success']}
+				onShareSuccess={() => trackShareOption('native', true)}
+				onShareError={() => trackShareOption('native', false)}
+			/>
 		</div>
 	{/if}
 </div>

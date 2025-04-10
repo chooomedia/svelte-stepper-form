@@ -7,13 +7,6 @@ export interface AnimationOptions {
 	easing?: (t: number) => number;
 }
 
-// Formatiert die Zeit für den Countdown
-export function formatTime(seconds: number): string {
-	const mins = Math.floor(seconds / 60);
-	const secs = Math.floor(seconds % 60);
-	return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-}
-
 // Standard-Transitions für Modals
 export const modalTransitions = {
 	fadeIn: { duration: 200, easing: cubicOut },
