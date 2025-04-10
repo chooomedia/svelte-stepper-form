@@ -31,8 +31,6 @@
 </script>
 
 <div class="confirm-content text-center">
-	<p class="mb-4 text-lg text-gray-700">{message}</p>
-
 	{#if subMessage}
 		<p class="mb-6 text-sm text-gray-500">{subMessage}</p>
 	{/if}
