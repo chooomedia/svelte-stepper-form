@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createDynamicFormSchema } from '$lib/utils/dynamicValidation';
 
 const imageOptionSchema = z.object({
 	value: z.string(),
@@ -10,78 +11,7 @@ const imageOptionSchema = z.object({
 
 export type ImageOption = z.infer<typeof imageOptionSchema>;
 
-export const baseFormSchema = z.object({
-	// Fields with multiple selection support
-	visibility: z
-		.union([
-			z.string({ required_error: 'Bitte wähle aus, wo Dein Unternehmen zu finden ist' }),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
-		])
-		.default(''),
-	advertising_frequency: z
-		.union([
-			z.string({ required_error: 'Bitte wähle die Werbefrequenz aus' }),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Werbefrequenz aus')
-		])
-		.optional(),
-	goals: z
-		.union([
-			z.string({ required_error: 'Bitte wähle Dein Hauptziel aus' }),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens ein Ziel aus')
-		])
-		.optional(),
-	campaign_management: z
-		.union([
-			z.string({ required_error: 'Bitte wähle aus, wer die Werbung betreuen soll' }),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
-		])
-		.optional(),
-	online_reviews: z
-		.union([
-			z.string({
-				required_error: 'Bitte angeben wie durchschnittlich Deine Online-Bewertungen sind'
-			}),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
-		])
-		.optional(),
-	previous_campaigns: z
-		.union([
-			z.string({ required_error: 'Bitte angeben, ob bereits Onlinewerbung geschaltet wurde' }),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Option aus')
-		])
-		.optional(),
-	business_phase: z
-		.union([
-			z.string({ required_error: 'Bitte wählen Deine Unternehmensphase aus' }),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens eine Phase aus')
-		])
-		.optional(),
-	implementation_time: z
-		.union([
-			z.string({ required_error: 'Bitte wähle den gewünschten Implementierungszeitraum' }),
-			z.array(z.string()).min(1, 'Bitte wähle mindestens einen Zeitraum aus')
-		])
-		.optional(),
-
-	// Company and contact details (unchanged)
-	company_name: z
-		.string({ required_error: 'Unternehmensname wird benötigt' })
-		.min(2, 'Name muss mindestens 2 Zeichen lang sein'),
-	company_url: z.string().url('Bitte gültige URL angeben'),
-	salutation: z.enum(['Herr', 'Frau', 'Divers']).optional(),
-	first_name: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein').optional(),
-	last_name: z.string().min(2, 'Nachname muss mindestens 2 Zeichen lang sein'),
-	email: z.string().email('Bitte eine gültige E-Mail-Adresse angeben'),
-	phone: z
-		.string()
-		.regex(/^\+?[0-9\s\-()]{7,20}$/, 'Ungültiges Telefonformat')
-		.optional(),
-	privacy_agreement: z.boolean().refine((val) => val === true, {
-		message: 'Bitte akzeptiere die Datenschutzerklärung'
-	}),
-	marketing_consent: z.boolean().optional(),
-	visibility_score: z.number().optional()
-});
+export const baseFormSchema = createDynamicFormSchema();
 
 export const step_1 = baseFormSchema.pick({ visibility: true });
 export const step_2 = baseFormSchema.pick({ company_url: true });

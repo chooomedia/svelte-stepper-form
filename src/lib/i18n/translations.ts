@@ -1,4 +1,3 @@
-// Definiere den Typen für alle Übersetzungen
 export interface Translation {
 	start: {
 		title: string;
@@ -100,6 +99,68 @@ export interface Translation {
 			optimal: string;
 			showImprovement: string;
 			hideImprovement: string;
+		};
+		validation: {
+			required: string;
+			visibility: {
+				required: string;
+				minSelection: string;
+			};
+			advertising_frequency: {
+				required: string;
+				minSelection: string;
+			};
+			goals: {
+				required: string;
+				minSelection: string;
+			};
+			campaign_management: {
+				required: string;
+				minSelection: string;
+			};
+			online_reviews: {
+				required: string;
+				minSelection: string;
+			};
+			previous_campaigns: {
+				required: string;
+				minSelection: string;
+			};
+			business_phase: {
+				required: string;
+				minSelection: string;
+			};
+			implementation_time: {
+				required: string;
+				minSelection: string;
+			};
+			company_name: {
+				required: string;
+				minLength: string;
+			};
+			company_url: {
+				required: string;
+				url: string;
+			};
+			first_name: {
+				required: string;
+				minLength: string;
+			};
+			last_name: {
+				required: string;
+				minLength: string;
+			};
+			email: {
+				required: string;
+				email: string;
+			};
+			phone: {
+				required: string;
+				pattern: string;
+			};
+			privacy_agreement: {
+				required: string;
+			};
 		};
 	};
 	results: {
@@ -778,6 +839,70 @@ const de: Translation = {
 			improvedValue: 'Nach Optimierung',
 			average: 'Durchschnitt',
 			optimal: 'Optimal'
+		},
+		validation: {
+			// Allgemeine Validierungsfehler
+			required: 'Dieses Feld ist erforderlich',
+			// Felder-spezifische Validierungsfehler
+			visibility: {
+				required: 'Bitte wähle aus, wo Dein Unternehmen zu finden ist',
+				minSelection: 'Bitte wähle mindestens eine Option aus'
+			},
+			advertising_frequency: {
+				required: 'Bitte wähle die Werbefrequenz aus',
+				minSelection: 'Bitte wähle mindestens eine Werbefrequenz aus'
+			},
+			goals: {
+				required: 'Bitte wähle Dein Hauptziel aus',
+				minSelection: 'Bitte wähle mindestens ein Ziel aus'
+			},
+			campaign_management: {
+				required: 'Bitte wähle aus, wer die Werbung betreuen soll',
+				minSelection: 'Bitte wähle mindestens eine Option aus'
+			},
+			online_reviews: {
+				required: 'Bitte angeben wie durchschnittlich Deine Online-Bewertungen sind',
+				minSelection: 'Bitte wähle mindestens eine Option aus'
+			},
+			previous_campaigns: {
+				required: 'Bitte angeben, ob bereits Onlinewerbung geschaltet wurde',
+				minSelection: 'Bitte wähle mindestens eine Option aus'
+			},
+			business_phase: {
+				required: 'Bitte wählen Deine Unternehmensphase aus',
+				minSelection: 'Bitte wähle mindestens eine Phase aus'
+			},
+			implementation_time: {
+				required: 'Bitte wähle den gewünschten Implementierungszeitraum',
+				minSelection: 'Bitte wähle mindestens einen Zeitraum aus'
+			},
+			company_name: {
+				required: 'Unternehmensname wird benötigt',
+				minLength: 'Name muss mindestens 2 Zeichen lang sein'
+			},
+			company_url: {
+				required: 'Website-URL wird benötigt',
+				url: 'Bitte gültige URL angeben'
+			},
+			first_name: {
+				required: 'Vorname wird benötigt',
+				minLength: 'Vorname muss mindestens 2 Zeichen lang sein'
+			},
+			last_name: {
+				required: 'Nachname wird benötigt',
+				minLength: 'Nachname muss mindestens 2 Zeichen lang sein'
+			},
+			email: {
+				required: 'E-Mail-Adresse wird benötigt',
+				email: 'Bitte eine gültige E-Mail-Adresse angeben'
+			},
+			phone: {
+				required: 'Telefonnummer wird benötigt',
+				pattern: 'Ungültiges Telefonformat'
+			},
+			privacy_agreement: {
+				required: 'Bitte akzeptiere die Datenschutzerklärung'
+			}
 		}
 	},
 	results: {
@@ -1528,6 +1653,69 @@ const en: Translation = {
 			improvedValue: 'After Optimization',
 			average: 'Average',
 			optimal: 'Optimal'
+		},
+		validation: {
+			required: 'This field is required',
+			// Felder-spezifische Validierungsfehler
+			visibility: {
+				required: 'Please select where your business can be found',
+				minSelection: 'Please select at least one option'
+			},
+			advertising_frequency: {
+				required: 'Please select your advertising frequency',
+				minSelection: 'Please select at least one advertising frequency'
+			},
+			goals: {
+				required: 'Please select your main goal',
+				minSelection: 'Please select at least one goal'
+			},
+			campaign_management: {
+				required: 'Please select who should manage your advertising',
+				minSelection: 'Please select at least one option'
+			},
+			online_reviews: {
+				required: 'Please indicate how your online reviews are on average',
+				minSelection: 'Please select at least one option'
+			},
+			previous_campaigns: {
+				required: 'Please indicate if you have already run online advertising',
+				minSelection: 'Please select at least one option'
+			},
+			business_phase: {
+				required: 'Please select your business phase',
+				minSelection: 'Please select at least one phase'
+			},
+			implementation_time: {
+				required: 'Please select the desired implementation period',
+				minSelection: 'Please select at least one period'
+			},
+			company_name: {
+				required: 'Company name is required',
+				minLength: 'Name must be at least 2 characters long'
+			},
+			company_url: {
+				required: 'Website URL is required',
+				url: 'Please provide a valid URL'
+			},
+			first_name: {
+				required: 'First name is required',
+				minLength: 'First name must be at least 2 characters long'
+			},
+			last_name: {
+				required: 'Last name is required',
+				minLength: 'Last name must be at least 2 characters long'
+			},
+			email: {
+				required: 'Email address is required',
+				email: 'Please provide a valid email address'
+			},
+			phone: {
+				required: 'Phone number is required',
+				pattern: 'Invalid phone format'
+			},
+			privacy_agreement: {
+				required: 'Please accept the privacy policy'
+			}
 		}
 	},
 	results: {
