@@ -142,7 +142,20 @@ function createCurrencyStore(): CurrencyStore {
 
 			const currencyInfo = defaultRates[currencyCode] || defaultRates.EUR;
 
-			// Format the number according to locale
+			// Special handling for Swiss Francs
+			if (currencyCode === 'CHF') {
+				const formattedNumber = price.toFixed(currencyInfo.decimals);
+				// Swiss format uses apostrophes as thousands separators
+				const swissFormattedNumber = formattedNumber.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+
+				if (showSymbol) {
+					return `CHF ${swissFormattedNumber}`;
+				}
+
+				return swissFormattedNumber;
+			}
+
+			// Regular formatting for other currencies
 			const formattedNumber = price
 				.toFixed(currencyInfo.decimals)
 				.replace('.', currencyInfo.decimalSeparator);

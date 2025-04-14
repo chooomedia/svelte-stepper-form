@@ -38,27 +38,26 @@ export const i18n = derived(currentLocale, ($locale) => {
 // Country code to locale mapping
 const COUNTRY_TO_LOCALE: Record<string, SupportedLocale> = {
 	de: 'de',
-	at: 'de', // Austria uses German
-	ch: 'de', // Switzerland (defaulting to German)
+	at: 'de',
+	ch: 'de',
 	swiss: 'de',
 	gb: 'en',
 	us: 'en',
 	ca: 'en',
 	au: 'en',
-	fr: 'en', // Fallback to English until we have French
-	es: 'en', // Fallback to English until we have Spanish
-	it: 'en', // Fallback to English until we have Italian
-	// Arabic-speaking countries
-	sa: 'ar', // Saudi Arabia
-	ae: 'ar', // United Arab Emirates
-	eg: 'ar', // Egypt
-	iq: 'ar', // Iraq
-	jo: 'ar', // Jordan
-	kw: 'ar', // Kuwait
-	lb: 'ar', // Lebanon
-	om: 'ar', // Oman
-	qa: 'ar', // Qatar
-	ye: 'ar' // Yemen
+	fr: 'en',
+	es: 'en',
+	it: 'en',
+	sa: 'ar',
+	ae: 'ar',
+	eg: 'ar',
+	iq: 'ar',
+	jo: 'ar',
+	kw: 'ar',
+	lb: 'ar',
+	om: 'ar',
+	qa: 'ar',
+	ye: 'ar'
 };
 
 // Currency code mapping based on country
@@ -67,25 +66,62 @@ const COUNTRY_TO_CURRENCY: Record<string, string> = {
 	at: 'EUR',
 	ch: 'CHF',
 	swiss: 'CHF',
-	gb: 'GBP',
-	us: 'USD',
-	ca: 'CAD',
-	au: 'AUD',
+	gb: 'EUR',
+	us: 'EUR',
+	ca: 'EUR',
+	au: 'EUR',
 	fr: 'EUR',
 	es: 'EUR',
 	it: 'EUR',
-	// Arab currencies
-	sa: 'SAR', // Saudi Riyal
-	ae: 'AED', // UAE Dirham
-	eg: 'EGP', // Egyptian Pound
-	iq: 'IQD', // Iraqi Dinar
-	jo: 'JOD', // Jordanian Dinar
-	kw: 'KWD', // Kuwaiti Dinar
-	lb: 'LBP', // Lebanese Pound
-	om: 'OMR', // Omani Rial
-	qa: 'QAR', // Qatari Riyal
-	ye: 'YER' // Yemeni Rial
+	sa: 'EUR',
+	ae: 'EUR',
+	eg: 'EUR',
+	iq: 'EUR',
+	jo: 'EUR',
+	kw: 'EUR',
+	lb: 'EUR',
+	om: 'EUR',
+	qa: 'EUR',
+	ye: 'EUR'
 };
+
+/**
+ * Set locale and update related stores (currency, tax)
+ */
+function setLocaleAndCurrency(locale: SupportedLocale): void {
+	// Update locale store
+	currentLocale.set(locale);
+
+	// Save preference
+	if (browser) {
+		localStorage.setItem('userLocale', locale);
+	}
+
+	// Get country code from locale mapping
+	let countryCode = locale;
+	// Find the country code that maps to this locale (first match)
+	for (const [country, mappedLocale] of Object.entries(COUNTRY_TO_LOCALE)) {
+		if (mappedLocale === locale) {
+			countryCode = country;
+			break;
+		}
+	}
+
+	// Update currency if store available
+	if (currencyStore && typeof currencyStore.setCurrency === 'function') {
+		const currency = COUNTRY_TO_CURRENCY[countryCode] || 'EUR';
+		currencyStore.setCurrency(currency);
+	}
+
+	// Update tax info if store available
+	if (taxInfo && typeof taxInfo.update === 'function') {
+		taxInfo.update((store) => ({
+			...store,
+			country: countryCode.toUpperCase(),
+			currency: COUNTRY_TO_CURRENCY[countryCode] || 'EUR'
+		}));
+	}
+}
 
 /**
  * Initialize locale based on browser settings, localStorage, or geolocation
@@ -147,44 +183,6 @@ async function detectUserRegion(): Promise<void> {
 	} catch (error) {
 		console.error('Failed to detect user region:', error);
 		setLocaleAndCurrency(DEFAULT_LOCALE);
-	}
-}
-
-/**
- * Set locale and update related stores (currency, tax)
- */
-function setLocaleAndCurrency(locale: SupportedLocale): void {
-	// Update locale store
-	currentLocale.set(locale);
-
-	// Save preference
-	if (browser) {
-		localStorage.setItem('userLocale', locale);
-	}
-
-	// Get country code from locale mapping
-	let countryCode = locale;
-	// Find the country code that maps to this locale (first match)
-	for (const [country, mappedLocale] of Object.entries(COUNTRY_TO_LOCALE)) {
-		if (mappedLocale === locale) {
-			countryCode = country;
-			break;
-		}
-	}
-
-	// Update currency if store available
-	if (currencyStore && typeof currencyStore.setCurrency === 'function') {
-		const currency = COUNTRY_TO_CURRENCY[countryCode] || 'EUR';
-		currencyStore.setCurrency(currency);
-	}
-
-	// Update tax info if store available
-	if (taxInfo && typeof taxInfo.update === 'function') {
-		taxInfo.update((store) => ({
-			...store,
-			country: countryCode.toUpperCase(),
-			currency: COUNTRY_TO_CURRENCY[countryCode] || 'EUR'
-		}));
 	}
 }
 

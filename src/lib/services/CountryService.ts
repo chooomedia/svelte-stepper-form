@@ -1,6 +1,6 @@
 // src/lib/services/CountryService.ts
-export type SupportedLocale = 'de' | 'en' | 'ar';
-export type SupportedCurrency = 'EUR' | 'USD' | 'GBP' | 'CHF' | 'AED' | 'SAR' | 'CAD' | 'AUD';
+export type SupportedLocale = 'ar' | 'de' | 'en' | 'hu' | 'ro' | 'ru' | 'tr';
+export type SupportedCurrency = 'EUR' | 'CHF';
 
 export interface CountryConfig {
 	locale: SupportedLocale;
@@ -17,8 +17,8 @@ export class CountryService {
 		de: { locale: 'de', currency: 'EUR', vatRate: 19, vatLabel: 'MwSt.', rtl: false },
 		at: { locale: 'de', currency: 'EUR', vatRate: 20, vatLabel: 'USt.', rtl: false },
 		ch: { locale: 'de', currency: 'CHF', vatRate: 7.7, vatLabel: 'MwSt.', rtl: false },
-		gb: { locale: 'en', currency: 'GBP', vatRate: 20, vatLabel: 'VAT', rtl: false },
-		uk: { locale: 'en', currency: 'GBP', vatRate: 20, vatLabel: 'VAT', rtl: false },
+		gb: { locale: 'en', currency: 'EUR', vatRate: 20, vatLabel: 'VAT', rtl: false },
+		uk: { locale: 'en', currency: 'EUR', vatRate: 20, vatLabel: 'VAT', rtl: false },
 		fr: { locale: 'en', currency: 'EUR', vatRate: 20, vatLabel: 'TVA', rtl: false },
 		es: { locale: 'en', currency: 'EUR', vatRate: 21, vatLabel: 'IVA', rtl: false },
 		it: { locale: 'en', currency: 'EUR', vatRate: 22, vatLabel: 'IVA', rtl: false },
@@ -26,18 +26,18 @@ export class CountryService {
 		be: { locale: 'en', currency: 'EUR', vatRate: 21, vatLabel: 'TVA/BTW', rtl: false },
 
 		// North America
-		us: { locale: 'en', currency: 'USD', vatRate: 0, vatLabel: 'Sales Tax', rtl: false },
-		ca: { locale: 'en', currency: 'CAD', vatRate: 5, vatLabel: 'GST', rtl: false },
+		us: { locale: 'en', currency: 'EUR', vatRate: 0, vatLabel: 'Sales Tax', rtl: false },
+		ca: { locale: 'en', currency: 'EUR', vatRate: 5, vatLabel: 'GST', rtl: false },
 
 		// Oceania
-		au: { locale: 'en', currency: 'AUD', vatRate: 10, vatLabel: 'GST', rtl: false },
-		nz: { locale: 'en', currency: 'AUD', vatRate: 15, vatLabel: 'GST', rtl: false },
+		au: { locale: 'en', currency: 'EUR', vatRate: 10, vatLabel: 'GST', rtl: false },
+		nz: { locale: 'en', currency: 'EUR', vatRate: 15, vatLabel: 'GST', rtl: false },
 
 		// Middle East (Arabic-speaking)
-		sa: { locale: 'ar', currency: 'SAR', vatRate: 15, vatLabel: 'VAT', rtl: true },
-		ae: { locale: 'ar', currency: 'AED', vatRate: 5, vatLabel: 'VAT', rtl: true },
-		qa: { locale: 'ar', currency: 'SAR', vatRate: 0, vatLabel: 'VAT', rtl: true },
-		eg: { locale: 'ar', currency: 'USD', vatRate: 14, vatLabel: 'VAT', rtl: true },
+		sa: { locale: 'ar', currency: 'EUR', vatRate: 15, vatLabel: 'VAT', rtl: true },
+		ae: { locale: 'ar', currency: 'EUR', vatRate: 5, vatLabel: 'VAT', rtl: true },
+		qa: { locale: 'ar', currency: 'EUR', vatRate: 0, vatLabel: 'VAT', rtl: true },
+		eg: { locale: 'ar', currency: 'EUR', vatRate: 14, vatLabel: 'VAT', rtl: true },
 
 		// Default (fallback)
 		default: { locale: 'de', currency: 'EUR', vatRate: 19, vatLabel: 'MwSt.', rtl: false }
@@ -59,29 +59,27 @@ export class CountryService {
 
 		switch (currency) {
 			case 'EUR':
-				locales.push('de-DE', 'fr-FR', 'es-ES', 'it-IT', 'nl-NL');
-				break;
-			case 'USD':
-				locales.push('en-US');
-				break;
-			case 'GBP':
-				locales.push('en-GB');
+				locales.push(
+					'de-DE',
+					'fr-FR',
+					'es-ES',
+					'it-IT',
+					'nl-NL',
+					'en-US',
+					'en-GB',
+					'ar-SA',
+					'ar-AE',
+					'en-CA',
+					'fr-CA',
+					'en-AU',
+					'en-US'
+				);
 				break;
 			case 'CHF':
 				locales.push('de-CH', 'fr-CH', 'it-CH');
 				break;
-			case 'AED':
-			case 'SAR':
-				locales.push('ar-SA', 'ar-AE');
-				break;
-			case 'CAD':
-				locales.push('en-CA', 'fr-CA');
-				break;
-			case 'AUD':
-				locales.push('en-AU');
-				break;
 			default:
-				locales.push('en-US');
+				locales.push('de-CH');
 		}
 
 		return locales;
