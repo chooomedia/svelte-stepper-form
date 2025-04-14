@@ -8,7 +8,7 @@ const en: Translation = {
 			rating: {
 				user: 'Customers',
 				from: 'of',
-				quiztime: '-minute quiz'
+				quiztime: 'minute quiz'
 			}
 		}
 	},

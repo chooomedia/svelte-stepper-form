@@ -72,6 +72,7 @@
 							className="text-primary-600 transition-colors group-hover:text-primary-700"
 							fill="currentColor"
 							aria-hidden="true"
+							viewBox="0 0 24 24"
 						/>
 						<span
 							class="font-medium transition-colors group-hover:text-secondary-800"

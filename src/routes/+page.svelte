@@ -199,7 +199,7 @@
 				aria-hidden={$currentStepIndex > 1}
 			>
 				<h1
-					class="mb-6 text-5xl font-bold text-secondary-900"
+					class="mb-6 text-3xl font-bold text-secondary-900 lg:text-5xl"
 					itemprop="name"
 					id="assessment-title"
 				>

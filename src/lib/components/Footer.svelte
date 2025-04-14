@@ -12,7 +12,8 @@
 		const nativeNames = {
 			de: 'Deutsch',
 			en: 'English',
-			ar: 'العربية' // Arabic
+			ar: 'العربية',
+			hu: 'Ungar'
 		};
 
 		return {
@@ -36,12 +37,12 @@
 <footer
 	class="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white px-4 py-4 sm:px-6 lg:px-8"
 >
-	<div class="flex items-center justify-center">
-		<div class="text-center text-xs text-gray-500 lg:text-sm">
+	<div class="flex flex-col items-center justify-center lg:flex-row">
+		<div class="text-center text-xs text-gray-500">
 			© {new Date().getFullYear()} Digital Pusher. {$i18n.footer.copyright}
 		</div>
 
-		<div class="ml-4 flex space-x-1">
+		<div class="mt-2 flex space-x-1 lg:ml-4 lg:mt-0">
 			{#each supportedLanguages as lang}
 				<button
 					class="rounded-md px-2 py-1 text-xs {$currentLocale === lang.code

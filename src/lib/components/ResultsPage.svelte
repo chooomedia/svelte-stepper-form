@@ -562,14 +562,14 @@
 		class="my-8 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
 	>
 		<button
-			class="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto"
+			class="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto lg:mx-3"
 			onclick={restartAssessment}
 		>
 			{$i18n.results.buttons.restart}
 		</button>
 
 		<button
-			class="w-full rounded-lg bg-primary-600 px-6 py-3 font-semibold text-secondary shadow-sm transition-colors hover:bg-primary-700 sm:w-auto"
+			class="w-full rounded-lg bg-primary-600 px-6 py-3 font-semibold text-secondary shadow-sm transition-colors hover:bg-primary-700 sm:w-auto lg:mx-3"
 			onclick={nextStep}
 		>
 			{$i18n.results.buttons.getReport}

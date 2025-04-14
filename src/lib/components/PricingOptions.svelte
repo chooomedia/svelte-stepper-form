@@ -88,34 +88,46 @@
 		const selectedPlanData = pricePlans.find((p) => p.name === planName);
 		if (!selectedPlanData) return;
 
-		// Extract the number of months from the plan name
+		// Extrahiere die Anzahl der Monate aus dem Plannamen
 		const months = parseInt(planName.split('-')[0]) || 1;
 
-		// Calculate prices with 2 decimal places precision
+		// Berechne Preise mit 2 Dezimalstellen Genauigkeit
 		const pricePerDay = selectedPlanData.price;
 		const days = months * 30;
 
-		// Monthly price (base calculation)
+		// Monatlicher Preis (Grundberechnung)
 		monthlyPrice = Math.round(pricePerDay * 30 * 100) / 100;
 
-		// Total price based on payment type
-		if (payMethod === PaymentType.MONTHLY) {
-			totalPrice = monthlyPrice;
+		// Schweizer Anpassungen für die Preise
+		const currency = $currencyStore;
+		const isSwissFranc = currency === 'CHF';
+
+		// Währungsumrechnung falls notwendig
+		let currencyMultiplier = 1;
+		if (isSwissFranc) {
+			// Beispiel Umrechnungskurs von EUR zu CHF
+			currencyMultiplier = 1.07; // Aktuellen Kurs verwenden
+		}
+
+		// Gesamtpreis basierend auf Zahlungsart und Währung
+		if (payMethod === 'monatlich') {
+			totalPrice = monthlyPrice * currencyMultiplier;
 			savingsAmount = 0;
 		} else {
-			// Get the appropriate discount percentage
+			// Holen Sie sich den entsprechenden Rabatt-Prozentsatz
 			const discountPercent = getDiscountPercentage(payMethod) / 100;
 
-			if (payMethod === PaymentType.ONE_TIME) {
-				// Calculate one-time payment with appropriate discount
-				const fullPrice = Math.round(pricePerDay * days * 100) / 100;
+			if (payMethod === 'einmalig') {
+				// Berechne Einmalzahlung mit entsprechendem Rabatt
+				const fullPrice = (Math.round(pricePerDay * days * 100) / 100) * currencyMultiplier;
 				const discount = Math.round(fullPrice * discountPercent * 100) / 100;
 				discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
 				totalPrice = discountedPrice;
 				savingsAmount = discount;
-			} else if (payMethod === PaymentType.LONGTIME) {
-				// Calculate longtime value with appropriate discount
-				const fullPrice = (Math.round(pricePerDay * days * 100) / 100) * longtimeYears;
+			} else if (payMethod === 'longtime') {
+				// Berechne Longtime-Wert mit entsprechendem Rabatt
+				const fullPrice =
+					(Math.round(pricePerDay * days * 100) / 100) * longtimeYears * currencyMultiplier;
 				const discount = Math.round(fullPrice * discountPercent * 100) / 100;
 				discountedPrice = Math.round((fullPrice - discount) * 100) / 100;
 				totalPrice = discountedPrice;
@@ -290,8 +302,8 @@
 			...plan,
 			price: currencyStore.convertPrice(plan.price),
 			originalPrice: currencyStore.convertPrice(plan.originalPrice),
-			formattedPrice: currencyStore.convertPrice(plan.price),
-			formattedOriginalPrice: currencyStore.convertPrice(plan.originalPrice),
+			formattedPrice: currencyStore.formatPrice(plan.price),
+			formattedOriginalPrice: currencyStore.formatPrice(plan.originalPrice),
 			// Add translated features if needed
 			features: plan.features.map((feature) => {
 				// Try to find a translation for this feature
@@ -305,6 +317,11 @@
 					: feature;
 			})
 		}));
+	}
+
+	function formatSwissFrancPrice(price: number): string {
+		// Formatiere gemäß Schweizer Standards (z.B. CHF 199'950.00)
+		return `CHF ${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, "'")}`;
 	}
 
 	const translationLabels = $derived($i18n.pricing || {});
@@ -428,7 +445,14 @@
 						<div
 							class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary-600 text-secondary"
 						>
-							<Icon name="document" size={50} stroke="currentColor" strokeWidth="2" fill="none" />
+							<Icon
+								name="document"
+								size={50}
+								stroke="currentColor"
+								strokeWidth="2"
+								fill="none"
+								viewBox="0 0 24 24"
+							/>
 						</div>
 						<p class="text-lg font-semibold text-white">{$i18n.pricing.bonusBox.value}</p>
 						<p class="text-xs text-primary-300">{$i18n.pricing.bonusBox.limited}</p>
@@ -536,13 +560,29 @@
 							{/if}
 
 							<span class="ml-1 text-3xl font-bold text-gray-900">
-								{currencyStore.formatPrice(
-									paymentType === 'monatlich'
-										? plan.price
-										: paymentType === 'einmalig'
-											? plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92
-											: plan.price * 30 * parseInt(plan.name.split('-')[0]) * longtimeYears * 0.8
-								)}
+								{$currencyStore === 'CHF'
+									? formatSwissFrancPrice(
+											paymentType === 'monatlich'
+												? plan.price
+												: paymentType === 'einmalig'
+													? plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92
+													: plan.price *
+														30 *
+														parseInt(plan.name.split('-')[0]) *
+														longtimeYears *
+														0.8
+										)
+									: currencyStore.formatPrice(
+											paymentType === 'monatlich'
+												? plan.price
+												: paymentType === 'einmalig'
+													? plan.price * 30 * parseInt(plan.name.split('-')[0]) * 0.92
+													: plan.price *
+														30 *
+														parseInt(plan.name.split('-')[0]) *
+														longtimeYears *
+														0.8
+										)}
 							</span>
 							<span class="text-sm text-gray-500">
 								{paymentType === 'monatlich'

@@ -4,7 +4,7 @@
 	export let color: string = 'currentColor';
 	export let strokeWidth = '1';
 	export let className: string = '';
-	export let viewbox: string = '0 0 24 24';
+	export let viewBox: string = '0 0 24 24';
 	export let fill: string = '';
 	export let stroke: string = '';
 
@@ -92,14 +92,6 @@
 		copy: 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'
 	};
 
-	// Bestimme das zu verwendende ViewBox
-	function getViewBox(iconName: string): string {
-		if (pathIcons[iconName]?.viewBox) {
-			return pathIcons[iconName].viewBox;
-		}
-		return '0 0 24 24'; // Standard-ViewBox
-	}
-
 	const shouldUseFill = fill !== '' || name === 'info' || name === 'lock';
 	const effectiveFill = fill || (shouldUseFill ? color : 'currentColor');
 	const effectiveStroke = stroke || (shouldUseFill ? 'none' : color);
@@ -109,7 +101,7 @@
 	xmlns="http://www.w3.org/2000/svg"
 	width={size}
 	height={size}
-	viewBox={getViewBox(name)}
+	{viewBox}
 	fill={effectiveFill || fill || color}
 	stroke={effectiveStroke}
 	stroke-width={strokeWidth}

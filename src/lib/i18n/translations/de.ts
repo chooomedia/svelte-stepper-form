@@ -8,7 +8,7 @@ const de: Translation = {
 			rating: {
 				user: 'Nutzer',
 				from: 'von',
-				quiztime: '-Minuten Quiz'
+				quiztime: 'Minuten Quiz'
 			}
 		}
 	},
@@ -564,7 +564,7 @@ const de: Translation = {
 				googlePartner: {
 					label: 'Google Partner',
 					value: '',
-					icon: 'star'
+					icon: 'google'
 				},
 				customers: {
 					label: 'Kunden',

@@ -13,7 +13,7 @@
 		class="flex items-center space-x-1 rounded-[4px] bg-white p-2 text-xs font-bold shadow-custom"
 	>
 		<div class="h-4 w-4 bg-[#00B67A] text-white">
-			<Icon name="star" size={24} fill="currentColor" stroke="none" />
+			<Icon name="star" size={16} fill="currentColor" stroke="none" viewBox="0 0 16 16" />
 		</div>
 		<p class="font-bold">4.8</p>
 		<span class="font-normal">{$i18n.start.meta.rating.from} 5</span>
@@ -22,6 +22,6 @@
 		<span class="font-normal">{$i18n.start.meta.rating.user}</span>
 	</div>
 	<p class="rounded-[4px] bg-white p-2 text-xs font-bold uppercase shadow-custom">
-		{calculateTime(totalSteps)}{$i18n.start.meta.rating.quiztime}
+		{calculateTime(totalSteps)}-{$i18n.start.meta.rating.quiztime}
 	</p>
 </div>

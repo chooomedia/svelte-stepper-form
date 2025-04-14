@@ -398,22 +398,22 @@ const ar: Translation = {
 				purchase: {
 					title: 'إتمام الشراء',
 					description: 'اختيار الخطة المناسبة وإتمام الشراء',
-					icon: 'عربة'
+					icon: 'cart'
 				},
 				scheduling: {
 					title: 'تحديد موعد',
 					description: 'ترتيب موعد مع خبيرنا الرقمي',
-					icon: 'تقويم'
+					icon: 'calendar'
 				},
 				implementation: {
 					title: 'التنفيذ',
 					description: 'تنفيذ احترافي للتدابير المتفق عليها',
-					icon: 'كود'
+					icon: 'code'
 				},
 				handover: {
 					title: 'التسليم',
 					description: 'تسليم النظام الرقمي المحسن',
-					icon: '✓'
+					icon: 'check'
 				}
 			},
 			plans: 'اختر خطتك',
@@ -440,49 +440,49 @@ const ar: Translation = {
 					{
 						title: 'تحسين الموقع',
 						description: 'تحسين سرعة التحميل والتوافق مع المحمول وسهولة الاستخدام.',
-						icon: 'جهاز',
+						icon: 'deviceDesktop',
 						underScore: 40
 					},
 					{
 						title: 'SEO والكلمات المفتاحية',
 						description: 'تحسين محركات البحث مخصص لقطاعك.',
-						icon: 'بحث',
+						icon: 'search',
 						underScore: 40
 					},
 					{
 						title: 'الوجود الأساسي على الويب',
 						description: 'بناء وجود قوي على الإنترنت.',
-						icon: 'منزل',
+						icon: 'home',
 						underScore: 40
 					},
 					{
 						title: 'SEO محلي',
 						description: 'تحسين للبحث المحلي.',
-						icon: 'خريطة',
+						icon: 'mapPin',
 						underScore: 40
 					},
 					{
 						title: 'استراتيجية المحتوى',
 						description: 'استراتيجية محتوى تجذب جمهورك.',
-						icon: 'ملف',
+						icon: 'fileText',
 						underScore: 60
 					},
 					{
 						title: 'التكامل مع وسائل التواصل',
 						description: 'ربط موقعك بوسائل التواصل لزيادة الوصول.',
-						icon: 'مشاركة',
+						icon: 'share2',
 						underScore: 60
 					},
 					{
 						title: 'تحسين التحويل',
 						description: 'تحسينات لتحويل الزوار إلى عملاء.',
-						icon: 'زيادة',
+						icon: 'trendingUp',
 						underScore: 80
 					},
 					{
 						title: 'تسويق المحتوى',
 						description: 'محتوى عالي الجودة يعرض خبرتك.',
-						icon: 'تحرير',
+						icon: 'edit',
 						underScore: 80
 					}
 				]
@@ -548,23 +548,24 @@ const ar: Translation = {
 			name: 'كريستوفر مات',
 			role: 'خبير تسويق رقمي',
 			bio: 'بخبرة أكثر من 10 سنوات، يساعد كريستوفر الشركات على تحسين تواجدها الرقمي وتحقيق النتائج. كشريك معتمد في Google وخبير وسائل التواصل، يعرف جميع الاستراتيجيات اللازمة للرؤية المستدامة.',
-			imageUrl: 'https://example.com/christopher-matt.png',
+			imageUrl:
+				'https://www.chooomedia.de/wp-content/uploads/2023/03/chooomedia-christopher-matt-ceo-freelancer-webdesigner-ui-designer-information-designer-500x500px__1_-removebg-preview.png',
 			imageAlt: 'كريستوفر مات - خبير تسويق رقمي',
 			badges: {
 				googlePartner: {
 					label: 'شريك Google',
 					value: '',
-					icon: 'نجمة'
+					icon: 'google'
 				},
 				customers: {
 					label: 'عملاء',
 					value: '220+',
-					icon: 'مستخدمون'
+					icon: 'users'
 				},
 				experience: {
 					label: 'سنوات الخبرة',
 					value: '10+',
-					icon: 'خبرة'
+					icon: 'experience'
 				}
 			}
 		},

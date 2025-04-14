@@ -1,22 +1,25 @@
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
-import type { Translation } from './types';
 import { taxInfo } from '$lib/stores/taxStore';
 import { currencyStore } from '$lib/stores/currencyStore';
 
 // Import all language files
+import ar from './translations/ar';
 import de from './translations/de';
 import en from './translations/en';
-import ar from './translations/ar';
+import hu from './translations/hu';
+import ro from './translations/ro';
+import ru from './translations/ru';
+import tr from './translations/tr';
 
 // Export the Translation type
 export type { Translation } from './types';
 
 // Collection of all translations
-export const translations = { de, en, ar };
+export const translations = { ar, de, en, hu, ro, ru, tr };
 
 // Supported locales as type
-export type SupportedLocale = 'de' | 'en' | 'ar';
+export type SupportedLocale = 'ar' | 'de' | 'en' | 'hu' | 'ro' | 'ru' | 'tr';
 
 // Default settings
 const DEFAULT_LOCALE: SupportedLocale = 'de';
@@ -37,6 +40,7 @@ const COUNTRY_TO_LOCALE: Record<string, SupportedLocale> = {
 	de: 'de',
 	at: 'de', // Austria uses German
 	ch: 'de', // Switzerland (defaulting to German)
+	swiss: 'de',
 	gb: 'en',
 	us: 'en',
 	ca: 'en',
@@ -62,6 +66,7 @@ const COUNTRY_TO_CURRENCY: Record<string, string> = {
 	de: 'EUR',
 	at: 'EUR',
 	ch: 'CHF',
+	swiss: 'CHF',
 	gb: 'GBP',
 	us: 'USD',
 	ca: 'CAD',
