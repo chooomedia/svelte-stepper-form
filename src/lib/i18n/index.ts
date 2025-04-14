@@ -1,13 +1,23 @@
 // src/lib/i18n/index.ts - Improved version
-
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
-import { translations, type Translation } from './translations';
+import type { Translation } from './types';
 import { taxInfo } from '$lib/stores/taxStore';
 import { currencyStore } from '$lib/stores/currencyStore';
 
+// Import all language files
+import de from './translations/de';
+import en from './translations/en';
+import ar from './translations/ar';
+
+// Export the Translation type
+export type { Translation } from './types';
+
+// Collection of all translations
+export const translations = { de, en, ar };
+
 // Supported locales as type
-export type SupportedLocale = 'de' | 'en' | 'fr' | 'es' | 'it';
+export type SupportedLocale = 'de' | 'en' | 'ar';
 
 // Default settings
 const DEFAULT_LOCALE: SupportedLocale = 'de';
@@ -32,9 +42,20 @@ const COUNTRY_TO_LOCALE: Record<string, SupportedLocale> = {
 	us: 'en',
 	ca: 'en',
 	au: 'en',
-	fr: 'fr',
-	es: 'es',
-	it: 'it'
+	fr: 'en', // Fallback to English until we have French
+	es: 'en', // Fallback to English until we have Spanish
+	it: 'en', // Fallback to English until we have Italian
+	// Arabic-speaking countries
+	sa: 'ar', // Saudi Arabia
+	ae: 'ar', // United Arab Emirates
+	eg: 'ar', // Egypt
+	iq: 'ar', // Iraq
+	jo: 'ar', // Jordan
+	kw: 'ar', // Kuwait
+	lb: 'ar', // Lebanon
+	om: 'ar', // Oman
+	qa: 'ar', // Qatar
+	ye: 'ar' // Yemen
 };
 
 // Currency code mapping based on country
@@ -48,7 +69,18 @@ const COUNTRY_TO_CURRENCY: Record<string, string> = {
 	au: 'AUD',
 	fr: 'EUR',
 	es: 'EUR',
-	it: 'EUR'
+	it: 'EUR',
+	// Arab currencies
+	sa: 'SAR', // Saudi Riyal
+	ae: 'AED', // UAE Dirham
+	eg: 'EGP', // Egyptian Pound
+	iq: 'IQD', // Iraqi Dinar
+	jo: 'JOD', // Jordanian Dinar
+	kw: 'KWD', // Kuwaiti Dinar
+	lb: 'LBP', // Lebanese Pound
+	om: 'OMR', // Omani Rial
+	qa: 'QAR', // Qatari Riyal
+	ye: 'YER' // Yemeni Rial
 };
 
 /**
@@ -61,7 +93,7 @@ export function initLocale(): Promise<void> {
 		// Check localStorage first (user preference)
 		const savedLocale = localStorage.getItem('userLocale');
 
-		if (savedLocale && isValidLocale(savedLocale)) {
+		if (savedLocale && isValidLocale(savedLocale as SupportedLocale)) {
 			setLocaleAndCurrency(savedLocale as SupportedLocale);
 			isLocaleInitialized.set(true);
 			return resolve();
@@ -70,7 +102,7 @@ export function initLocale(): Promise<void> {
 		// Then check browser language
 		const browserLang = navigator.language.split('-')[0];
 
-		if (isValidLocale(browserLang)) {
+		if (isValidLocale(browserLang as SupportedLocale)) {
 			setLocaleAndCurrency(browserLang as SupportedLocale);
 			isLocaleInitialized.set(true);
 			return resolve();
@@ -126,8 +158,15 @@ function setLocaleAndCurrency(locale: SupportedLocale): void {
 		localStorage.setItem('userLocale', locale);
 	}
 
-	// Get country code from locale (simplified mapping)
-	const countryCode = locale;
+	// Get country code from locale mapping
+	let countryCode = locale;
+	// Find the country code that maps to this locale (first match)
+	for (const [country, mappedLocale] of Object.entries(COUNTRY_TO_LOCALE)) {
+		if (mappedLocale === locale) {
+			countryCode = country;
+			break;
+		}
+	}
 
 	// Update currency if store available
 	if (currencyStore && typeof currencyStore.setCurrency === 'function') {
@@ -149,7 +188,7 @@ function setLocaleAndCurrency(locale: SupportedLocale): void {
  * Change locale with user interaction
  */
 export function changeLocale(locale: string): void {
-	if (isValidLocale(locale)) {
+	if (isValidLocale(locale as SupportedLocale)) {
 		setLocaleAndCurrency(locale as SupportedLocale);
 	}
 }
@@ -185,5 +224,30 @@ export function getLocalizedDescription(
 	return translation?.schema?.options?.[fieldName]?.[optionValue]?.description || fallback || '';
 }
 
-// Export translation type
-export type { Translation } from './translations';
+/**
+ * Format a date according to the current locale
+ */
+export function formatDate(date: Date, options?: Intl.DateTimeFormatOptions): string {
+	const locale = get(currentLocale);
+	const localeString = locale === 'de' ? 'de-DE' : locale === 'ar' ? 'ar-SA' : 'en-US';
+
+	return new Intl.DateTimeFormat(localeString, options).format(date);
+}
+
+/**
+ * Format a number according to the current locale
+ */
+export function formatNumber(num: number, options?: Intl.NumberFormatOptions): string {
+	const locale = get(currentLocale);
+	const localeString = locale === 'de' ? 'de-DE' : locale === 'ar' ? 'ar-SA' : 'en-US';
+
+	return new Intl.NumberFormat(localeString, options).format(num);
+}
+
+/**
+ * Get the text direction for the current locale (for RTL support)
+ */
+export function getTextDirection(): 'rtl' | 'ltr' {
+	const locale = get(currentLocale);
+	return locale === 'ar' ? 'rtl' : 'ltr';
+}
