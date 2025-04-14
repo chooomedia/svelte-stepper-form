@@ -2,13 +2,24 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { currentLocale, changeLocale, initLocale, isLocaleInitialized } from '$lib/i18n';
+	import { currentLocale, changeLocale, initLocale } from '$lib/i18n';
 	import { i18n } from '$lib/i18n';
+	import { translations } from '$lib/i18n';
 
-	const supportedLanguages = [
-		{ code: 'de', label: 'Deutsch' },
-		{ code: 'en', label: 'English' }
-	];
+	// Dynamically get supported languages from translations object
+	const supportedLanguages = Object.keys(translations).map((code) => {
+		// Get native language name based on code
+		const nativeNames = {
+			de: 'Deutsch',
+			en: 'English',
+			ar: 'العربية' // Arabic
+		};
+
+		return {
+			code,
+			label: nativeNames[code] || code.toUpperCase()
+		};
+	});
 
 	function handleLanguageChange(locale: string) {
 		changeLocale(locale);

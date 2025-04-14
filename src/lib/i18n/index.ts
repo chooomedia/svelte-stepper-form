@@ -1,4 +1,3 @@
-// src/lib/i18n/index.ts - Improved version
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { Translation } from './types';

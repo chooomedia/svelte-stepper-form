@@ -1,8 +1,8 @@
-// src/lib/utils/dynamicValidation.ts
 import { z } from 'zod';
 import { get } from 'svelte/store';
 import { i18n } from '$lib/i18n';
 import type { ZodType, ZodTypeDef } from 'zod';
+import { currentLocale } from '$lib/i18n';
 
 /**
  * Erstellt ein dynamisches Zod-Schema, das beim Validieren aktuelle Übersetzungen verwendet
@@ -13,18 +13,38 @@ import type { ZodType, ZodTypeDef } from 'zod';
 export function createDynamicSchema<Output, Def extends ZodTypeDef, Input>(
 	schemaFn: (t: (key: string, defaultMessage?: string) => string) => ZodType<Output, Def, Input>
 ): ZodType<Output, Def, Input> {
-	// Funktion zum Abrufen von Übersetzungen
+	// Function to retrieve translations
 	const getTranslation = (key: string, defaultMessage: string = ''): string => {
-		// Die Übersetzungen über den Store abrufen
+		// Get translations via the store
 		const translations = get(i18n);
+		const locale = get(currentLocale);
 
-		// Pfad zum Übersetzungsschlüssel aufteilen
+		// Split path to the translation key
 		const pathParts = key.split('.');
 		let current: any = translations?.schema?.validation || {};
 
-		// Durchlaufe den Pfad, um den spezifischen Übersetzungsschlüssel zu finden
+		// Traverse the path to find the specific translation key
 		for (const part of pathParts) {
 			if (current[part] === undefined) {
+				// If translation is missing for current language but available in German,
+				// fall back to German for validation messages only
+				if (locale !== 'de') {
+					const deTranslations = translations.de?.schema?.validation || {};
+					let deCurrent = deTranslations;
+					let found = true;
+
+					for (const dePart of pathParts) {
+						if (deCurrent[dePart] === undefined) {
+							found = false;
+							break;
+						}
+						deCurrent = deCurrent[dePart];
+					}
+
+					if (found && typeof deCurrent === 'string') {
+						return deCurrent;
+					}
+				}
 				return defaultMessage;
 			}
 			current = current[part];
@@ -33,7 +53,7 @@ export function createDynamicSchema<Output, Def extends ZodTypeDef, Input>(
 		return typeof current === 'string' ? current : defaultMessage;
 	};
 
-	// Schema mit der Übersetzungsfunktion erstellen
+	// Create schema with the translation function
 	return schemaFn(getTranslation);
 }
 
