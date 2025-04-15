@@ -252,6 +252,7 @@
 				fieldName="visibility"
 				multiple={true}
 				maxSelections={4}
+				special={true}
 			/>
 
 			<!-- Step 2: Website URL -->

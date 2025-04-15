@@ -229,7 +229,7 @@
 			<slot />
 		</section>
 
-		{#if !isIframe}
+		{#if !isIframe && $currentStepIndex === 1}
 			<Footer />
 		{/if}
 	</main>

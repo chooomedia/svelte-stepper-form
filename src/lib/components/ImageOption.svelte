@@ -14,6 +14,7 @@
 		maxSelections?: number;
 		countdownTime?: number;
 		fieldName?: string;
+		special?: boolean;
 	}
 
 	// Props mit Standardwerten
@@ -25,7 +26,8 @@
 		multiple = false,
 		maxSelections = undefined,
 		countdownTime = 3,
-		fieldName = ''
+		fieldName = '',
+		special = false
 	} = $props<Props>();
 
 	// Event Dispatcher mit modernem TypeScript-Typ
@@ -160,12 +162,12 @@
 	{/if}
 
 	<div
-		class="grid grid-cols-2 grid-rows-2 gap-4 pt-2 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:grid-rows-1"
+		class="grid grid-cols-1 gap-4 pt-2 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:grid-rows-1"
 	>
 		{#each options as option}
 			<button
 				type="button"
-				class="relative flex h-full flex-col justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 shadow-custom transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-600 {isSelected(
+				class="relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 shadow-custom transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
 					option.value
 				)
 					? 'border-primary-500 shadow-primary-100 ring-1 ring-primary-500'
@@ -176,23 +178,27 @@
 			>
 				{#if isSelected(option.value)}
 					<div
-						class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary-500 text-secondary"
+						class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary-50 text-secondary lg:bg-primary-500"
 					>
 						<Icon name="check" size={18} fill="none" strokeWidth="2" stroke="currentColor" />
 					</div>
 				{/if}
 
 				{#if option.imgSrc}
-					<div class="mx-auto p-4">
+					<div class="mx-auto p-2 md:p-4">
 						<img
 							src={option.imgSrc}
 							alt={getLocalizedDescription(fieldName, option.value)}
-							class="h-24 w-auto transform object-contain transition-transform hover:scale-110 lg:h-32"
+							class="h-16 w-auto transform object-contain transition-transform hover:scale-110 md:h-24 lg:h-32"
 						/>
 					</div>
 				{/if}
 
-				<div class="w-full border-t border-primary-200 bg-primary px-1 py-2">
+				<div
+					class={`flex w-full flex-col justify-center border-t border-primary-200 ${
+						special ? 'bg-primary' : ''
+					} px-1 py-2 lg:block`}
+				>
 					<h3 class="hyphens-auto break-words text-base font-semibold text-secondary">
 						{getLocalizedLabel(fieldName, option.value)}
 					</h3>
