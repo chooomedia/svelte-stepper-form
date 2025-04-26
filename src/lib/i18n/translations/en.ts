@@ -575,7 +575,8 @@ const en: Translation = {
 		},
 		buttons: {
 			restart: 'Restart Quiz and Analysis',
-			getReport: 'Receive Analysis Report by Email'
+			getReport: 'Receive Analysis Report by Email',
+			emailError: 'Please enter an email address in the form to receive the results.'
 		},
 		screenshot: {
 			alt: 'Website Screenshot',

@@ -324,6 +324,7 @@ export interface Translation {
 		buttons: {
 			restart: string;
 			getReport: string;
+			emailError: string;
 		};
 		screenshot: {
 			alt: string;

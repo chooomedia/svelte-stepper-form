@@ -580,7 +580,8 @@ const de: Translation = {
 		},
 		buttons: {
 			restart: 'Quiz und Analyse neu starten',
-			getReport: 'Analysebericht per E-Mail erhalten'
+			getReport: 'Analysebericht per E-Mail erhalten',
+			emailError: 'Bitte gib im Formular eine E-Mail-Adresse an, um die Ergebnisse zu erhalten.'
 		},
 		screenshot: {
 			alt: 'Website Screenshot',

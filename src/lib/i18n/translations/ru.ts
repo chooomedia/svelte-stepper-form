@@ -569,7 +569,8 @@ const ru: Translation = {
 		},
 		buttons: {
 			restart: 'Начать заново',
-			getReport: 'Получить отчет'
+			getReport: 'Получить отчет',
+			emailError: 'Пожалуйста, укажи адрес электронной почты в форме, чтобы получить результаты.'
 		},
 		screenshot: {
 			alt: 'Скриншот сайта',

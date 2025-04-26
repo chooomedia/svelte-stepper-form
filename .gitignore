@@ -28,3 +28,6 @@ vite.config.ts.timestamp-*
 
 # VS Code
 .code-workspace
+
+# Mail Tempalte
+/mail

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { WebhookService } from '$lib/services/webhookService';
 	import { i18n } from '$lib/i18n';
 	import { currencyStore } from '$lib/stores/currencyStore';
 	import type { FormData } from '$lib/schema';
@@ -9,10 +10,11 @@
 	import PricingOptions from './PricingOptions.svelte';
 	import ExpertProfile from './sections/ExpertSection.svelte';
 	import ProcessSteps from './ProcessSteps.svelte';
-	import ImprovementSection from './sections/ImprovementSection.svelte';
 	import BenefitsSection from './sections/BenefitsSection.svelte';
 	import { scoreStore, getFallbackAuditData, websiteScreenshot } from '$lib/utils/scoring';
 	import Icon from './Icon.svelte';
+
+	const isDev = import.meta.env.DEV;
 
 	interface Props {
 		score: number;
@@ -22,13 +24,41 @@
 		restartAssessment: () => void;
 	}
 
-	let { score, formData, auditData, nextStep, restartAssessment } = $props<Props>();
+	let { score, formData, nextStep, restartAssessment } = $props<Props>();
 
 	// State variables
 	let benefits = $state<string[]>([]);
 	let recommendations = $state<string[]>([]);
 	let pageLoaded = $state(false);
 	let showImprovement = $state(false);
+	let webhookSent = $state(false);
+	let webhookSuccess = $state(false);
+	let webhookMessage = $state('');
+	let emailSendAttempted = $state(false);
+
+	async function sendAnalysisResults() {
+		emailSendAttempted = true;
+
+		// Prüfen, ob bereits gesendet wurde
+		if (webhookSent) {
+			return;
+		}
+
+		// Prüfen, ob tägliches Limit erreicht ist
+		if (WebhookService.hasReachedDailyLimit() && !isDev) {
+			webhookMessage =
+				'Du hast dein tägliches Limit für E-Mails erreicht. Versuche es morgen erneut.';
+			webhookSuccess = false;
+			webhookSent = true;
+			return;
+		}
+
+		// Webhook senden
+		const result = await WebhookService.sendQuizResults();
+		webhookSent = true;
+		webhookSuccess = result.success;
+		webhookMessage = result.message;
+	}
 
 	// Process the score value to ensure it's valid
 	let processedScore = $derived(isNaN(score) || score < 0 || score > 100 ? 50 : score);
@@ -222,6 +252,13 @@
 			scorestoreData = data;
 		});
 
+		if (formData.email && !webhookSent && !WebhookService.hasReachedDailyLimit()) {
+			// Wait a short delay to allow the UI to render
+			setTimeout(() => {
+				sendAnalysisResults();
+			}, 2000);
+		}
+
 		// Generate benefits and recommendations
 		benefits = generateBenefits();
 		recommendations = generateRecommendations();
@@ -372,8 +409,8 @@
 		</div>
 	</div>
 
-	<!-- Improvement Section - NEW -->
-	<ImprovementSection score={processedScore} />
+	<!-- Improvement Section 
+	<ImprovementSection score={processedScore} />  -->
 
 	<!-- Benefits and Recommendations -->
 	<BenefitsSection />
@@ -559,20 +596,66 @@
 
 	<!-- Action Buttons -->
 	<div
-		class="my-8 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
+		class="mt-8 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
 	>
 		<button
-			class="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto lg:mx-3"
+			class="btn w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto lg:mx-3"
 			onclick={restartAssessment}
 		>
 			{$i18n.results.buttons.restart}
 		</button>
 
 		<button
-			class="w-full rounded-lg bg-primary-600 px-6 py-3 font-semibold text-secondary shadow-sm transition-colors hover:bg-primary-700 sm:w-auto lg:mx-3"
-			onclick={nextStep}
+			class="btn btn-primary flex w-full items-center justify-center px-6 py-3 shadow-sm md:w-auto lg:mx-3 {emailSendAttempted &&
+			!formData.email
+				? 'btn-error'
+				: ''}"
+			onclick={formData.email
+				? sendAnalysisResults
+				: () => {
+						emailSendAttempted = true;
+					}}
+			disabled={webhookSent && webhookSuccess}
 		>
-			{$i18n.results.buttons.getReport}
+			{#if webhookSent && webhookSuccess}
+				Ergebnisse gesendet
+			{:else if formData.email}
+				{$i18n.results.buttons.getReport}
+			{:else}
+				{$i18n.results.buttons.getReport}
+			{/if}
 		</button>
+	</div>
+	<div class="my-4 text-center">
+		{#if webhookSent}
+			<div
+				class="rounded-lg p-4 {webhookSuccess
+					? 'bg-green-100 text-green-800'
+					: 'bg-red-100 text-red-800'}"
+				in:fade={{ duration: 300 }}
+			>
+				<p class="font-medium">
+					{#if webhookSuccess}
+						<Icon name="checkCircle" size={24} className="inline-block mr-2" stroke="none" />
+						Deine Ergebnisse wurden erfolgreich an {formData.email} gesendet!
+					{:else}
+						<Icon
+							name="alert"
+							size={32}
+							className="inline-block mr-2"
+							fill="none"
+							stroke="currentColor"
+						/>
+						{webhookMessage}
+					{/if}
+				</p>
+			</div>
+		{/if}
+
+		{#if emailSendAttempted && !formData.email}
+			<p class="text-sm text-red-600" in:fly={{ y: 10, duration: 300 }}>
+				{$i18n.results.buttons.emailError}
+			</p>
+		{/if}
 	</div>
 </div>

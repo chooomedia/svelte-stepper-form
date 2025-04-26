@@ -569,7 +569,8 @@ const ro: Translation = {
 		},
 		buttons: {
 			restart: 'Reîncepe testul',
-			getReport: 'Primește raportul'
+			getReport: 'Primește raportul',
+			emailError: 'Te rugăm să introduci o adresă de e-mail în formular pentru a primi rezultatele.'
 		},
 		screenshot: {
 			alt: 'Captură website',

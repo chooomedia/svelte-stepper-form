@@ -569,7 +569,8 @@ const tr: Translation = {
 		},
 		buttons: {
 			restart: 'Testi Yeniden Başlat',
-			getReport: 'Raporu E-postayla Al'
+			getReport: 'Raporu E-postayla Al',
+			emailError: 'Sonuçları almak için lütfen forma bir e-posta adresi gir.'
 		},
 		screenshot: {
 			alt: 'Website Ekran Görüntüsü',

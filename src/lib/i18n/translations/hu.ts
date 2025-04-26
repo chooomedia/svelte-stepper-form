@@ -572,7 +572,8 @@ const hu: Translation = {
 		},
 		buttons: {
 			restart: 'Kvíz újraindítása',
-			getReport: 'Jelentés e-mailben'
+			getReport: 'Jelentés e-mailben',
+			emailError: 'Kérjük, add meg az e-mail címedet az űrlapon, hogy megkaphasd az eredményeket.'
 		},
 		screenshot: {
 			alt: 'Weboldal képernyőkép',
