@@ -1,7 +1,20 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import os from 'os';
 
-const hostIp = '192.168.178.37';
+function getLocalIP() {
+	const interfaces = os.networkInterfaces();
+	for (const name of Object.keys(interfaces)) {
+		for (const iface of interfaces[name] || []) {
+			if (iface.family === 'IPv4' && !iface.internal) {
+				return iface.address;
+			}
+		}
+	}
+	return 'localhost';
+}
+
+const hostIp = getLocalIP();
 
 export default defineConfig({
 	plugins: [sveltekit()],

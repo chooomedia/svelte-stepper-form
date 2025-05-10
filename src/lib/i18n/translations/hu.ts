@@ -641,7 +641,7 @@ const hu: Translation = {
 			title: 'Fizetési mód:',
 			monthly: 'Havonta',
 			oneTime: 'Egyszeri (-8%)',
-			longTime: 'Longtime (-20%)',
+			longTime: 'Enterprise (-20%)',
 			hotLabel: 'AKCIÓS'
 		},
 		planLabels: {
@@ -665,16 +665,16 @@ const hu: Translation = {
 		ctaButton: {
 			monthly: 'FELIRATKOZÁS',
 			oneTime: 'VÁSÁRLÁS',
-			longTime: 'LONGTIME HOZZÁFÉRÉS',
+			longTime: 'ENTERPRISE HOZZÁFÉRÉS',
 			selectPlan: 'Válassz'
 		},
 		savings: 'Megtakarított összeg',
 		trustBadges: ['Biztonságos fizetés', '30 napos visszatérítés'],
 		discountBanner: {
-			title: 'Longtime hozzáférés',
+			title: 'Enterprise hozzáférés',
 			discount: ' 20% kedvezménnyel!',
 			description:
-				'5 évre szóló hozzáférés egy összegben! <span class="font-bold">Most azonnal!</span>',
+				'1 évr szóló hozzáférés egy összegben! <span class="font-bold">Most azonnal!</span>',
 			buttonText: 'Igényeld!'
 		},
 		terms: {

@@ -640,7 +640,7 @@ const ar: Translation = {
 			title: 'اختر طريقة الدفع:',
 			monthly: 'شهريًا',
 			oneTime: 'مرة واحدة (-8%)',
-			longTime: 'Longtime (-20%)',
+			longTime: 'Enterprise (-20%)',
 			hotLabel: 'مميز'
 		},
 		planLabels: {
@@ -664,13 +664,13 @@ const ar: Translation = {
 		ctaButton: {
 			monthly: 'اشترك',
 			oneTime: 'اشتري الآن',
-			longTime: 'احصل على Longtime',
+			longTime: 'احصل على Enterprise',
 			selectPlan: 'اختر خطة'
 		},
 		savings: 'وفرت',
 		trustBadges: ['دفع آمن', 'ضمان استرداد 30 يومًا'],
 		discountBanner: {
-			title: 'وصول Longtime بخصم',
+			title: 'وصول Enterprise بخصم',
 			discount: ' 20%!',
 			description:
 				'احصل الآن على وصول لمدة 5 سنوات بخصم 20%! استثمر مرة واحدة واستمتع بجميع الميزات.',
@@ -704,7 +704,7 @@ const ar: Translation = {
 				title: 'ملخص',
 				monthly: 'دفع شهري',
 				oneTime: 'دفع مرة واحدة',
-				longtime: 'وصول Longtime',
+				longtime: 'وصول Enterprise',
 				discount: 'خصم',
 				donation: 'بما فيها التبرع',
 				tax: 'بما فيها الضريبة'

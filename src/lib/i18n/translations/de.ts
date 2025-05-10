@@ -656,7 +656,7 @@ const de: Translation = {
 			title: 'Wähle Deine Zahlungsoption:',
 			monthly: 'Monatlich',
 			oneTime: 'Einmalig (-8%)',
-			longTime: 'Longtime (-20%)',
+			longTime: 'Enterprise (-20%)',
 			hotLabel: 'HOT'
 		},
 		planLabels: {
@@ -666,27 +666,27 @@ const de: Translation = {
 			sixMonth: '6-MONATS PLAN',
 			popular: '★ AM BELIEBTESTEN',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'BASIS LONGTIME',
-				'3-MONATS PLAN': 'PREMIUM LONGTIME',
-				BUSINESS: 'BUSINESS LONGTIME'
+				'1-MONATS PLAN': 'BASIS Enterprise',
+				'3-MONATS PLAN': 'PREMIUM Enterprise',
+				BUSINESS: 'BUSINESS Enterprise'
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['8% Rabatt auf Gesamtpreis', 'Keine monatlichen Gebühren'],
-			longTime: ['Jahre Zugang', 'Massiver 20% Rabatt', 'Alle zukünftigen Updates'],
+			longTime: ['Jahr Zugang', 'Massiver 20% Rabatt', 'Alle zukünftigen Updates'],
 			savings: 'Spare',
 			savingsOption: 'mit dieser Option!'
 		},
 		ctaButton: {
 			monthly: 'PLAN ABONNIEREN',
 			oneTime: 'JETZT KAUFEN',
-			longTime: 'LONGTIME ZUGANG SICHERN',
+			longTime: 'ENTERPRISE ZUGANG SICHERN',
 			selectPlan: 'Plan auswählen'
 		},
 		savings: 'Du sparst',
 		trustBadges: ['Sicher & geschützt bezahlen', '30 Tage Geld-zurück-Garantie'],
 		discountBanner: {
-			title: 'Longtime-Zugang mit',
+			title: 'Enterprise-Zugang mit',
 			discount: ' mit 20% Rabatt!',
 			description:
 				'Sichere Dir <span class="font-bold">JETZT</span> Deinen 5 Jahre langen Zugang zu allen Features und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.',
@@ -723,7 +723,7 @@ const de: Translation = {
 				title: 'Zusammenfassung',
 				monthly: 'Monatliche Zahlung',
 				oneTime: 'Einmalzahlung',
-				longtime: 'Longtime-Zugang',
+				longtime: 'Enterprise-Zugang',
 				discount: 'Rabatt',
 				donation: 'inkl. Spende',
 				tax: 'inkl. MwSt'
