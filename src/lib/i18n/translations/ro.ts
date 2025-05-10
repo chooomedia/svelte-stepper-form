@@ -638,7 +638,7 @@ const ro: Translation = {
 			title: 'Metode de plată:',
 			monthly: 'Lunar',
 			oneTime: 'Plată unică (-8%)',
-			longTime: 'Longtime (-20%)',
+			longTime: 'Enterprise (-20%)', // Schimbat din 'Longtime'
 			hotLabel: 'POPULAR'
 		},
 		planLabels: {
@@ -648,29 +648,29 @@ const ro: Translation = {
 			sixMonth: '6 LUNI',
 			popular: '★ RECOMANDAT',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'LONG DE BAZĂ',
-				'3-MONATS PLAN': 'LONG PREMIUM',
-				BUSINESS: 'LONG BUSINESS'
+				'1-MONATS PLAN': 'ENTERPRISE DE BAZĂ', // Schimbat din 'LONG DE BAZĂ'
+				'3-MONATS PLAN': 'ENTERPRISE PREMIUM', // Schimbat din 'LONG PREMIUM'
+				BUSINESS: 'ENTERPRISE BUSINESS' // Schimbat din 'LONG BUSINESS'
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['Reducere 8%', 'Fără abonament'],
-			longTime: ['Acces 5 ani', 'Reducere 20%', 'Toate actualizările'],
+			longTime: ['Acces 1 an', 'Reducere 20%', 'Toate actualizările'], // Schimbat din 'Acces 5 ani'
 			savings: 'Economisești',
 			savingsOption: 'cu această opțiune!'
 		},
 		ctaButton: {
 			monthly: 'ABONEAZĂ-TE',
 			oneTime: 'CUMPĂRĂ',
-			longTime: 'LONGTIME',
+			longTime: 'ENTERPRISE', // Schimbat din 'LONGTIME'
 			selectPlan: 'Alege'
 		},
 		savings: 'Economisit',
 		trustBadges: ['Plată securizată', 'Garantie 30 zile'],
 		discountBanner: {
-			title: 'Acces Longtime',
+			title: 'Acces Enterprise', // Schimbat din 'Acces Longtime'
 			discount: ' cu 20% reducere!',
-			description: 'Acces 5 ani cu o singură plată! <span class="font-bold">Acum!</span>',
+			description: 'Acces 1 an cu o singură plată! <span class="font-bold">Acum!</span>', // Schimbat din 'Acces 5 ani'
 			buttonText: 'Alege!'
 		},
 		terms: {
@@ -678,7 +678,7 @@ const ro: Translation = {
 				main: 'Planul {selectedPlan} se reînnoiește automat la {totalPrice.toFixed(2)}€/lună. Anulează: abo@digitalpusher.de.',
 				reminder: 'Notificare cu 5 zile înainte'
 			},
-			oneTime: 'Plată unică {totalPrice.toFixed(2)}€. Acces 5 ani.',
+			oneTime: 'Plată unică {totalPrice.toFixed(2)}€. Acces 1 an.',
 			acceptance: 'Apăsând "Cumpără" accepti termenii.'
 		}
 	},
@@ -701,7 +701,7 @@ const ro: Translation = {
 				title: 'Sumar',
 				monthly: 'Abonament lunar',
 				oneTime: 'Plată unică',
-				longtime: 'Acces Longtime',
+				longtime: 'Acces Enterprise',
 				discount: 'Reducere',
 				donation: 'Cu donație',
 				tax: 'Inclus TVA'

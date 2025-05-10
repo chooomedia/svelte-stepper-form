@@ -641,7 +641,7 @@ const hu: Translation = {
 			title: 'Fizetési mód:',
 			monthly: 'Havonta',
 			oneTime: 'Egyszeri (-8%)',
-			longTime: 'Enterprise (-20%)',
+			longTime: 'Enterprise (-20%)', // Változtatva: 'Longtime'-ról
 			hotLabel: 'AKCIÓS'
 		},
 		planLabels: {
@@ -651,30 +651,30 @@ const hu: Translation = {
 			sixMonth: '6 HÓNAPOS',
 			popular: '★ LEGNÉPSZERŰBB',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'ALAP LONG',
-				'3-MONATS PLAN': 'PRÉMIUM LONG',
-				BUSINESS: 'ÜZLETI LONG'
+				'1-MONATS PLAN': 'ALAP ENTERPRISE', // Változtatva: 'ALAP LONG'-ról
+				'3-MONATS PLAN': 'PRÉMIUM ENTERPRISE', // Változtatva: 'PRÉMIUM LONG'-ról
+				BUSINESS: 'ÜZLETI ENTERPRISE' // Változtatva: 'ÜZLETI LONG'-ról
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['8% kedvezmény', 'Nincs havi díj'],
-			longTime: ['5 év hozzáférés', '20% kedvezmény', 'Minden frissítés'],
+			longTime: ['1 év hozzáférés', '20% kedvezmény', 'Minden frissítés'], // Változtatva: '5 év hozzáférés'-ről
 			savings: 'Megtakarítás',
 			savingsOption: 'ezzel a lehetőséggel!'
 		},
 		ctaButton: {
 			monthly: 'FELIRATKOZÁS',
 			oneTime: 'VÁSÁRLÁS',
-			longTime: 'ENTERPRISE HOZZÁFÉRÉS',
+			longTime: 'ENTERPRISE HOZZÁFÉRÉS', // Változtatva: 'LONGTIME HOZZÁFÉRÉS'-ről
 			selectPlan: 'Válassz'
 		},
 		savings: 'Megtakarított összeg',
 		trustBadges: ['Biztonságos fizetés', '30 napos visszatérítés'],
 		discountBanner: {
-			title: 'Enterprise hozzáférés',
+			title: 'Enterprise hozzáférés', // Változtatva: 'Longtime hozzáférés'-ről
 			discount: ' 20% kedvezménnyel!',
 			description:
-				'1 évr szóló hozzáférés egy összegben! <span class="font-bold">Most azonnal!</span>',
+				'1 évre szóló hozzáférés egy összegben! <span class="font-bold">Most azonnal!</span>', // Változtatva: '5 évre szóló'-ról
 			buttonText: 'Igényeld!'
 		},
 		terms: {
@@ -682,7 +682,7 @@ const hu: Translation = {
 				main: 'A {selectedPlan} csomag automatikusan megújul {totalPrice.toFixed(2)}€/hó. Lemondás: abo@digitalpusher.de.',
 				reminder: 'Értesítünk 5 nappal lejárat előtt.'
 			},
-			oneTime: 'Egyszeri összeg: {totalPrice.toFixed(2)}€. 5 év hozzáférés.',
+			oneTime: 'Egyszeri összeg: {totalPrice.toFixed(2)}€. 1 év hozzáférés.',
 			acceptance: 'A "Vásárlás" gombbal elfogadod a ÁSZF-et.'
 		}
 	},
@@ -705,7 +705,7 @@ const hu: Translation = {
 				title: 'Összegzés',
 				monthly: 'Havi fizetés',
 				oneTime: 'Egyszeri fizetés',
-				longtime: 'Longtime hozzáférés',
+				longtime: 'Enterprise hozzáférés',
 				discount: 'Kedvezmény',
 				donation: 'támogatással',
 				tax: 'ÁFA-val'

@@ -638,7 +638,7 @@ const tr: Translation = {
 			title: 'Ödeme Seçenekleri:',
 			monthly: 'Aylık',
 			oneTime: 'Tek Ödeme (-%8)',
-			longTime: 'Uzun Süre (-%20)',
+			longTime: 'Enterprise (-%20)', // Değişiklik: 'Longtime' yerine
 			hotLabel: 'POPÜLER'
 		},
 		planLabels: {
@@ -648,29 +648,29 @@ const tr: Translation = {
 			sixMonth: '6 AYLIK',
 			popular: '★ TAVSİYE EDİLEN',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'TEMEL UZUN',
-				'3-MONATS PLAN': 'PREMIUM UZUN',
-				BUSINESS: 'İŞ UZUN'
+				'1-MONATS PLAN': 'TEMEL ENTERPRISE', // Değişiklik: 'TEMEL UZUN' yerine
+				'3-MONATS PLAN': 'PREMIUM ENTERPRISE', // Değişiklik: 'PREMIUM UZUN' yerine
+				BUSINESS: 'İŞ ENTERPRISE' // Değişiklik: 'İŞ UZUN' yerine
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['%8 indirim', 'Abonelik yok'],
-			longTime: ['5 yıl erişim', '%20 indirim', 'Tüm güncellemeler'],
+			longTime: ['1 yıl erişim', '%20 indirim', 'Tüm güncellemeler'], // Değişiklik: '5 yıl erişim' yerine
 			savings: 'Tasarruf',
 			savingsOption: 'bu seçenekle!'
 		},
 		ctaButton: {
 			monthly: 'ABONE OL',
 			oneTime: 'SATIN AL',
-			longTime: 'UZUN PAKET',
+			longTime: 'ENTERPRISE PAKET', // Değişiklik: 'UZUN PAKET' yerine
 			selectPlan: 'Seç'
 		},
 		savings: 'Tasarruf Edilen',
 		trustBadges: ['Güvenli ödeme', '30 gün garantisi'],
 		discountBanner: {
-			title: 'Uzun Süre Paketi',
+			title: 'Enterprise Paketi', // Değişiklik: 'Uzun Süre Paketi' yerine
 			discount: ' %20 indirimle!',
-			description: '5 yıllık erişim tek ödemeyle! <span class="font-bold">Hemen al!</span>',
+			description: '1 yıllık erişim tek ödemeyle! <span class="font-bold">Hemen al!</span>', // Değişiklik: '5 yıllık' yerine
 			buttonText: 'Hemen Al'
 		},
 		terms: {
@@ -678,7 +678,7 @@ const tr: Translation = {
 				main: '{selectedPlan} paketi {totalPrice.toFixed(2)}€/ay ile otomatik yenilenir. İptal: abo@digitalpusher.de',
 				reminder: 'Yenileme öncesi 5 gün bildirim'
 			},
-			oneTime: 'Tek seferlik {totalPrice.toFixed(2)}€ ödeme. 5 yıl erişim.',
+			oneTime: 'Tek seferlik {totalPrice.toFixed(2)}€ ödeme. 1 yıl erişim.',
 			acceptance: '"Satın Al"a tıklayarak şartları kabul edersiniz.'
 		}
 	},
@@ -701,7 +701,7 @@ const tr: Translation = {
 				title: 'Özet',
 				monthly: 'Aylık ödeme',
 				oneTime: 'Tek ödeme',
-				longtime: 'Uzun paket',
+				longtime: 'Enterprise paketi', // Değişiklik: 'Uzun paket' yerine
 				discount: 'İndirim',
 				donation: 'Bağış içerir',
 				tax: 'KDV dahil'

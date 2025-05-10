@@ -656,7 +656,7 @@ const de: Translation = {
 			title: 'Wähle Deine Zahlungsoption:',
 			monthly: 'Monatlich',
 			oneTime: 'Einmalig (-8%)',
-			longTime: 'Enterprise (-20%)',
+			longTime: 'Enterprise (-20%)', // Geändert von 'Longtime'
 			hotLabel: 'HOT'
 		},
 		planLabels: {
@@ -666,30 +666,30 @@ const de: Translation = {
 			sixMonth: '6-MONATS PLAN',
 			popular: '★ AM BELIEBTESTEN',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'BASIS Enterprise',
-				'3-MONATS PLAN': 'PREMIUM Enterprise',
-				BUSINESS: 'BUSINESS Enterprise'
+				'1-MONATS PLAN': 'BASIS ENTERPRISE', // Geändert von 'BASIS LONGTIME'
+				'3-MONATS PLAN': 'PREMIUM ENTERPRISE', // Geändert von 'PREMIUM LONGTIME'
+				BUSINESS: 'BUSINESS ENTERPRISE' // Geändert von 'BUSINESS LONGTIME'
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['8% Rabatt auf Gesamtpreis', 'Keine monatlichen Gebühren'],
-			longTime: ['Jahr Zugang', 'Massiver 20% Rabatt', 'Alle zukünftigen Updates'],
+			longTime: ['Jahr Zugang', 'Massiver 20% Rabatt', 'Alle zukünftigen Updates'], // Geändert von 'Jahre Zugang'
 			savings: 'Spare',
 			savingsOption: 'mit dieser Option!'
 		},
 		ctaButton: {
 			monthly: 'PLAN ABONNIEREN',
 			oneTime: 'JETZT KAUFEN',
-			longTime: 'ENTERPRISE ZUGANG SICHERN',
+			longTime: 'ENTERPRISE ZUGANG SICHERN', // Geändert von 'LONGTIME ZUGANG SICHERN'
 			selectPlan: 'Plan auswählen'
 		},
 		savings: 'Du sparst',
 		trustBadges: ['Sicher & geschützt bezahlen', '30 Tage Geld-zurück-Garantie'],
 		discountBanner: {
-			title: 'Enterprise-Zugang mit',
+			title: 'Enterprise-Zugang mit', // Geändert von 'Longtime-Zugang'
 			discount: ' mit 20% Rabatt!',
 			description:
-				'Sichere Dir <span class="font-bold">JETZT</span> Deinen 5 Jahre langen Zugang zu allen Features und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.',
+				'Sichere Dir <span class="font-bold">JETZT</span> Deinen 1 Jahr langen Zugang zu allen Features und Updates! Statt monatlicher Zahlungen - einmalig investieren und dauerhaft profitieren.', // Geändert von '5 Jahre'
 			buttonText: 'Jetzt sichern!'
 		},
 		terms: {
@@ -699,7 +699,7 @@ const de: Translation = {
 					'Ansonsten erhälst du 5 Werktage vor dem Ablauf des Abos eine E-Mail mit der Möglichkeit das Abo zu kündigen.'
 			},
 			oneTime:
-				'Der Gesamtbetrag von {totalPrice.toFixed(2)}€ wird einmalig abgebucht. Es entstehen keine weiteren Kosten oder automatischen Verlängerungen. Dein longtime-Zugang gilt für 5 Jahre.',
+				'Der Gesamtbetrag von {totalPrice.toFixed(2)}€ wird einmalig abgebucht. Es entstehen keine weiteren Kosten oder automatischen Verlängerungen. Dein Enterprise-Zugang gilt für 1 Jahr.',
 			acceptance:
 				'Indem auf „{paymentType === $i18n.pricing.paymentOptions.monthly ? $i18n.pricing.ctaButton.monthly : $i18n.pricing.ctaButton.oneTime}" geklickt wird, werden die Allgemeinen Geschäftsbedingungen und die Datenschutzrichtlinie akzeptiert.'
 		}

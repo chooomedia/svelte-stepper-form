@@ -640,7 +640,7 @@ const ar: Translation = {
 			title: 'اختر طريقة الدفع:',
 			monthly: 'شهريًا',
 			oneTime: 'مرة واحدة (-8%)',
-			longTime: 'Enterprise (-20%)',
+			longTime: 'انتربرايز (-20%)',
 			hotLabel: 'مميز'
 		},
 		planLabels: {
@@ -650,30 +650,30 @@ const ar: Translation = {
 			sixMonth: 'خطة 6 أشهر',
 			popular: '★ الأكثر شيوعًا',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'أساسي طويل',
-				'3-MONATS PLAN': 'متميز طويل',
-				BUSINESS: 'أعمال طويلة'
+				'1-MONATS PLAN': 'أساسي انتربرايز',
+				'3-MONATS PLAN': 'متميز انتربرايز',
+				BUSINESS: 'أعمال انتربرايز'
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['خصم 8%', 'لا رسوم شهرية'],
-			longTime: ['وصول لسنوات', 'خصم 20%', 'جميع التحديثات'],
+			longTime: ['وصول لسنة', 'خصم 20%', 'جميع التحديثات'],
 			savings: 'وفر',
 			savingsOption: 'مع هذا الخيار!'
 		},
 		ctaButton: {
 			monthly: 'اشترك',
 			oneTime: 'اشتري الآن',
-			longTime: 'احصل على Enterprise',
+			longTime: 'احصل على انتربرايز',
 			selectPlan: 'اختر خطة'
 		},
 		savings: 'وفرت',
 		trustBadges: ['دفع آمن', 'ضمان استرداد 30 يومًا'],
 		discountBanner: {
-			title: 'وصول Enterprise بخصم',
+			title: 'وصول انتربرايز بخصم',
 			discount: ' 20%!',
 			description:
-				'احصل الآن على وصول لمدة 5 سنوات بخصم 20%! استثمر مرة واحدة واستمتع بجميع الميزات.',
+				'احصل الآن على وصول لمدة سنة واحدة بخصم 20%! استثمر مرة واحدة واستمتع بجميع الميزات.', // تم التغيير من '5 سنوات'
 			buttonText: 'احصل الآن!'
 		},
 		terms: {
@@ -681,7 +681,7 @@ const ar: Translation = {
 				main: 'يوافق اختيارك على التجديد التلقائي للخطة {selectedPlan} بالسعر الكامل. يتم الفحص الشهري بـ {totalPrice.toFixed(2)}. يمكنك الإلغاء عبر البريد على abo@digitalpusher.de.',
 				reminder: 'ستصلك إشعار قبل 5 أيام من التجديد.'
 			},
-			oneTime: 'سيتم خصم {totalPrice.toFixed(2)}€ مرة واحدة. لا تجديدات. الوصول لمدة 5 سنوات.',
+			oneTime: 'سيتم خصم {totalPrice.toFixed(2)}€ مرة واحدة. لا تجديدات. الوصول لمدة سنة واحدة.',
 			acceptance: 'بالنقر على "اشتراك"، أنت توافق على الشروط وسياسة الخصوصية.'
 		}
 	},
@@ -704,7 +704,7 @@ const ar: Translation = {
 				title: 'ملخص',
 				monthly: 'دفع شهري',
 				oneTime: 'دفع مرة واحدة',
-				longtime: 'وصول Enterprise',
+				longtime: 'وصول انتربرايز',
 				discount: 'خصم',
 				donation: 'بما فيها التبرع',
 				tax: 'بما فيها الضريبة'

@@ -653,7 +653,7 @@ const en: Translation = {
 			title: 'Choose Your Power Plan:',
 			monthly: 'Monthly',
 			oneTime: 'One-Time (-8%)',
-			longTime: 'Enterprise (-20%)',
+			longTime: 'Enterprise (-20%)', // Changed from 'Longtime'
 			hotLabel: 'HOT'
 		},
 		planLabels: {
@@ -663,15 +663,15 @@ const en: Translation = {
 			sixMonth: '6-MONTHS PLAN',
 			popular: '★ MOST POPULAR',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'BASIS Enterprise',
-				'3-MONATS PLAN': 'PREMIUM Enterprise',
-				BUSINESS: 'BUSINESS Enterprise'
+				'1-MONATS PLAN': 'BASIS ENTERPRISE', // Changed from 'BASIS LONGTIME'
+				'3-MONATS PLAN': 'PREMIUM ENTERPRISE', // Changed from 'PREMIUM LONGTIME'
+				BUSINESS: 'BUSINESS ENTERPRISE' // Changed from 'BUSINESS LONGTIME'
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['8% Discount on Total Price', 'Zero Monthly Recurring Fees'],
 			longTime: [
-				'Year of Unlimited Access',
+				'Year of Unlimited Access', // Changed from 'Years'
 				'Massive 20% Lifetime Discount',
 				'All Future Updates Included'
 			],
@@ -681,16 +681,16 @@ const en: Translation = {
 		ctaButton: {
 			monthly: 'SUBSCRIBE NOW',
 			oneTime: 'SECURE MY PLAN',
-			longTime: 'LOCK IN ENTERPRISE ACCESS',
+			longTime: 'LOCK IN ENTERPRISE ACCESS', // Changed from 'LONGTIME'
 			selectPlan: 'Choose Plan'
 		},
 		savings: 'You save',
 		trustBadges: ['Secure & Protected Payment', '30-Day Money-Back Guarantee'],
 		discountBanner: {
-			title: 'Enterprise Access with 20% Mega Discount!',
+			title: 'Enterprise Access with 20% Mega Discount!', // Changed from 'Longtime'
 			discount: ' 20% Discount!',
 			description:
-				'Secure your 5-year growth accelerator NOW! One strategic investment, endless business potential. Skip monthly payments and future-proof your success!',
+				'Secure your 1-year growth accelerator NOW! One strategic investment, endless business potential. Skip monthly payments and future-proof your success!', // Changed from '5-year'
 			buttonText: 'Claim My Advantage!'
 		},
 		terms: {
@@ -700,7 +700,7 @@ const en: Translation = {
 					"We'll send a friendly reminder email 5 working days before your subscription expires, giving you the option to continue or pause."
 			},
 			oneTime:
-				'A one-time charge of {totalPrice}€ grants you complete access. No hidden fees, no automatic renewals. Your Enterprise access is locked in for 5 full years of digital empowerment.',
+				'A one-time charge of {totalPrice}€ grants you complete access. No hidden fees, no automatic renewals. Your enterprise access is locked in for 1 full year of digital empowerment.',
 			acceptance:
 				'By clicking "{ctaText}", you confirm acceptance of our Terms of Service and Privacy Policy.'
 		}

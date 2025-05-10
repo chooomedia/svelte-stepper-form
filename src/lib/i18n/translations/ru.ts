@@ -638,7 +638,7 @@ const ru: Translation = {
 			title: 'Способы оплаты:',
 			monthly: 'Ежемесячно',
 			oneTime: 'Единоразово (-8%)',
-			longTime: 'Longtime (-20%)',
+			longTime: 'Энтерпрайз (-20%)', // Изменено с 'Longtime'
 			hotLabel: 'ХИТ'
 		},
 		planLabels: {
@@ -648,29 +648,29 @@ const ru: Translation = {
 			sixMonth: '6 МЕСЯЦЕВ',
 			popular: '★ ПОПУЛЯРНЫЙ',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'БАЗОВЫЙ LONG',
-				'3-MONATS PLAN': 'ПРЕМИУМ LONG',
-				BUSINESS: 'БИЗНЕС LONG'
+				'1-MONATS PLAN': 'БАЗОВЫЙ ЭНТЕРПРАЙЗ', // Изменено с 'БАЗОВЫЙ LONG'
+				'3-MONATS PLAN': 'ПРЕМИУМ ЭНТЕРПРАЙЗ', // Изменено с 'ПРЕМИУМ LONG'
+				BUSINESS: 'БИЗНЕС ЭНТЕРПРАЙЗ' // Изменено с 'БИЗНЕС LONG'
 			}
 		},
 		additionalBenefits: {
 			oneTime: ['Скидка 8%', 'Без подписки'],
-			longTime: ['Доступ 5 лет', 'Скидка 20%', 'Все обновления'],
+			longTime: ['Доступ 1 год', 'Скидка 20%', 'Все обновления'], // Изменено с 'Доступ 5 лет'
 			savings: 'Экономия',
 			savingsOption: 'с этим вариантом!'
 		},
 		ctaButton: {
 			monthly: 'ОФОРМИТЬ',
 			oneTime: 'КУПИТЬ',
-			longTime: 'LONGTIME',
+			longTime: 'ЭНТЕРПРАЙЗ', // Изменено с 'LONGTIME'
 			selectPlan: 'Выбрать'
 		},
 		savings: 'Сэкономлено',
 		trustBadges: ['Безопасная оплата', '30 дней гарантии'],
 		discountBanner: {
-			title: 'Longtime доступ',
+			title: 'Энтерпрайз доступ', // Изменено с 'Longtime доступ'
 			discount: ' со скидкой 20%!',
-			description: '5 лет доступа за одну оплату! <span class="font-bold">Только сейчас!</span>',
+			description: '1 год доступа за одну оплату! <span class="font-bold">Только сейчас!</span>', // Изменено с '5 лет'
 			buttonText: 'Получить!'
 		},
 		terms: {
@@ -678,7 +678,7 @@ const ru: Translation = {
 				main: 'Автопродление тарифа {selectedPlan} за {totalPrice.toFixed(2)}€/мес. Отмена: abo@digitalpusher.de.',
 				reminder: 'Уведомление за 5 дней до продления.'
 			},
-			oneTime: 'Однократный платеж {totalPrice.toFixed(2)}€. Доступ 5 лет.',
+			oneTime: 'Однократный платеж {totalPrice.toFixed(2)}€. Доступ 1 год.',
 			acceptance: 'Нажимая "Купить", вы принимаете условия.'
 		}
 	},
@@ -701,7 +701,7 @@ const ru: Translation = {
 				title: 'Итого',
 				monthly: 'Ежемесячно',
 				oneTime: 'Единоразово',
-				longtime: 'Longtime',
+				longtime: 'Энтерпрайз доступ',
 				discount: 'Скидка',
 				donation: 'С донатом',
 				tax: 'С НДС'
