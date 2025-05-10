@@ -650,9 +650,9 @@ const ar: Translation = {
 			sixMonth: 'خطة 6 أشهر',
 			popular: '★ الأكثر شيوعًا',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'أساسي انتربرايز',
-				'3-MONATS PLAN': 'متميز انتربرايز',
-				BUSINESS: 'أعمال انتربرايز'
+				'1-MONATS PLAN': 'إنتربرايز أساسي',
+				'3-MONATS PLAN': 'إنتربرايز متميز',
+				BUSINESS: 'إنتربرايز الأعمال'
 			}
 		},
 		additionalBenefits: {

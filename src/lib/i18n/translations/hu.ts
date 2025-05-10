@@ -651,9 +651,9 @@ const hu: Translation = {
 			sixMonth: '6 HÓNAPOS',
 			popular: '★ LEGNÉPSZERŰBB',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'ALAP ENTERPRISE', // Változtatva: 'ALAP LONG'-ról
-				'3-MONATS PLAN': 'PRÉMIUM ENTERPRISE', // Változtatva: 'PRÉMIUM LONG'-ról
-				BUSINESS: 'ÜZLETI ENTERPRISE' // Változtatva: 'ÜZLETI LONG'-ról
+				'1-MONATS PLAN': 'ENTERPRISE ALAP',
+				'3-MONATS PLAN': 'ENTERPRISE PRÉMIUM',
+				BUSINESS: 'ENTERPRISE ÜZLETI'
 			}
 		},
 		additionalBenefits: {
