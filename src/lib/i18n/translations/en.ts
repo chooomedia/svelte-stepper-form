@@ -663,9 +663,9 @@ const en: Translation = {
 			sixMonth: '6-MONTHS PLAN',
 			popular: '★ MOST POPULAR',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'ENTERPRISE BASIS',
-				'3-MONATS PLAN': 'ENTERPRISE PREMIUM',
-				BUSINESS: 'ENTERPRISE BUSINESS'
+				oneMonth: 'ENTERPRISE BASIS',
+				threeMonth: 'ENTERPRISE PREMIUM',
+				business: 'ENTERPRISE BUSINESS'
 			}
 		},
 		additionalBenefits: {

@@ -648,9 +648,9 @@ const ro: Translation = {
 			sixMonth: '6 LUNI',
 			popular: '★ RECOMANDAT',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'ENTERPRISE DE BAZĂ',
-				'3-MONATS PLAN': 'ENTERPRISE PREMIUM',
-				BUSINESS: 'ENTERPRISE BUSINESS'
+				oneMonth: 'ENTERPRISE DE BAZĂ',
+				threeMonth: 'ENTERPRISE PREMIUM',
+				business: 'ENTERPRISE BUSINESS'
 			}
 		},
 		additionalBenefits: {

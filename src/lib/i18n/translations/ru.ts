@@ -648,9 +648,9 @@ const ru: Translation = {
 			sixMonth: '6 МЕСЯЦЕВ',
 			popular: '★ ПОПУЛЯРНЫЙ',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'ЭНТЕРПРАЙЗ БАЗОВЫЙ',
-				'3-MONATS PLAN': 'ЭНТЕРПРАЙЗ ПРЕМИУМ',
-				BUSINESS: 'ЭНТЕРПРАЙЗ БИЗНЕС'
+				oneMonth: 'ЭНТЕРПРАЙЗ БАЗОВЫЙ',
+				threeMonth: 'ЭНТЕРПРАЙЗ ПРЕМИУМ',
+				business: 'ЭНТЕРПРАЙЗ БИЗНЕС'
 			}
 		},
 		additionalBenefits: {

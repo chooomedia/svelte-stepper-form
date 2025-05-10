@@ -540,7 +540,7 @@
 								onchange={() => handlePlanChange(plan.name)}
 							/>
 							<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
-								{paymentType === 'enterprise' && $i18n.pricing.planLabels.longTimeSuffix[plan.name]
+								{paymentType === 'longtime' && $i18n.pricing.planLabels.longTimeSuffix[plan.name]
 									? $i18n.pricing.planLabels.longTimeSuffix[plan.name]
 									: plan.name}
 							</label>

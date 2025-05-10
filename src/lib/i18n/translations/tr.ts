@@ -648,9 +648,9 @@ const tr: Translation = {
 			sixMonth: '6 AYLIK',
 			popular: '★ TAVSİYE EDİLEN',
 			longTimeSuffix: {
-				'1-MONATS PLAN': 'ENTERPRISE TEMEL',
-				'3-MONATS PLAN': 'ENTERPRISE PREMIUM',
-				BUSINESS: 'ENTERPRISE İŞ'
+				oneMonth: 'ENTERPRISE TEMEL',
+				threeMonth: 'ENTERPRISE PREMIUM',
+				business: 'ENTERPRISE İŞ'
 			}
 		},
 		additionalBenefits: {

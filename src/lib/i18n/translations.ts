@@ -397,7 +397,7 @@ export interface Translation {
 			sixMonth: string;
 			popular: string;
 			longTimeSuffix: {
-				'1-MONATS PLAN': string;
+				oneMonth: string;
 				'3-MONATS PLAN': string;
 				BUSINESS: string;
 			};

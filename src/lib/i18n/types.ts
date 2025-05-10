@@ -403,9 +403,9 @@ export interface Translation {
 			sixMonth: string;
 			popular: string;
 			longTimeSuffix: {
-				'1-MONATS PLAN': string;
-				'3-MONATS PLAN': string;
-				BUSINESS: string;
+				oneMonth: string;
+				threeMonth: string;
+				business: string;
 			};
 		};
 		additionalBenefits: {
