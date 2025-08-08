@@ -685,6 +685,8 @@ const de: Translation = {
 		},
 		savings: 'Du sparst',
 		trustBadges: ['Sicher & geschützt bezahlen', '30 Tage Geld-zurück-Garantie'],
+		consultationText: 'Oder möchtest Du auf "Nummer sicher" gehen?',
+		consultationLink: 'Kostenloses Beratungsgespräch buchen',
 		discountBanner: {
 			title: 'Enterprise-Zugang mit', // Geändert von 'Longtime-Zugang'
 			discount: ' mit 20% Rabatt!',
@@ -808,6 +810,24 @@ const de: Translation = {
 			cancelPurchase: 'Möchtest du den Kaufvorgang wirklich abbrechen?',
 			confirmButton: 'Ja, abbrechen',
 			cancelButton: 'Zurück zum Kaufvorgang'
+		},
+		booking: {
+			title: 'Kostenloses Beratungsgespräch buchen',
+			subtitle:
+				'Wähle einen Termin für Dein 30-minütiges kostenloses Beratungsgespräch. Wir besprechen Deine individuellen Bedürfnisse und zeigen Dir, wie Du Deine Online-Sichtbarkeit optimieren kannst.',
+			selectDate: 'Datum auswählen:',
+			selectTime: 'Uhrzeit auswählen:',
+			contactInfo: 'Deine Kontaktdaten:',
+			confirm: 'Termin kostenlos buchen',
+			booking: 'Termin wird gebucht...',
+			cancel: 'Abbrechen',
+			success: {
+				title: 'Termin erfolgreich gebucht!',
+				message:
+					'Dein kostenloses Beratungsgespräch wurde für den {date} um {time} Uhr reserviert.',
+				details:
+					'Du erhältst in Kürze eine Bestätigungs-E-Mail mit allen Details und dem Meeting-Link.'
+			}
 		}
 	},
 	waitingScreen: {

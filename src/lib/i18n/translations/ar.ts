@@ -669,6 +669,8 @@ const ar: Translation = {
 		},
 		savings: 'وفرت',
 		trustBadges: ['دفع آمن', 'ضمان استرداد 30 يومًا'],
+		consultationText: 'أم تريد اللعب بأمان؟',
+		consultationLink: 'احجز استشارة مجانية',
 		discountBanner: {
 			title: 'وصول انتربرايز بخصم',
 			discount: ' 20%!',
@@ -780,6 +782,22 @@ const ar: Translation = {
 			cancelPurchase: 'هل تريد إلغاء الشراء؟',
 			confirmButton: 'نعم، ألغِ',
 			cancelButton: 'عودة للشراء'
+		},
+		booking: {
+			title: 'احجز استشارة مجانية',
+			subtitle:
+				'اختر موعداً لاستشارتك المجانية لمدة 30 دقيقة. نناقش احتياجاتك الفردية ونوضح لك كيفية تحسين ظهورك عبر الإنترنت.',
+			selectDate: 'اختر التاريخ:',
+			selectTime: 'اختر الوقت:',
+			contactInfo: 'معلومات الاتصال الخاصة بك:',
+			confirm: 'احجز موعداً مجاناً',
+			booking: 'جاري حجز الموعد...',
+			cancel: 'إلغاء',
+			success: {
+				title: 'تم حجز الموعد بنجاح!',
+				message: 'تم حجز استشارتك المجانية في {date} الساعة {time}.',
+				details: 'ستتلقى رسالة تأكيد بالبريد الإلكتروني قريباً مع جميع التفاصيل ورابط الاجتماع.'
+			}
 		}
 	},
 	waitingScreen: {

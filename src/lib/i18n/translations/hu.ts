@@ -670,6 +670,8 @@ const hu: Translation = {
 		},
 		savings: 'Megtakarított összeg',
 		trustBadges: ['Biztonságos fizetés', '30 napos visszatérítés'],
+		consultationText: 'Vagy biztonságosan játszol?',
+		consultationLink: 'Ingyenes konzultáció foglalása',
 		discountBanner: {
 			title: 'Enterprise hozzáférés', // Változtatva: 'Longtime hozzáférés'-ről
 			discount: ' 20% kedvezménnyel!',
@@ -781,6 +783,23 @@ const hu: Translation = {
 			cancelPurchase: 'Biztosan megszakítod?',
 			confirmButton: 'Igen, megszakítom',
 			cancelButton: 'Vissza a fizetéshez'
+		},
+		booking: {
+			title: 'Ingyenes konzultáció foglalása',
+			subtitle:
+				'Válassz időpontot a 30 perces ingyenes konzultációhoz. Megbeszéljük egyéni igényeidet és megmutatjuk, hogyan optimalizálhatod online láthatóságodat.',
+			selectDate: 'Dátum kiválasztása:',
+			selectTime: 'Időpont kiválasztása:',
+			contactInfo: 'Kapcsolati adataid:',
+			confirm: 'Ingyenes időpont foglalása',
+			booking: 'Időpont foglalása...',
+			cancel: 'Mégse',
+			success: {
+				title: 'Időpont sikeresen foglalva!',
+				message: 'Ingyenes konzultációd {date} {time} időpontra lett foglalva.',
+				details:
+					'Hamarosan megkapsz egy visszaigazoló e-mailt minden részlettel és a meeting linkkel.'
+			}
 		}
 	},
 	waitingScreen: {

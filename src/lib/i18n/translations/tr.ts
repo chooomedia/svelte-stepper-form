@@ -667,6 +667,8 @@ const tr: Translation = {
 		},
 		savings: 'Tasarruf Edilen',
 		trustBadges: ['Güvenli ödeme', '30 gün garantisi'],
+		consultationText: 'Yoksa güvenli oynamak mı istiyorsun?',
+		consultationLink: 'Ücretsiz danışmanlık randevusu al',
 		discountBanner: {
 			title: 'Enterprise Paketi', // Değişiklik: 'Uzun Süre Paketi' yerine
 			discount: ' %20 indirimle!',
@@ -777,6 +779,23 @@ const tr: Translation = {
 			cancelPurchase: 'İptal etmek istiyor musun?',
 			confirmButton: 'Evet, iptal et',
 			cancelButton: 'Ödemeye Dön'
+		},
+		booking: {
+			title: 'Ücretsiz danışmanlık randevusu al',
+			subtitle:
+				'30 dakikalık ücretsiz danışmanlığınız için bir randevu seçin. Bireysel ihtiyaçlarınızı tartışır ve çevrimiçi görünürlüğünüzü nasıl optimize edeceğinizi gösteririz.',
+			selectDate: 'Tarih seçin:',
+			selectTime: 'Saat seçin:',
+			contactInfo: 'İletişim bilgileriniz:',
+			confirm: 'Ücretsiz randevu al',
+			booking: 'Randevu alınıyor...',
+			cancel: 'İptal',
+			success: {
+				title: 'Randevu başarıyla alındı!',
+				message: 'Ücretsiz danışmanlığınız {date} tarihinde {time} saatinde rezerve edildi.',
+				details:
+					'Yakında tüm detaylar ve toplantı linki ile birlikte bir onay e-postası alacaksınız.'
+			}
 		}
 	},
 	waitingScreen: {

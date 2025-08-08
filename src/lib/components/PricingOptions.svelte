@@ -46,8 +46,8 @@
 	let savingsAmount: number = $state(0);
 
 	// Longtime calculation periods
-	let longtimeYears: number = $state(5); // Longtime is calculated as 5 years
-	let displayLongtimeYears: number = $state(5); // But displayed as 10 years
+	let longtimeYears: number = $state(2); // Longtime is calculated as 5 years
+	let displayLongtimeYears: number = $state(1); // But displayed as 10 years
 
 	// State for selected plan and payment type using enums
 	let selectedPlan = $state<PlanType>(PlanType.THREE_MONTH); // Default to most popular
@@ -540,9 +540,19 @@
 								onchange={() => handlePlanChange(plan.name)}
 							/>
 							<label for={plan.name} class="ml-2 text-lg font-semibold text-gray-900">
-								{paymentType === 'longtime' && $i18n.pricing.planLabels.longTimeSuffix[plan.name]
-									? $i18n.pricing.planLabels.longTimeSuffix[plan.name]
-									: plan.name}
+								{#if paymentType === 'longtime'}
+									{#if plan.name === $i18n.pricing.planLabels.oneMonth}
+										{$i18n.pricing.planLabels.longTimeSuffix.oneMonth}
+									{:else if plan.name === $i18n.pricing.planLabels.threeMonth}
+										{$i18n.pricing.planLabels.longTimeSuffix.threeMonth}
+									{:else if plan.name === $i18n.pricing.planLabels.sixMonth}
+										{$i18n.pricing.planLabels.longTimeSuffix.business}
+									{:else}
+										{plan.name}
+									{/if}
+								{:else}
+									{plan.name}
+								{/if}
 							</label>
 						</div>
 
@@ -733,6 +743,19 @@
 					</span>
 				</button>
 			</div>
+
+			<!-- Beratungsbuchungs-Text -->
+			<div class="mt-4 text-center" in:fade={{ duration: 300, delay: 600 }}>
+				<p class="text-sm text-gray-600">
+					{$i18n.pricing.consultationText || 'Oder möchtest Du auf "Nummer sicher" gehen?'}
+					<button
+						class="ml-1 font-medium text-primary-600 underline hover:text-primary-700"
+						onclick={() => modalStore.open('booking')}
+					>
+						{$i18n.pricing.consultationLink || 'Kostenloses Beratungsgespräch buchen'}
+					</button>
+				</p>
+			</div>
 		</div>
 
 		<!-- Trust Badges -->
@@ -808,7 +831,7 @@
 		<!-- Terms -->
 		<div class="mt-8 text-center text-xs text-gray-500" in:fade={{ duration: 300, delay: 800 }}>
 			{@html $i18n.pricing.terms.acceptance.replace(
-				'{paymentType}',
+				/\{paymentType .*?\}/g,
 				paymentType === PaymentType.MONTHLY
 					? $i18n.pricing.ctaButton.monthly
 					: paymentType === PaymentType.ONE_TIME

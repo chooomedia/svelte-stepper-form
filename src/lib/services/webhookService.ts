@@ -1,6 +1,7 @@
 // src/lib/services/webhookService.ts
 import { browser } from '$app/environment';
 import type { FormData } from '$lib/schema';
+import { get } from 'svelte/store';
 import { formatEmailData, shouldGeneratePdf, isValidEmail } from '$lib/utils/emailUtils';
 
 // Store for rate limiting data

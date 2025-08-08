@@ -8,3 +8,4 @@ export { default as PaymentContent } from './ModalContent/PaymentContent.svelte'
 export { default as SuccessContent } from './ModalContent/SuccessContent.svelte';
 export { default as ErrorContent } from './ModalContent/ErrorContent.svelte';
 export { default as ConfirmContent } from './ModalContent/ConfirmContent.svelte';
+export { default as BookingContent } from './ModalContent/BookingContent.svelte';

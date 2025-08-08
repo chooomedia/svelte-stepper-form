@@ -1,7 +1,7 @@
 // src/lib/components/modal/modalStore.ts
 import { writable, derived } from 'svelte/store';
 
-export type ModalType = 'payment' | 'success' | 'error' | 'confirm' | null;
+export type ModalType = 'payment' | 'success' | 'error' | 'confirm' | 'booking' | null;
 
 export interface ModalState {
 	isOpen: boolean;

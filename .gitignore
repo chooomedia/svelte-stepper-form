@@ -10,7 +10,7 @@ node_modules
 /build
 
 #npm
-package-lock.json
+# package-lock.json should be committed for reproducible builds
 
 # OS
 .DS_Store

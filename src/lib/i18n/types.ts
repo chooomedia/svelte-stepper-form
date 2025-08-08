@@ -422,6 +422,8 @@ export interface Translation {
 		};
 		savings: string;
 		trustBadges: string[];
+		consultationText: string;
+		consultationLink: string;
 		discountBanner: {
 			title: string;
 			discount: string;
@@ -532,6 +534,21 @@ export interface Translation {
 			cancelPurchase: string;
 			confirmButton: string;
 			cancelButton: string;
+		};
+		booking: {
+			title: string;
+			subtitle: string;
+			selectDate: string;
+			selectTime: string;
+			contactInfo: string;
+			confirm: string;
+			booking: string;
+			cancel: string;
+			success: {
+				title: string;
+				message: string;
+				details: string;
+			};
 		};
 	};
 	waitingScreen: {

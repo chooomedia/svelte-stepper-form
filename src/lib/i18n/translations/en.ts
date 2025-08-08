@@ -672,7 +672,7 @@ const en: Translation = {
 			oneTime: ['8% Discount on Total Price', 'Zero Monthly Recurring Fees'],
 			longTime: [
 				'Year of Unlimited Access', // Changed from 'Years'
-				'Massive 20% Lifetime Discount',
+				'Massive 20% Discount',
 				'All Future Updates Included'
 			],
 			savings: 'Save',
@@ -686,6 +686,8 @@ const en: Translation = {
 		},
 		savings: 'You save',
 		trustBadges: ['Secure & Protected Payment', '30-Day Money-Back Guarantee'],
+		consultationText: 'Or want to play it safe?',
+		consultationLink: 'Book free consultation',
 		discountBanner: {
 			title: 'Enterprise Access with 20% Mega Discount!', // Changed from 'Longtime'
 			discount: ' 20% Discount!',
@@ -807,6 +809,23 @@ const en: Translation = {
 			cancelPurchase: 'Do you really want to cancel the purchase process?',
 			confirmButton: 'Yes, cancel',
 			cancelButton: 'Back to checkout'
+		},
+		booking: {
+			title: 'Book Free Consultation',
+			subtitle:
+				'Choose an appointment for your 30-minute free consultation. We discuss your individual needs and show you how to optimize your online visibility.',
+			selectDate: 'Select Date:',
+			selectTime: 'Select Time:',
+			contactInfo: 'Your Contact Information:',
+			confirm: 'Book Free Appointment',
+			booking: 'Booking appointment...',
+			cancel: 'Cancel',
+			success: {
+				title: 'Appointment Successfully Booked!',
+				message: 'Your free consultation has been reserved for {date} at {time}.',
+				details:
+					'You will receive a confirmation email shortly with all details and the meeting link.'
+			}
 		}
 	},
 	waitingScreen: {

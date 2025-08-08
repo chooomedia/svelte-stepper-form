@@ -6,6 +6,7 @@
 	import SuccessContent from './ModalContent/SuccessContent.svelte';
 	import ErrorContent from './ModalContent/ErrorContent.svelte';
 	import ConfirmContent from './ModalContent/ConfirmContent.svelte';
+	import BookingContent from './ModalContent/BookingContent.svelte';
 	import { i18n } from '$lib/i18n';
 	import { PaymentType, PlanType } from '$lib/types/plans';
 
@@ -33,6 +34,8 @@
 				return $i18n.modal.error.title;
 			case 'confirm':
 				return $i18n.modal.common.confirm;
+			case 'booking':
+				return $i18n.modal.booking.title;
 			default:
 				return '';
 		}
@@ -50,6 +53,8 @@
 				return $i18n.modal.error.defaultMessage;
 			case 'confirm':
 				return modalData?.message || $i18n.modal.confirm.cancelPurchase;
+			case 'booking':
+				return $i18n.modal.booking.subtitle;
 			default:
 				return '';
 		}
@@ -144,5 +149,7 @@
 			previousType={modalData?.previousType}
 			previousData={modalData?.previousData}
 		/>
+	{:else if currentModalType === 'booking'}
+		<BookingContent />
 	{/if}
 </Modal>

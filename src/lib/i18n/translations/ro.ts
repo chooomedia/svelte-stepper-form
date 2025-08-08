@@ -667,6 +667,8 @@ const ro: Translation = {
 		},
 		savings: 'Economisit',
 		trustBadges: ['Plată securizată', 'Garantie 30 zile'],
+		consultationText: 'Sau vrei să joci la sigur?',
+		consultationLink: 'Rezervă consultație gratuită',
 		discountBanner: {
 			title: 'Acces Enterprise', // Schimbat din 'Acces Longtime'
 			discount: ' cu 20% reducere!',
@@ -777,6 +779,23 @@ const ro: Translation = {
 			cancelPurchase: 'Anulezi comanda?',
 			confirmButton: 'Da, anulează',
 			cancelButton: 'Continuă plata'
+		},
+		booking: {
+			title: 'Rezervă consultație gratuită',
+			subtitle:
+				'Alege o programare pentru consultația ta gratuită de 30 de minute. Discutăm nevoile tale individuale și îți arătăm cum să îți optimizezi vizibilitatea online.',
+			selectDate: 'Selectează data:',
+			selectTime: 'Selectează ora:',
+			contactInfo: 'Informațiile tale de contact:',
+			confirm: 'Rezervă programare gratuită',
+			booking: 'Se rezervă programarea...',
+			cancel: 'Anulează',
+			success: {
+				title: 'Programarea rezervată cu succes!',
+				message: 'Consultația ta gratuită a fost rezervată pentru {date} la {time}.',
+				details:
+					'Vei primi în curând un e-mail de confirmare cu toate detaliile și link-ul pentru întâlnire.'
+			}
 		}
 	},
 	waitingScreen: {
