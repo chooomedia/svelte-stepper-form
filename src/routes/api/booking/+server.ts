@@ -212,12 +212,15 @@ export const GET: RequestHandler = async ({ url }) => {
 		// In a real implementation, you would need to call the specific availability endpoint
 		// for each booking type and combine the results
 		console.log('Found booking types:', bookingTypes.length);
-		
+
+		// Filter slots to only include 10:00 and later
+		const filteredSlots = ['10:00', '11:00', '14:00', '15:00', '16:00'];
+
 		return json({
 			success: true,
 			availability: {
 				date,
-				slots: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
+				slots: filteredSlots
 			}
 		});
 	} catch (error) {

@@ -14,15 +14,18 @@ const ar: Translation = {
 	},
 	common: {
 		next: 'التالي',
-		skip: 'تخطي',
+		skip: 'تخطى',
 		back: 'رجوع',
 		submit: 'إرسال',
-		loading: 'جار التحميل...',
+		loading: 'جاري التحميل...',
 		error: 'حدث خطأ',
-		success: 'نجاح!',
+		success: 'نجح!',
 		analyze: 'تحليل',
 		formErrorHeading: 'يرجى تصحيح الأخطاء التالية:',
-		support: 'الدعم'
+		support: 'الدعم',
+		backToHome: 'العودة إلى الصفحة الرئيسية',
+		tryAgainLater: 'يرجى المحاولة مرة أخرى لاحقاً أو الاتصال بدعمنا.',
+		contactSupport: 'اتصل بالدعم'
 	},
 	forms: {
 		labels: {

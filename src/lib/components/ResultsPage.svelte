@@ -13,6 +13,7 @@
 	import BenefitsSection from './sections/BenefitsSection.svelte';
 	import { scoreStore, getFallbackAuditData, websiteScreenshot } from '$lib/utils/scoring';
 	import Icon from './Icon.svelte';
+	import ErrorDisplay from './ErrorDisplay.svelte';
 
 	const isDev = import.meta.env.DEV;
 
@@ -34,6 +35,7 @@
 	let webhookSent = $state(false);
 	let webhookSuccess = $state(false);
 	let webhookMessage = $state('');
+	let formErrors = $state<string[]>([]);
 	let emailSendAttempted = $state(false);
 
 	async function sendAnalysisResults() {
@@ -46,18 +48,33 @@
 
 		// Prüfen, ob tägliches Limit erreicht ist
 		if (WebhookService.hasReachedDailyLimit() && !isDev) {
-			webhookMessage =
-				'Du hast dein tägliches Limit für E-Mails erreicht. Versuche es morgen erneut.';
+			const error = 'Du hast dein tägliches Limit für E-Mails erreicht. Versuche es morgen erneut.';
+			webhookMessage = error;
+			formErrors = [error];
 			webhookSuccess = false;
 			webhookSent = true;
 			return;
 		}
 
 		// Webhook senden
-		const result = await WebhookService.sendQuizResults();
-		webhookSent = true;
-		webhookSuccess = result.success;
-		webhookMessage = result.message;
+		try {
+			const result = await WebhookService.sendQuizResults();
+			webhookSent = true;
+			webhookSuccess = result.success;
+			webhookMessage = result.message;
+			if (!result.success) {
+				formErrors = [result.message];
+			} else {
+				formErrors = [];
+			}
+		} catch (error) {
+			webhookSent = true;
+			webhookSuccess = false;
+			const errorMessage =
+				error instanceof Error ? error.message : 'Ein unerwarteter Fehler ist aufgetreten';
+			webhookMessage = errorMessage;
+			formErrors = [errorMessage];
+		}
 	}
 
 	// Process the score value to ensure it's valid
@@ -280,6 +297,10 @@
 </script>
 
 <div class="results-page mb-16 mt-3">
+	{#if formErrors.length > 0}
+		<ErrorDisplay errors={formErrors} title={$i18n.common.formErrorHeading} />
+	{/if}
+
 	<!-- Score Section -->
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
 		<!-- Left column: Score visualization and website screenshot -->
@@ -627,31 +648,6 @@
 		</button>
 	</div>
 	<div class="my-4 text-center">
-		{#if webhookSent}
-			<div
-				class="rounded-lg p-4 {webhookSuccess
-					? 'bg-green-100 text-green-800'
-					: 'bg-red-100 text-red-800'}"
-				in:fade={{ duration: 300 }}
-			>
-				<p class="font-medium">
-					{#if webhookSuccess}
-						<Icon name="checkCircle" size={24} className="inline-block mr-2" stroke="none" />
-						Deine Ergebnisse wurden erfolgreich an {formData.email} gesendet!
-					{:else}
-						<Icon
-							name="alert"
-							size={32}
-							className="inline-block mr-2"
-							fill="none"
-							stroke="currentColor"
-						/>
-						{webhookMessage}
-					{/if}
-				</p>
-			</div>
-		{/if}
-
 		{#if emailSendAttempted && !formData.email}
 			<p class="text-sm text-red-600" in:fly={{ y: 10, duration: 300 }}>
 				{$i18n.results.buttons.emailError}

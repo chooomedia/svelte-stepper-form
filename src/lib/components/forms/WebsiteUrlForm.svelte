@@ -80,8 +80,8 @@
 	function handleBlur(fieldName: string) {
 		touchedFields.add(fieldName);
 
-		if (fieldName === 'company_url' && $form?.company_url !== undefined) {
-			const validation = validateUrl($form.company_url);
+		if (fieldName === 'company_url' && $form?.data?.company_url !== undefined) {
+			const validation = validateUrl($form.data.company_url);
 			if (!validation.isValid) {
 				localErrors.company_url = validation.error;
 				isUrlValid = false;
@@ -280,14 +280,14 @@
 	// Main analyze function
 	async function analyzeWebsite() {
 		// Check if form and company_url are defined
-		if (!$form || !$form.company_url) {
+		if (!$form || !$form.data?.company_url) {
 			localErrors.company_url = 'Bitte eine URL eingeben';
 			touchedFields.add('company_url');
 			return;
 		}
 
 		// Validate URL
-		const validation = validateUrl($form.company_url);
+		const validation = validateUrl($form.data.company_url);
 		if (!validation.isValid) {
 			localErrors.company_url = validation.error;
 			touchedFields.add('company_url');
@@ -295,7 +295,7 @@
 		}
 
 		// Prepare URL for webhook - just basic formatting
-		let webhookUrl = $form.company_url.trim();
+		let webhookUrl = $form.data.company_url.trim();
 		// Ensure URL has protocol
 		if (!webhookUrl.startsWith('http://') && !webhookUrl.startsWith('https://')) {
 			webhookUrl = 'https://' + webhookUrl;
@@ -441,8 +441,8 @@
 
 	// URL validation effect when value changes
 	$effect(() => {
-		if ($form?.company_url !== undefined && touchedFields.has('company_url')) {
-			const validation = validateUrl($form.company_url);
+		if ($form?.data?.company_url !== undefined && touchedFields.has('company_url')) {
+			const validation = validateUrl($form.data.company_url);
 			if (!validation.isValid) {
 				localErrors.company_url = validation.error;
 				isUrlValid = false;
@@ -455,9 +455,9 @@
 
 	// Auto-analyze when component mounts if URL is already set
 	onMount(() => {
-		if ($form?.company_url && !$form.visibility_score) {
+		if ($form?.data?.company_url && !$form.data.visibility_score) {
 			// Validate URL first
-			const validation = validateUrl($form.company_url);
+			const validation = validateUrl($form.data.company_url);
 			if (validation.isValid) {
 				setTimeout(() => {
 					analyzeWebsite();
@@ -503,13 +503,13 @@
 							<input
 								type="url"
 								id="company_url"
-								bind:value={$form.company_url}
+								bind:value={$form.data.company_url}
 								class="input-field flex-grow shadow-custom {shouldShowError('company_url')
 									? 'error'
 									: ''}"
 								onblur={() => handleBlur('company_url')}
 								onkeydown={(e) => {
-									if (e.key === 'Enter' && !isLoading && $form?.company_url && isUrlValid) {
+									if (e.key === 'Enter' && !isLoading && $form?.data?.company_url && isUrlValid) {
 										e.preventDefault();
 										analyzeWebsite();
 									}
@@ -523,7 +523,7 @@
 							<button
 								type="button"
 								class="btn btn-primary mt-2 lg:ml-2 lg:mt-0"
-								disabled={isLoading || !$form?.company_url || !isUrlValid}
+								disabled={isLoading || !$form?.data?.company_url || !isUrlValid}
 								onclick={analyzeWebsite}
 							>
 								{#if isLoading}
@@ -545,7 +545,7 @@
 								{analysisError}
 							</p>
 						{/if}
-						{#if !shouldShowError('company_url') && $form?.company_url && !isLoading && !analysisError}
+						{#if !shouldShowError('company_url') && $form?.data?.company_url && !isLoading && !analysisError}
 							<p class="mt-1 text-sm text-gray-500" id="company_url-description">
 								{$i18n.forms.descriptions.analyze}
 							</p>

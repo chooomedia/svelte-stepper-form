@@ -12,8 +12,14 @@ async function mockCreateEntity(data: any) {
 
 export const load: PageServerLoad = async () => {
 	// Initialize the form with default values
-	const form = await superValidate(zod(last_step), { defaults: defaultValues });
+	const form = await superValidate(zod(last_step), {
+		defaults: {
+			...defaultValues,
+			company_url: 'https://chooomedia.de' // Test-URL für Entwicklung
+		}
+	});
 
+	console.log('🔍 Form loaded with data:', form.data);
 	return { form };
 };
 

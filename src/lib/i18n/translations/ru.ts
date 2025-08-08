@@ -21,8 +21,11 @@ const ru: Translation = {
 		error: 'Произошла ошибка',
 		success: 'Успешно!',
 		analyze: 'Анализировать',
-		formErrorHeading: 'Исправьте следующие ошибки:',
-		support: 'Поддержка'
+		formErrorHeading: 'Пожалуйста, исправьте следующие ошибки:',
+		support: 'Поддержка',
+		backToHome: 'Вернуться на главную',
+		tryAgainLater: 'Пожалуйста, попробуйте позже или свяжитесь с нашей поддержкой.',
+		contactSupport: 'Связаться с поддержкой'
 	},
 	forms: {
 		labels: {

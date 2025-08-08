@@ -22,7 +22,10 @@ const de: Translation = {
 		success: 'Erfolgreich!',
 		analyze: 'Analysieren',
 		formErrorHeading: 'Bitte korrigiere die folgenden Fehler:',
-		support: 'Support'
+		support: 'Support',
+		backToHome: 'Zurück zur Startseite',
+		tryAgainLater: 'Bitte versuche es später erneut oder kontaktiere unseren Support.',
+		contactSupport: 'Support kontaktieren'
 	},
 	forms: {
 		labels: {

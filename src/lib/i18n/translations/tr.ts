@@ -22,7 +22,10 @@ const tr: Translation = {
 		success: 'Başarılı!',
 		analyze: 'Analiz Et',
 		formErrorHeading: 'Lütfen hataları düzeltin:',
-		support: 'Destek'
+		support: 'Destek',
+		backToHome: 'Ana Sayfaya Dön',
+		tryAgainLater: 'Lütfen daha sonra tekrar deneyin veya destek ekibimizle iletişime geçin.',
+		contactSupport: 'Destek İle İletişim'
 	},
 	forms: {
 		labels: {

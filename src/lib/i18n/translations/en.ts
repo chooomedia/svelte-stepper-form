@@ -22,7 +22,10 @@ const en: Translation = {
 		success: 'Success!',
 		analyze: 'Analyze',
 		formErrorHeading: 'Please correct the following errors:',
-		support: 'Support'
+		support: 'Support',
+		backToHome: 'Back to Homepage',
+		tryAgainLater: 'Please try again later or contact our support.',
+		contactSupport: 'Contact Support'
 	},
 	forms: {
 		labels: {

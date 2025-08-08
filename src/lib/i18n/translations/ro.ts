@@ -22,7 +22,10 @@ const ro: Translation = {
 		success: 'Succes!',
 		analyze: 'Analizează',
 		formErrorHeading: 'Corectează următoarele erori:',
-		support: 'Suport'
+		support: 'Suport',
+		backToHome: 'Înapoi la Pagina Principală',
+		tryAgainLater: 'Te rugăm să încerci din nou mai târziu sau să contactezi suportul nostru.',
+		contactSupport: 'Contactează Suportul'
 	},
 	forms: {
 		labels: {

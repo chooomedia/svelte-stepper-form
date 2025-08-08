@@ -22,7 +22,10 @@ const hu: Translation = {
 		success: 'Siker!',
 		analyze: 'Elemzés',
 		formErrorHeading: 'Kérjük javítsd a következő hibákat:',
-		support: 'Támogatás'
+		support: 'Támogatás',
+		backToHome: 'Vissza a Főoldalra',
+		tryAgainLater: 'Kérjük próbáld újra később vagy lépj kapcsolatba támogatásunkkal.',
+		contactSupport: 'Kapcsolat a Támogatással'
 	},
 	forms: {
 		labels: {

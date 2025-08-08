@@ -372,13 +372,15 @@ export function updateVisibilityScore(formData: Partial<FormData>, form: any) {
 	// Calculate the score
 	const score = calculateVisibilityScore(formData);
 
-	// Update the form's visibility_score field if it exists
-	if (form) {
-		if (typeof form.visibility_score === 'number') {
-			form.visibility_score = score;
-		} else if (form.data && typeof form.data.visibility_score === 'number') {
-			form.data.visibility_score = score;
-		}
+	// Update the form's visibility_score field using Superforms
+	if (form && typeof form.update === 'function') {
+		form.update((data) => ({
+			...data,
+			data: {
+				...data.data,
+				visibility_score: score
+			}
+		}));
 	}
 
 	// Update the store

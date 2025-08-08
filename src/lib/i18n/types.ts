@@ -24,6 +24,9 @@ export interface Translation {
 		analyze: string;
 		formErrorHeading?: string;
 		support?: string;
+		backToHome?: string;
+		tryAgainLater?: string;
+		contactSupport?: string;
 	};
 	forms: {
 		labels: Record<string, string>;

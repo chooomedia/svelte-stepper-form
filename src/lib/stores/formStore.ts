@@ -1,124 +1,240 @@
-// src/lib/stores/formStore.ts
-import { writable, derived, get } from 'svelte/store';
-import type { FormData } from '$lib/schema';
-import {
-	calculateVisibilityScore,
-	calculateFinalScore,
-	extractScoreFromResponse
-} from '$lib/utils/scoring';
-import { scoreStore } from '$lib/utils/scoring';
+import { writable, derived } from 'svelte/store';
 
-// Core form data
-export const formData = writable<Partial<FormData>>({});
+// Store für den berechneten Score des Formulars
+export const calculatedScore = writable<number>(0);
 
-// Analysis-related state
-export const analysisState = writable({
-	isLoading: false,
-	isComplete: false,
-	score: 0,
-	error: '',
-	data: null
+// Store für alle Formulardaten
+export const formData = writable<Record<string, any>>({});
+
+// Store für den aktuellen Formularstatus
+export const formStatus = writable<'idle' | 'submitting' | 'success' | 'error'>('idle');
+
+// Store für Formularfehler
+export const formErrors = writable<Record<string, string>>({});
+
+// Store für die Formularvalidierung
+export const formValidation = writable<Record<string, boolean>>({});
+
+// Store für den aktuellen Schritt des Formulars
+export const currentStep = writable<number>(0);
+
+// Store für die Formularhistorie (für Undo/Redo)
+export const formHistory = writable<Array<Record<string, any>>>([]);
+export const historyIndex = writable<number>(-1);
+
+// Abgeleitete Stores für bessere Datenverwaltung
+export const hasContactData = derived(formData, ($formData) => {
+	return !!(($formData.first_name || $formData.last_name) && $formData.email);
 });
 
-// Calculate the score when form data changes
-export const calculatedScore = derived([formData, analysisState], ([$formData, $analysisState]) => {
-	// Get the latest scores from the analysis state and form data
-	if ($analysisState.score > 0) {
-		// Use website analysis score with 70% weight
-		const formScore = calculateVisibilityScore($formData);
-		return Math.round($analysisState.score * 0.7 + formScore * 0.3);
+export const hasCompanyData = derived(formData, ($formData) => {
+	return !!($formData.company_name || $formData.company_url);
+});
+
+export const isFormComplete = derived(formData, ($formData) => {
+	const requiredFields = ['first_name', 'last_name', 'email', 'company_name', 'company_url'];
+	return requiredFields.every(
+		(field) => $formData[field] && $formData[field].toString().trim() !== ''
+	);
+});
+
+export const formProgress = derived(formData, ($formData) => {
+	const totalFields = 8; // Gesamtanzahl der Felder
+	const filledFields = Object.values($formData).filter(
+		(value) => value && value.toString().trim() !== '' && value !== false
+	).length;
+	return Math.round((filledFields / totalFields) * 100);
+});
+
+// Funktion zum Zurücksetzen des Stores
+export function resetFormStore() {
+	calculatedScore.set(0);
+	formData.set({});
+	formStatus.set('idle');
+	formErrors.set({});
+	formValidation.set({});
+	currentStep.set(0);
+	formHistory.set([]);
+	historyIndex.set(-1);
+}
+
+// Funktion zum Aktualisieren des berechneten Scores
+export function updateCalculatedScore(score: number) {
+	calculatedScore.set(score);
+}
+
+// Funktion zum Aktualisieren der Formulardaten
+export function updateFormData(data: Record<string, any>) {
+	formData.update((current) => {
+		const newData = { ...current, ...data };
+
+		// Füge zur Historie hinzu (für Undo/Redo)
+		addToHistory(current);
+
+		return newData;
+	});
+}
+
+// Funktion zum Setzen des Formularstatus
+export function setFormStatus(status: 'idle' | 'submitting' | 'success' | 'error') {
+	formStatus.set(status);
+}
+
+// Funktion zum Setzen von Formularfehlern
+export function setFormErrors(errors: Record<string, string>) {
+	formErrors.set(errors);
+}
+
+// Funktion zum Setzen der Formularvalidierung
+export function setFormValidation(validation: Record<string, boolean>) {
+	formValidation.set(validation);
+}
+
+// Funktion zum Setzen des aktuellen Schritts
+export function setCurrentStep(step: number) {
+	currentStep.set(step);
+}
+
+// Funktion zum Hinzufügen zur Historie
+function addToHistory(data: Record<string, any>) {
+	// Verwende einen einfacheren Ansatz ohne Historie für jetzt
+	// TODO: Historie-Funktionalität später implementieren
+}
+
+// Funktion zum Rückgängig machen (Undo)
+export function undoFormChange() {
+	// TODO: Historie-Funktionalität später implementieren
+}
+
+// Funktion zum Wiederholen (Redo)
+export function redoFormChange() {
+	// TODO: Historie-Funktionalität später implementieren
+}
+
+// Funktion zum Exportieren der Formulardaten
+export function exportFormData(): string {
+	let data = {};
+	formData.update((current) => {
+		data = current;
+		return current;
+	});
+	return JSON.stringify(data, null, 2);
+}
+
+// Funktion zum Importieren der Formulardaten
+export function importFormData(jsonData: string): boolean {
+	try {
+		const data = JSON.parse(jsonData);
+		if (typeof data === 'object' && data !== null) {
+			formData.set(data);
+			return true;
+		}
+		return false;
+	} catch (error) {
+		console.error('Error importing form data:', error);
+		return false;
+	}
+}
+
+// Funktion zum Speichern in localStorage
+export function saveToLocalStorage() {
+	try {
+		let data = {};
+		formData.update((current) => {
+			data = current;
+			return current;
+		});
+		localStorage.setItem('digitalpusher_form_data', JSON.stringify(data));
+		return true;
+	} catch (error) {
+		console.error('Error saving to localStorage:', error);
+		return false;
+	}
+}
+
+// Funktion zum Laden aus localStorage
+export function loadFromLocalStorage(): boolean {
+	try {
+		const data = localStorage.getItem('digitalpusher_form_data');
+		if (data) {
+			const parsedData = JSON.parse(data);
+			formData.set(parsedData);
+			return true;
+		}
+		return false;
+	} catch (error) {
+		console.error('Error loading from localStorage:', error);
+		return false;
+	}
+}
+
+// Funktion zum Teilen der Formulardaten (für Debugging/Support)
+export function shareFormData(): string {
+	let data = {};
+	let score = 0;
+	let status = 'idle';
+
+	formData.update((current) => {
+		data = current;
+		return current;
+	});
+
+	calculatedScore.update((current) => {
+		score = current;
+		return current;
+	});
+
+	formStatus.update((current) => {
+		status = current;
+		return current;
+	});
+
+	const shareData = {
+		formData: data,
+		score,
+		status,
+		timestamp: new Date().toISOString(),
+		version: '1.0.0'
+	};
+
+	return JSON.stringify(shareData, null, 2);
+}
+
+// Funktion zum Validieren der Formulardaten
+export function validateFormData(): { isValid: boolean; errors: Record<string, string> } {
+	let data = {};
+	formData.update((current) => {
+		data = current;
+		return current;
+	});
+
+	const errors: Record<string, string> = {};
+
+	// Pflichtfelder prüfen
+	if (!data.first_name?.trim()) errors.first_name = 'Vorname ist erforderlich';
+	if (!data.last_name?.trim()) errors.last_name = 'Nachname ist erforderlich';
+	if (!data.email?.trim()) errors.email = 'E-Mail ist erforderlich';
+
+	// E-Mail-Format prüfen
+	if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+		errors.email = 'Ungültiges E-Mail-Format';
 	}
 
-	// Fall back to just form-based score
-	return calculateVisibilityScore($formData);
-});
+	// URL-Format prüfen (wenn vorhanden)
+	if (data.company_url && !/^https?:\/\/.+/.test(data.company_url)) {
+		errors.company_url = 'Ungültiges URL-Format';
+	}
 
-// Sync form data changes with score calculation
-formData.subscribe(($formData) => {
-	// Update the score store with the latest form data
-	scoreStore.updateFormScore($formData);
-});
-
-// Helper functions
-export function updateFormField(field: keyof FormData, value: any) {
-	formData.update((data) => {
-		const updatedData = { ...data, [field]: value };
-
-		// Recalculate visibility score whenever form data changes
-		const formScore = calculateVisibilityScore(updatedData);
-
-		// Only update visibility_score if it's not already set by an API
-		if (!updatedData.visibility_score || field === 'visibility_score') {
-			updatedData.visibility_score = formScore;
-		}
-
-		return updatedData;
-	});
+	setFormErrors(errors);
+	return { isValid: Object.keys(errors).length === 0, errors };
 }
 
-// Set analysis results from API response
-export function setAnalysisResults(results: any) {
-	// Extract score from API response
-	const websiteScore = extractScoreFromResponse(results);
-
-	// Get current form data for score calculation
-	const currentFormData = get(formData);
-
-	// Calculate final score
-	const finalScore = calculateFinalScore(websiteScore, currentFormData);
-
-	// Update analysis state
-	analysisState.update((state) => ({
-		...state,
-		isComplete: true,
-		isLoading: false,
-		data: results,
-		score: websiteScore
-	}));
-
-	// Update form data with visibility score
-	formData.update((data) => ({
-		...data,
-		visibility_score: finalScore
-	}));
-
-	// Update score store
-	scoreStore.setWebsiteAnalysis(results, currentFormData);
-
-	return finalScore;
-}
-
-// Set loading state
-export function setAnalysisLoading(isLoading: boolean) {
-	analysisState.update((state) => ({
-		...state,
-		isLoading
-	}));
-}
-
-// Set error state
-export function setAnalysisError(error: string) {
-	analysisState.update((state) => ({
-		...state,
-		error,
-		isLoading: false
-	}));
-
-	// Update score store
-	scoreStore.setError(error);
-}
-
-// Reset store
-export function resetFormStore() {
-	formData.set({});
-	analysisState.set({
-		isLoading: false,
-		isComplete: false,
-		score: 0,
-		error: '',
-		data: null
-	});
-
-	// Reset score store
-	scoreStore.reset();
+// Funktion zum Zurücksetzen auf Standardwerte
+export function resetToDefaults(defaults: Record<string, any>) {
+	formData.set({ ...defaults });
+	formErrors.set({});
+	formValidation.set({});
+	currentStep.set(0);
+	formHistory.set([]);
+	historyIndex.set(-1);
 }

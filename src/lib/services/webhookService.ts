@@ -3,6 +3,8 @@ import { browser } from '$app/environment';
 import type { FormData } from '$lib/schema';
 import { get } from 'svelte/store';
 import { formatEmailData, shouldGeneratePdf, isValidEmail } from '$lib/utils/emailUtils';
+import { formData as formStoreData } from '$lib/stores/formStore';
+import { scoreStore } from '$lib/utils/scoring';
 
 // Store for rate limiting data
 const STORAGE_KEY = 'digitalpusher_email_reports';
@@ -21,6 +23,7 @@ export interface WebhookResponse {
  */
 export class WebhookService {
 	private static readonly BASE_URL = 'https://n8n.chooomedia.com/webhook';
+	private static readonly WEBHOOK_URL = 'https://n8n.chooomedia.com/webhook/quiz-results';
 	private static readonly ENDPOINTS = {
 		WEBSITE_HEALTH: '/websitehealth',
 		SEND_REPORT: '/websitehealth__done'
@@ -100,6 +103,13 @@ export class WebhookService {
 				count
 			})
 		);
+	}
+
+	/**
+	 * Increments the daily counter for quiz results
+	 */
+	private static incrementEmailSendCount(): void {
+		this.incrementDailyCounter();
 	}
 
 	/**
@@ -307,7 +317,11 @@ export class WebhookService {
 
 		try {
 			// Get current form data and score
-			const currentFormData = get(formData);
+			let currentFormData: Record<string, any> = {};
+			formStoreData.update((data) => {
+				currentFormData = data;
+				return data;
+			});
 			const scoreData = get(scoreStore);
 
 			// Validate email
