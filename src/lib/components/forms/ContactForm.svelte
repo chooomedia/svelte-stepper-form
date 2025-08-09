@@ -28,11 +28,11 @@
 
 		isUpdating = true;
 		try {
-			// Aktualisiere Form-Daten über SuperForms
-			form.update((data: any) => ({
-				...data,
+			// Aktualisiere Form-Daten über SuperForms - nur im data-Objekt
+			form.update((current: any) => ({
+				...current,
 				data: {
-					...data.data,
+					...current.data,
 					[field]: value
 				}
 			}));

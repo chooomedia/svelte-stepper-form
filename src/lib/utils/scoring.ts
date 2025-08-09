@@ -2,8 +2,12 @@
 import { writable, derived } from 'svelte/store';
 import type { FormData } from '$lib/schema';
 import { formOptions } from '$lib/schema';
+import { env } from '$lib/config/env';
 
-// Define the type for analysis data
+// ============================================================================
+// TYPES & INTERFACES
+// ============================================================================
+
 interface AnalysisData {
 	websiteScore: number;
 	formScore: number;
@@ -13,7 +17,6 @@ interface AnalysisData {
 	isComplete: boolean;
 	error: string | null;
 	screenshot: string | null;
-	// Neue detaillierte Metriken
 	metrics: {
 		performance: number;
 		seo: number;
@@ -24,6 +27,303 @@ interface AnalysisData {
 	};
 }
 
+interface ScoringConfig {
+	websiteWeight: number;
+	formWeight: number;
+	marketWeight: number;
+	performanceThresholds: {
+		excellent: number;
+		good: number;
+		average: number;
+		poor: number;
+	};
+	industryMultipliers: Record<string, number>;
+	businessPhaseMultipliers: Record<string, number>;
+}
+
+// ============================================================================
+// CONSTANTS & CONFIGURATION
+// ============================================================================
+
+const SCORING_CONFIG: ScoringConfig = {
+	websiteWeight: 0.4, // 40% - Technische Qualität
+	formWeight: 0.35, // 35% - Geschäftliche Relevanz
+	marketWeight: 0.25, // 25% - Marktpositionierung
+
+	performanceThresholds: {
+		excellent: 90,
+		good: 70,
+		average: 50,
+		poor: 30
+	},
+
+	industryMultipliers: {
+		'e-commerce': 1.2,
+		services: 1.1,
+		manufacturing: 0.9,
+		healthcare: 1.0,
+		education: 1.1,
+		'real-estate': 1.0,
+		finance: 1.2,
+		technology: 1.3
+	},
+
+	businessPhaseMultipliers: {
+		planning: 0.8,
+		less_than_6_months: 0.9,
+		more_than_6_months: 1.0,
+		family_business: 1.1
+	}
+};
+
+// ============================================================================
+// SCORING CALCULATIONS
+// ============================================================================
+
+/**
+ * Berechnet Score basierend auf Icon-Inputs der vorherigen Steps
+ */
+export function calculateIconBasedScore(formData: Partial<FormData>): number {
+	if (!formData) return 0;
+
+	const scoringSteps = [
+		{ field: 'visibility', weight: 25, calculator: calculateVisibilityScoreFromArray },
+		{ field: 'advertising_frequency', weight: 20, calculator: calculateFrequencyScore },
+		{ field: 'goals', weight: 15, calculator: calculateGoalsScore },
+		{ field: 'campaign_management', weight: 15, calculator: calculateManagementScore },
+		{ field: 'online_reviews', weight: 10, calculator: calculateReviewsScore },
+		{ field: 'previous_campaigns', weight: 10, calculator: calculateCampaignsScore },
+		{ field: 'business_phase', weight: 5, calculator: calculatePhaseScore }
+	];
+
+	let totalScore = 0;
+	let totalWeight = 0;
+
+	for (const step of scoringSteps) {
+		const value = formData[step.field as keyof FormData];
+		if (value) {
+			const score = step.calculator(value);
+			totalScore += score * step.weight;
+			totalWeight += step.weight;
+		}
+	}
+
+	return totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
+}
+
+/**
+ * Berechnet Visibility Score basierend auf Marktforschung
+ */
+function calculateVisibilityScoreFromArray(visibility: string | string[]): number {
+	if (!visibility) return 0;
+
+	const visibilityArray = Array.isArray(visibility) ? visibility : [visibility];
+	const visibilityWeights: Record<string, number> = {
+		search_engines: 40,
+		social_media: 30,
+		print: 15,
+		store: 10,
+		other: 5
+	};
+
+	let score = 0;
+	let totalWeight = 0;
+
+	visibilityArray.forEach((option) => {
+		const weight = visibilityWeights[option] || 0;
+		score += weight;
+		totalWeight += weight;
+	});
+
+	return totalWeight > 0 ? Math.round((score / totalWeight) * 100) : 0;
+}
+
+function calculateFrequencyScore(frequency: string | string[]): number {
+	const frequencyValue = Array.isArray(frequency) ? frequency[0] : frequency;
+	const frequencyScores: Record<string, number> = {
+		weekly: 90,
+		monthly: 70,
+		yearly: 40,
+		never: 10
+	};
+
+	return frequencyScores[frequencyValue || ''] || 0;
+}
+
+function calculateGoalsScore(goals: string | string[]): number {
+	const goalsValue = Array.isArray(goals) ? goals[0] : goals;
+	const goalsScores: Record<string, number> = {
+		more_online: 85,
+		new_clients: 80,
+		new_employees: 75,
+		all: 70
+	};
+
+	return goalsScores[goalsValue || ''] || 0;
+}
+
+function calculateManagementScore(management: string | string[]): number {
+	const managementValue = Array.isArray(management) ? management[0] : management;
+	const managementScores: Record<string, number> = {
+		digitalpusher: 95,
+		employee: 70,
+		self: 50,
+		other: 60
+	};
+
+	return managementScores[managementValue || ''] || 0;
+}
+
+function calculateReviewsScore(reviews: string | string[]): number {
+	const reviewsValue = Array.isArray(reviews) ? reviews[0] : reviews;
+	const reviewsScores: Record<string, number> = {
+		positive: 85,
+		negative: 30,
+		none: 50,
+		mixed: 60
+	};
+
+	return reviewsScores[reviewsValue || ''] || 0;
+}
+
+function calculateCampaignsScore(campaigns: string | string[]): number {
+	const campaignsValue = Array.isArray(campaigns) ? campaigns[0] : campaigns;
+	const campaignsScores: Record<string, number> = {
+		yes: 80,
+		no: 40,
+		planning: 60
+	};
+
+	return campaignsScores[campaignsValue || ''] || 0;
+}
+
+function calculatePhaseScore(phase: string | string[]): number {
+	const phaseValue = Array.isArray(phase) ? phase[0] : phase;
+	const phaseScores: Record<string, number> = {
+		planning: 60,
+		less_than_6_months: 70,
+		more_than_6_months: 80,
+		family_business: 85
+	};
+
+	return phaseScores[phaseValue || ''] || 0;
+}
+
+/**
+ * Erweiterte Scoring-Funktion basierend auf Marktforschung
+ */
+export function calculateAdvancedScore(websiteData: any, formData: Partial<FormData>): number {
+	const websiteScore = calculateWebsitePerformanceScore(websiteData);
+	const iconBasedScore = calculateIconBasedScore(formData);
+	const marketScore = calculateMarketPositioningScore(formData, websiteData);
+
+	const finalScore = Math.round(
+		websiteScore * SCORING_CONFIG.websiteWeight +
+			iconBasedScore * SCORING_CONFIG.formWeight +
+			marketScore * SCORING_CONFIG.marketWeight
+	);
+
+	return Math.max(0, Math.min(100, finalScore));
+}
+
+/**
+ * Berechnet Website-Performance Score basierend auf technischen Metriken
+ */
+function calculateWebsitePerformanceScore(websiteData: any): number {
+	if (!websiteData) return 0;
+
+	const metrics = extractDetailedMetrics(websiteData);
+	const weights = {
+		performance: 0.25,
+		seo: 0.3,
+		accessibility: 0.15,
+		bestPractices: 0.2,
+		content: 0.1
+	};
+
+	let totalScore = 0;
+	let totalWeight = 0;
+
+	for (const [metric, weight] of Object.entries(weights)) {
+		const score = metrics[metric] || 0;
+		totalScore += score * weight;
+		totalWeight += weight;
+	}
+
+	return totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
+}
+
+/**
+ * Berechnet Marktpositionierungs-Score basierend auf Wettbewerbsanalyse
+ */
+function calculateMarketPositioningScore(formData: Partial<FormData>, websiteData: any): number {
+	let score = 50; // Basis-Score
+
+	// Branchenanalyse
+	const industryMultiplier = detectIndustryMultiplier(websiteData);
+	score *= industryMultiplier;
+
+	// Geschäftsphasen-Bewertung
+	const phaseMultiplier =
+		SCORING_CONFIG.businessPhaseMultipliers[
+			formData?.business_phase as keyof typeof SCORING_CONFIG.businessPhaseMultipliers
+		] || 1.0;
+	score *= phaseMultiplier;
+
+	// Online-Präsenz-Bewertung
+	if (formData?.visibility === 'search_engines') {
+		score += 15;
+	} else if (formData?.visibility === 'social_media') {
+		score += 10;
+	}
+
+	// Implementierungszeit-Bewertung
+	if (formData?.implementation_time === 'immediate') {
+		score += 5;
+	} else if (formData?.implementation_time === 'long_term') {
+		score -= 5;
+	}
+
+	// Erfahrungs-Bewertung
+	if (formData?.previous_campaigns === 'yes') {
+		score += 10;
+	} else if (formData?.previous_campaigns === 'no') {
+		score -= 5;
+	}
+
+	return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+/**
+ * Erkennt Branchen-Multiplikator basierend auf Website-Daten
+ */
+function detectIndustryMultiplier(websiteData: any): number {
+	if (!websiteData) return 1.0;
+
+	const content = JSON.stringify(websiteData).toLowerCase();
+
+	if (content.includes('shop') || content.includes('cart') || content.includes('payment')) {
+		return SCORING_CONFIG.industryMultipliers['e-commerce'];
+	}
+
+	if (content.includes('software') || content.includes('app') || content.includes('digital')) {
+		return SCORING_CONFIG.industryMultipliers['technology'];
+	}
+
+	if (content.includes('bank') || content.includes('finance') || content.includes('investment')) {
+		return SCORING_CONFIG.industryMultipliers['finance'];
+	}
+
+	return 1.0;
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Extrahiert detaillierte Metriken aus API-Response
+ */
 export function extractDetailedMetrics(data: any): any {
 	const metrics = {
 		performance: 0,
@@ -35,7 +335,6 @@ export function extractDetailedMetrics(data: any): any {
 	};
 
 	try {
-		// Lighthouse-Scores extrahieren, falls vorhanden
 		if (data?.lighthouseResult?.categories) {
 			const categories = data.lighthouseResult.categories;
 			metrics.performance = Math.round((categories.performance?.score || 0) * 100);
@@ -44,11 +343,8 @@ export function extractDetailedMetrics(data: any): any {
 			metrics.bestPractices = Math.round((categories['best-practices']?.score || 0) * 100);
 		}
 
-		// Weitere Metriken aus der separaten API-Antwort extrahieren
 		if (data?.detailed_scores) {
 			const scores = data.detailed_scores;
-
-			// Content-Score aus verfügbaren Daten berechnen
 			const contentFactors = [
 				scores.meta_description || 0,
 				scores.h1 || 0,
@@ -57,14 +353,7 @@ export function extractDetailedMetrics(data: any): any {
 			metrics.content = Math.round(
 				contentFactors.reduce((sum, score) => sum + score, 0) / contentFactors.length
 			);
-
-			// Security-Score basierend auf verfügbaren Daten
-			metrics.security = scores.canonical ? 100 : 50; // Vereinfachtes Beispiel
-		}
-
-		// Falls wir einen overall_score direkt haben
-		if (data?.overall_score && typeof data.overall_score === 'number') {
-			// Den overall_score verwenden, aber nicht als Teil der Metriken speichern
+			metrics.security = scores.canonical ? 100 : 50;
 		}
 
 		return metrics;
@@ -74,73 +363,8 @@ export function extractDetailedMetrics(data: any): any {
 	}
 }
 
-export function calculateFinalScore(websiteScore: number, formData: Partial<FormData>): number {
-	const formScore = calculateVisibilityScore(formData);
-
-	// Grundgewichtung
-	let websiteWeight = 0.7;
-	let formWeight = 0.3;
-
-	// Gewichtung basierend auf Datenvollständigkeit anpassen
-	const hasGoodWebsiteData = websiteScore > 0 && websiteScore <= 100;
-	const hasGoodFormData = formScore > 0;
-
-	if (!hasGoodWebsiteData && hasGoodFormData) {
-		websiteWeight = 0.2;
-		formWeight = 0.8;
-	} else if (hasGoodWebsiteData && !hasGoodFormData) {
-		websiteWeight = 0.8;
-		formWeight = 0.2;
-	}
-
-	return Math.round(websiteScore * websiteWeight + formScore * formWeight);
-}
-
 /**
- * Calculates a visibility score based on form data
- */
-export function calculateVisibilityScore(formData: Partial<FormData>): number {
-	if (!formData) return 0;
-
-	const relevantFields = [
-		'visibility',
-		'advertising_frequency',
-		'goals',
-		'campaign_management',
-		'online_reviews',
-		'previous_campaigns',
-		'business_phase',
-		'implementation_time'
-	] as const;
-
-	let totalWeight = 0;
-	let count = 0;
-
-	for (const field of relevantFields) {
-		const value = formData[field]; // String from the form
-		if (typeof value === 'string' && value.trim() !== '') {
-			const weight = getOptionWeight(field, value);
-			totalWeight += weight;
-			count++;
-		}
-	}
-
-	if (count === 0) return 0; // If nothing was filled out
-
-	return Math.round((totalWeight / count) * 10); // Scale weighting to 100
-}
-
-/**
- * Gets the weight of a specific option
- */
-export function getOptionWeight(category: keyof typeof formOptions, value: string): number {
-	const options = formOptions[category];
-	const option = options.find((opt) => opt.value === value);
-	return option ? option.weight : 0;
-}
-
-/**
- * Helper to extract score from API response
+ * Extrahiert Score aus API-Response
  */
 export function extractScoreFromResponse(data: any): number {
 	if (!data) return 0;
@@ -152,7 +376,6 @@ export function extractScoreFromResponse(data: any): number {
 		}
 	}
 
-	// Try to extract score directly
 	if (data.score && typeof data.score === 'number') {
 		return data.score;
 	}
@@ -161,64 +384,49 @@ export function extractScoreFromResponse(data: any): number {
 }
 
 /**
- * Extracts the lighthouse screenshot from response data
+ * Extrahiert Screenshot aus API-Response
  */
 export function extractScreenshot(data: any): string | null {
 	if (!data) return null;
 
 	try {
-		// Try to extract screenshot data from various possible structures
+		// Verschiedene Screenshot-Pfade versuchen
+		const screenshotPaths = [
+			'lighthouseResult.audits.final-screenshot.details.data',
+			'lighthouse_report.audits.final-screenshot.details.data',
+			'info.screenshot',
+			'screenshot'
+		];
 
-		// First format: direct lighthouseResult path (most common)
-		if (data.lighthouseResult?.audits?.['final-screenshot']?.details?.data) {
-			return data.lighthouseResult.audits['final-screenshot'].details.data;
-		}
-
-		// Second format: nested under lighthouse_report
-		if (data.lighthouse_report?.audits?.['final-screenshot']?.details?.data) {
-			return data.lighthouse_report.audits['final-screenshot'].details.data;
-		}
-
-		if (data.info?.screenshot) {
-			return data.info?.screenshot;
-		}
-
-		// Third format: In case of an array response
-		if (Array.isArray(data) && data.length > 0) {
-			for (const item of data) {
-				// Try both paths for each item in the array
-				if (item.lighthouseResult?.audits?.['final-screenshot']?.details?.data) {
-					return item.lighthouseResult.audits['final-screenshot'].details.data;
-				}
-				if (item.lighthouse_report?.audits?.['final-screenshot']?.details?.data) {
-					return item.lighthouse_report.audits['final-screenshot'].details.data;
-				}
+		for (const path of screenshotPaths) {
+			const value = path.split('.').reduce((obj, key) => obj?.[key], data);
+			if (value && typeof value === 'string') {
+				return value;
 			}
 		}
 
-		// Fourth format: Sometimes available at top-level 'screenshot' property
-		if (data.screenshot && typeof data.screenshot === 'string') {
-			return data.screenshot;
+		// Array-Response durchsuchen
+		if (Array.isArray(data)) {
+			for (const item of data) {
+				const screenshot = extractScreenshot(item);
+				if (screenshot) return screenshot;
+			}
 		}
-
-		console.warn('Screenshot data structure not recognized:', data);
-	} catch (e) {
-		console.warn('Could not extract screenshot from data:', e);
+	} catch (error) {
+		console.warn('Could not extract screenshot from data:', error);
 	}
 
 	return null;
 }
 
 /**
- * Generate fallback audit data for visualization when real data is unavailable
+ * Generiert Fallback-Audit-Daten
  */
 export function getFallbackAuditData(score: number) {
-	// Default-Performance-Score basierend auf Gesamtscore
 	const performanceScore = Math.min(0.9, Math.max(0.4, score / 100));
 
-	// Wir erstellen ein ausgewogeneres Fallback
 	return {
-		url: 'example.com',
+		url: env.DEMO_URL.replace('https://', '').replace('http://', ''),
 		score: score,
 		lighthouse_report: {
 			categories: {
@@ -233,11 +441,7 @@ export function getFallbackAuditData(score: number) {
 				'speed-index': { score: performanceScore * 0.95 },
 				'total-blocking-time': { score: performanceScore * 0.8 },
 				'cumulative-layout-shift': { score: performanceScore * 1.1 },
-				'final-screenshot': {
-					details: {
-						data: null // Kein Standard-Screenshot für Fallback-Daten
-					}
-				}
+				'final-screenshot': { details: { data: null } }
 			}
 		},
 		detailed_scores: {
@@ -254,9 +458,20 @@ export function getFallbackAuditData(score: number) {
 	};
 }
 
-// Create a writable store for score-related state
+/**
+ * Gets the weight of a specific option
+ */
+export function getOptionWeight(category: keyof typeof formOptions, value: string): number {
+	const options = formOptions[category];
+	const option = options.find((opt) => opt.value === value);
+	return option ? option.weight : 0;
+}
+
+// ============================================================================
+// STORE MANAGEMENT
+// ============================================================================
+
 const createScoreStore = () => {
-	// Initialen Zustand erweitern
 	const initialState: AnalysisData = {
 		websiteScore: 0,
 		formScore: 0,
@@ -266,7 +481,6 @@ const createScoreStore = () => {
 		isComplete: false,
 		error: null,
 		screenshot: null,
-		// Neue leere Metriken hinzufügen
 		metrics: {
 			performance: 0,
 			seo: 0,
@@ -281,41 +495,27 @@ const createScoreStore = () => {
 
 	return {
 		subscribe,
-
-		// Update setWebsiteAnalysis, um die neuen Metriken zu extrahieren
 		setWebsiteAnalysis: (data: any, formData: Partial<FormData>) => {
 			update((state) => {
-				// Website-Score aus API-Antwort extrahieren
-				const websiteScore = extractScoreFromResponse(data);
-
-				// Screenshot extrahieren, falls verfügbar
 				const screenshot = extractScreenshot(data);
-
-				if (screenshot) {
-					console.log(
-						'Screenshot wurde erfolgreich extrahiert',
-						screenshot.substring(0, 50) + '...'
-					); // Nur Anfang zum Debuggen zeigen
-				} else {
-					console.warn('Kein Screenshot in den Daten gefunden:', data);
-				}
-
-				// Detaillierte Metriken extrahieren
 				const metrics = extractDetailedMetrics(data);
-
-				// Form-basierter Score berechnen
-				const formScore = calculateVisibilityScore(formData);
-
-				// Finalen Score berechnen
-				const finalScore = calculateFinalScore(websiteScore, formData);
-
-				// Audit-Daten für Visualisierung vorbereiten
+				const finalScore = calculateAdvancedScore(data, formData);
+				const websiteScore = calculateWebsitePerformanceScore(data);
+				const businessScore = calculateIconBasedScore(formData);
+				const marketScore = calculateMarketPositioningScore(formData, data);
 				const auditData = data || getFallbackAuditData(finalScore);
+
+				console.log('🔍 Erweiterte Scoring-Analyse:', {
+					websiteScore,
+					businessScore,
+					marketScore,
+					finalScore
+				});
 
 				return {
 					...state,
 					websiteScore,
-					formScore,
+					formScore: businessScore,
 					finalScore,
 					metrics,
 					rawData: data,
@@ -326,28 +526,22 @@ const createScoreStore = () => {
 				};
 			});
 		},
-
-		// Die anderen Methoden bleiben ähnlich...
 		updateFormScore: (formData: Partial<FormData>) => {
 			update((state) => {
-				const formScore = calculateVisibilityScore(formData);
+				const businessScore = calculateIconBasedScore(formData);
 				const finalScore =
-					state.websiteScore > 0 ? calculateFinalScore(state.websiteScore, formData) : formScore;
-
-				// Audit-Daten generieren oder aktualisieren
+					state.websiteScore > 0 ? calculateAdvancedScore(state.rawData, formData) : businessScore;
 				const auditData = state.auditData || getFallbackAuditData(finalScore);
 
 				return {
 					...state,
-					formScore,
+					formScore: businessScore,
 					finalScore,
 					auditData,
 					isComplete: true
 				};
 			});
 		},
-
-		// Get current state - useful for debugging
 		getState: () => {
 			let currentState: AnalysisData | null = null;
 			subscribe((state) => {
@@ -358,21 +552,34 @@ const createScoreStore = () => {
 	};
 };
 
-// Create the score store
 export const scoreStore = createScoreStore();
-
-// Derived store for visibility score (for use in forms)
 export const visibilityScore = derived(scoreStore, ($scoreStore) => $scoreStore.finalScore);
-
-// Derived store for the screenshot
 export const websiteScreenshot = derived(scoreStore, ($scoreStore) => $scoreStore.screenshot);
 
-// Helper function to update form and store simultaneously
-export function updateVisibilityScore(formData: Partial<FormData>, form: any) {
-	// Calculate the score
-	const score = calculateVisibilityScore(formData);
+// ============================================================================
+// LEGACY SUPPORT (für Kompatibilität)
+// ============================================================================
 
-	// Update the form's visibility_score field using Superforms
+/**
+ * @deprecated Verwende calculateIconBasedScore statt calculateVisibilityScore
+ */
+export function calculateVisibilityScore(formData: Partial<FormData>): number {
+	return calculateIconBasedScore(formData);
+}
+
+/**
+ * @deprecated Verwende calculateAdvancedScore statt calculateFinalScore
+ */
+export function calculateFinalScore(websiteScore: number, formData: Partial<FormData>): number {
+	return calculateAdvancedScore({ score: websiteScore }, formData);
+}
+
+/**
+ * Helper function to update form and store simultaneously
+ */
+export function updateVisibilityScore(formData: Partial<FormData>, form: any) {
+	const score = calculateIconBasedScore(formData);
+
 	if (form && typeof form.update === 'function') {
 		form.update((data) => ({
 			...data,
@@ -383,12 +590,13 @@ export function updateVisibilityScore(formData: Partial<FormData>, form: any) {
 		}));
 	}
 
-	// Update the store
 	scoreStore.updateFormScore(formData);
-
 	return score;
 }
 
+/**
+ * @deprecated Debug-Funktion für API-Antwort-Struktur-Analyse
+ */
 export function analyzeResponseStructure(data: any): void {
 	if (!data) {
 		console.log('Keine Daten vorhanden');
@@ -425,7 +633,9 @@ export function analyzeResponseStructure(data: any): void {
 	console.groupEnd();
 }
 
-// Hilfsfunktion zum Ausgeben von Objektschlüsseln
+/**
+ * Hilfsfunktion zum Ausgeben von Objektschlüsseln
+ */
 function logObjectKeys(obj: any, depth: number, maxDepth: number = 2) {
 	if (depth > maxDepth || !obj || typeof obj !== 'object') return;
 
@@ -440,7 +650,9 @@ function logObjectKeys(obj: any, depth: number, maxDepth: number = 2) {
 	});
 }
 
-// Hilfsfunktion zum Finden von Pfaden, die einen bestimmten String enthalten
+/**
+ * Hilfsfunktion zum Finden von Pfaden, die einen bestimmten String enthalten
+ */
 function findPaths(obj: any, searchTerm: string, currentPath: string = ''): string[] {
 	let results: string[] = [];
 

@@ -316,10 +316,9 @@
 			isBookingSuccessful = true;
 			setFormStatus('success');
 
-			// Show success state for 3 seconds before closing
-			setTimeout(() => {
-				modalStore.close();
-			}, 3000);
+			// Erfolgreiche Buchung - Modal bleibt offen für Benutzer-Interaktion
+			// Das Modal wird nur durch Benutzer-Interaktion geschlossen
+			console.log('🔍 Booking successful - Modal remains open for user interaction');
 		} catch (error) {
 			console.error('🔍 Booking error:', error);
 			setFormStatus('error');

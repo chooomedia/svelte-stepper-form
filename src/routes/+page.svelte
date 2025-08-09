@@ -2,18 +2,18 @@
 	import { slide } from 'svelte/transition';
 	import { superForm } from 'sveltekit-superforms/client';
 	import SuperDebug from 'sveltekit-superforms';
+
+	// Konsolidierte Imports - Redundanzen entfernt
 	import PageMeta from '$lib/components/PageMeta.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import ImageOption from '$lib/components/ImageOption.svelte';
 	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
 	import ContactForm from '$lib/components/forms/ContactForm.svelte';
 	import ResultsPage from '$lib/components/ResultsPage.svelte';
-	import { scoreStore } from '$lib/utils/scoring';
 	import WebsiteUrlForm from '$lib/components/forms/WebsiteUrlForm.svelte';
-	import { last_step, TOTAL_STEPS } from '$lib/schema';
-	import { i18n } from '$lib/i18n';
 
-	// Import stores
+	// Store-Imports konsolidiert
+	import { scoreStore } from '$lib/utils/scoring';
 	import {
 		currentStepIndex,
 		stepperStore,
@@ -23,27 +23,25 @@
 	import { formSubmitting } from '$lib/stores/loadingStore';
 	import {
 		calculatedScore,
-		formData as formStoreData,
 		updateFormData,
-		formStatus,
-		setFormStatus,
 		hasContactData,
 		hasCompanyData,
 		isFormComplete,
-		formProgress,
-		saveToLocalStorage,
-		loadFromLocalStorage,
-		validateFormData
+		formProgress
 	} from '$lib/stores/formStore';
 
-	// Import schema and options
-	import { FORM_STEPS, formOptions, defaultValues } from '$lib/schema';
+	// Schema-Imports konsolidiert
+	import { last_step, TOTAL_STEPS, FORM_STEPS, formOptions, defaultValues } from '$lib/schema';
+	import { i18n } from '$lib/i18n';
+	import { env } from '$lib/config/env';
 
 	const { data } = $props();
-
 	const isDev = import.meta.env.DEV;
 
-	// Initialize the form with SuperForms
+	// Demo-URL Konstante - aus zentraler Konfiguration
+	const DEMO_URL = env.DEMO_URL;
+
+	// Initialize the form with SuperForms - korrigiert für data-Objekt
 	const { form, errors } = superForm(data?.form || { data: defaultValues }, {
 		dataType: 'json',
 		resetForm: false,
@@ -58,41 +56,29 @@
 		}
 	});
 
-	// Ensure form is properly initialized with SuperForms best practices
-	$effect(() => {
-		if ($form && !$form.data) {
-			console.log('🔍 Form has no data, initializing...');
+	// State variables - konsolidiert
+	let contactFormValid = $state(false);
+	let showDebugSidebar = $state(false);
+	let isWebsiteAnalysisInProgress = $state(false);
+	let isSkipButtonEnabled = $state(false);
+	let skipButtonTimer: ReturnType<typeof setTimeout> | undefined;
+	let formSubmissionAttempted = $state(false);
+	let formInitialized = $state(false);
+	let lastStep = $state(0);
+	let lastValidatedStep = $state(0);
+	let debugStepNumber = $state($currentStepIndex);
 
-			// Try to load from localStorage first
-			const localStorageData = loadFromLocalStorage();
-			if (localStorageData) {
-				console.log('🔍 Loaded data from localStorage');
-			}
-
-			// Initialize with defaults or localStorage data
-			const initialData = {
-				...defaultValues,
-				company_url: 'https://chooomedia.de',
-				...formStoreData
-			};
-
-			form.update(() => ({
-				data: initialData
-			}));
-		}
-	});
-
-	// Handle webhook data updates and ensure demo URL is set
+	// Konsolidierter Form-Initialisierungs-Effect - korrigiert für data-Objekt
 	$effect(() => {
 		if ($form?.data) {
-			// Set demo URL if empty (for initial testing)
-			if (!$form.data.company_url || $form.data.company_url === '') {
-				console.log('🔍 Setting demo URL for testing');
+			// Setze Demo-URL nur für Step 2 (Website Analysis) - nicht für andere Steps
+			if ($currentStepIndex === 2 && (!$form.data.company_url || $form.data.company_url === '')) {
+				console.log('🔍 Setting demo URL for Step 2 testing');
 				form.update((current) => ({
 					...current,
 					data: {
 						...current.data,
-						company_url: 'https://chooomedia.de'
+						company_url: DEMO_URL
 					}
 				}));
 			}
@@ -102,13 +88,48 @@
 				calculatedScore.set($form.data.visibility_score);
 			}
 
-			// Sync SuperForm data to formStore
+			// Sync SuperForm data to formStore - nur data-Objekt
 			console.log('🔍 Syncing SuperForm data to formStore');
 			updateFormData($form.data);
+
+			// Mark form as initialized
+			if (!formInitialized) {
+				formInitialized = true;
+			}
 		}
 	});
 
-	// Debug logging for SuperForms structure
+	// Development test data for step 10 - korrigiert für data-Objekt
+	$effect(() => {
+		if (isDev && $currentStepIndex === 10 && lastStep !== 10) {
+			lastStep = 10;
+			// Initialisiere Demo-Daten nur einmal beim Erreichen von Step 10
+			const demoData = {
+				salutation: 'Herr' as const,
+				first_name: 'Test',
+				last_name: 'User',
+				email: env.DEMO_EMAIL,
+				phone: env.DEMO_PHONE,
+				company_name: env.DEMO_COMPANY_NAME,
+				company_url: DEMO_URL,
+				privacy_agreement: false,
+				marketing_consent: false
+			};
+
+			form.update((current) => ({
+				...current,
+				data: {
+					...current.data,
+					...demoData
+				}
+			}));
+			console.log('Development test data loaded for step 10');
+		} else if ($currentStepIndex !== 10) {
+			lastStep = $currentStepIndex;
+		}
+	});
+
+	// Debug logging - konsolidiert
 	console.log('🔍 Form data loaded:', $form);
 	console.log('🔍 Form errors:', $errors);
 	console.log('🔍 Form store:', form);
@@ -126,104 +147,36 @@
 		progress: $formProgress
 	});
 
-	// Store subscription to update our form data store when form changes
-	let contactFormValid = $state(false);
-	let showDebugSidebar = $state(false);
-	let isWebsiteAnalysisInProgress = $state(false);
-	let isSkipButtonEnabled = $state(false);
-	let skipButtonTimer: number | undefined;
-	let formSubmissionAttempted = $state(false);
-
-	// Initialisiere Form - nur einmal beim ersten Laden
-	let formInitialized = $state(false);
-
-	$effect(() => {
-		if (!formInitialized && $form?.data) {
-			console.log('🔍 Form data loaded:', $form.data);
-
-			// Setze Demo-URL wenn sie leer ist
-			if (!$form.data.company_url || $form.data.company_url === '') {
-				console.log('🔍 Setting demo URL');
-				form.update((current) => ({
-					...current,
-					data: {
-						...current.data,
-						company_url: 'https://chooomedia.de'
-					}
-				}));
-			}
-
-			formInitialized = true;
-		}
-	});
-
-	// Development test data for step 10
-	// Demo-Daten für Entwicklungsmodus
-	let lastStep = $state(0);
-
-	$effect(() => {
-		if (isDev && $currentStepIndex === 10 && lastStep !== 10) {
-			lastStep = 10;
-			// Initialisiere Demo-Daten nur einmal beim Erreichen von Step 10
-			const demoData = {
-				salutation: 'Herr',
-				first_name: 'Test',
-				last_name: 'User',
-				email: 'cm@chooo.de',
-				phone: '+49123456789',
-				company_name: 'Test Company',
-				company_url: 'https://chooomedia.de',
-				privacy_agreement: false,
-				marketing_consent: false
-			};
-
-			form.update((data) => ({
-				...data,
-				data: {
-					...data.data,
-					...demoData
-				}
-			}));
-			console.log('Development test data loaded for step 10');
-		} else if ($currentStepIndex !== 10) {
-			lastStep = $currentStepIndex;
-		}
-	});
-
+	// Event handlers - konsolidiert
 	function handleAnalysisStart() {
 		isWebsiteAnalysisInProgress = true;
-		isSkipButtonEnabled = false; // Reset button state
+		isSkipButtonEnabled = false;
 
-		// Set a timer to enable the skip button after 30 seconds
 		if (skipButtonTimer) clearTimeout(skipButtonTimer);
 		skipButtonTimer = setTimeout(() => {
 			isSkipButtonEnabled = true;
-		}, 30000); // 30 seconds
+		}, 30000);
 	}
 
 	function handleAnalysisEnd() {
 		isWebsiteAnalysisInProgress = false;
 
-		// Clear the skip button timer if it exists
 		if (skipButtonTimer) {
 			clearTimeout(skipButtonTimer);
 			skipButtonTimer = undefined;
 		}
 	}
 
-	// Website analysis function
 	async function handleAnalysisComplete(data: any, score: number) {
 		if (data) {
-			// Store analysis results, update score
-			form.update((data) => ({
-				...data,
+			form.update((current) => ({
+				...current,
 				data: {
-					...data.data,
+					...current.data,
 					visibility_score: score
 				}
 			}));
 
-			// Move to next step after analysis
 			setTimeout(() => {
 				stepperStore.markStepValid($currentStepIndex);
 				stepperStore.nextStep();
@@ -231,55 +184,52 @@
 		}
 	}
 
-	// Aktualisierter Event-Handler für ImageOption navigation events
 	function handleImageOptionNavigation(
 		event: CustomEvent<{ fieldName: string; values: string[] }>
 	) {
 		const { fieldName, values } = event.detail;
 		console.log(`RECEIVED Navigation event for ${fieldName} with values:`, values);
 
-		// Aktualisiere das Formular
-		form.update((data) => ({
-			...data,
+		form.update((current) => ({
+			...current,
 			data: {
-				...data.data,
+				...current.data,
 				[fieldName]: values
 			}
 		}));
 
-		// Navigiere zum nächsten Schritt
 		console.log(`Navigating to next step from ${fieldName}`);
 		stepperStore.markStepValid($currentStepIndex);
 		stepperStore.nextStep();
 	}
 
-	// Function to handle image option selection
 	function handleImageOptionSelect(fieldName: string, value: string | string[]) {
-		// Formularwerte aktualisieren
-		form.update((data) => ({
-			...data,
+		console.log(`🔍 handleImageOptionSelect: ${fieldName} =`, value);
+
+		form.update((current) => ({
+			...current,
 			data: {
-				...data.data,
+				...current.data,
 				[fieldName]: value
 			}
 		}));
 
-		// Bei Einzelauswahl direkt weiterleiten
-		if (!Array.isArray(value)) {
-			console.log(`Einfachauswahl für ${fieldName}: ${value} - navigiere weiter`);
+		// Update formStore - nur data-Objekt
+		updateFormData({ [fieldName]: value });
+
+		// Nur bei Einzelauswahl automatisch zum nächsten Step navigieren
+		// Bei Mehrfachauswahl (wie visibility) wird die Navigation über handleImageOptionNavigation gesteuert
+		if (fieldName !== 'visibility') {
 			stepperStore.markStepValid($currentStepIndex);
 			stepperStore.nextStep();
 		}
 	}
 
-	// Restart assessment
 	function restartAssessment() {
 		stepperStore.goToStep(1);
 	}
 
 	// Component display logic based on current step
-	let lastValidatedStep = $state(0);
-
 	$effect(() => {
 		if ($currentStepIndex === lastValidatedStep) return;
 
@@ -287,23 +237,37 @@
 		if (!currentStepKey) return;
 
 		const formValue = $form?.data;
-		const isValid =
-			formValue && formValue[currentStepKey] !== undefined && formValue[currentStepKey] !== '';
+		if (!formValue) return;
+
+		// Prüfe, ob das Feld in der data-Struktur existiert und einen Wert hat
+		let isValid = false;
+
+		if (currentStepKey in formValue) {
+			const fieldValue = formValue[currentStepKey as keyof typeof formValue];
+			isValid = fieldValue !== undefined && fieldValue !== '' && fieldValue !== null;
+
+			// Für Arrays prüfen, ob sie nicht leer sind
+			if (Array.isArray(fieldValue)) {
+				isValid = fieldValue.length > 0 && fieldValue.some((item: any) => item !== '');
+			}
+		}
 
 		lastValidatedStep = $currentStepIndex;
 
 		if (isValid && $stepperStore.stepValidity[$currentStepIndex] !== 'valid') {
+			console.log(`🔍 Marking step ${$currentStepIndex} as valid for ${String(currentStepKey)}`);
 			stepperStore.markStepValid($currentStepIndex);
 		}
 	});
 
-	let debugStepNumber = $state($currentStepIndex);
-
 	function handleStepChange(event: Event) {
-		const newStep = parseInt(event.target.value, 10);
-		if (newStep >= 1 && newStep <= TOTAL_STEPS) {
-			debugStepNumber = newStep;
-			jumpToStep(newStep);
+		const target = event.target as HTMLInputElement;
+		if (target) {
+			const newStep = parseInt(target.value, 10);
+			if (newStep >= 1 && newStep <= TOTAL_STEPS) {
+				debugStepNumber = newStep;
+				jumpToStep(newStep);
+			}
 		}
 	}
 
@@ -323,9 +287,7 @@
 
 	function formatUrl(url: string): string {
 		if (!url) return '';
-
-		// Remove protocol and www
-		return url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/+$/, ''); // Also remove trailing slashes
+		return url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/+$/, '');
 	}
 </script>
 
@@ -351,15 +313,12 @@
 				>
 					{@html $i18n.start.text}
 				</p>
-				<!-- Page Meta -->
 				<PageMeta totalSteps={FORM_STEPS.length} />
 			</div>
 		</header>
 	{/if}
 
 	<!-- Step Content -->
-
-	<!-- Dynamic step content based on current step -->
 	<h2
 		class="{$currentStepIndex !== 1
 			? 'mb-6'
@@ -382,10 +341,10 @@
 		<!-- Step 1: Visibility -->
 		{#if $currentStepIndex === 1}
 			<ImageOption
-				value={$form?.data?.visibility}
-				options={formOptions.visibility}
-				error={$errors.visibility}
-				onSelect={(value) => handleImageOptionSelect('visibility', value)}
+				value={$form?.data?.visibility as any}
+				options={formOptions.visibility as any}
+				error={$errors?.data?.visibility}
+				onSelect={(value: any) => handleImageOptionSelect('visibility', value)}
 				on:navigate={handleImageOptionNavigation}
 				fieldName="visibility"
 				multiple={true}
@@ -397,23 +356,19 @@
 		{:else if $currentStepIndex === 2}
 			<WebsiteUrlForm
 				{form}
-				error={$errors}
+				errors={$errors}
 				onAnalysisComplete={handleAnalysisComplete}
 				onAnalysisStart={handleAnalysisStart}
 				onAnalysisEnd={handleAnalysisEnd}
-				onclick={() => {
-					stepperStore.markStepValid($currentStepIndex);
-					stepperStore.nextStep();
-				}}
 			/>
 
 			<!-- Step 3: Advertising Frequency -->
 		{:else if $currentStepIndex === 3}
 			<ImageOption
-				value={$form?.data?.advertising_frequency}
-				options={formOptions.advertising_frequency}
-				error={$errors.advertising_frequency}
-				onSelect={(value) => handleImageOptionSelect('advertising_frequency', value)}
+				value={$form?.data?.advertising_frequency as any}
+				options={formOptions.advertising_frequency as any}
+				error={$errors?.data?.advertising_frequency}
+				onSelect={(value: any) => handleImageOptionSelect('advertising_frequency', value)}
 				fieldName="advertising_frequency"
 				multiple={false}
 			/>
@@ -421,10 +376,10 @@
 			<!-- Step 4: Goals -->
 		{:else if $currentStepIndex === 4}
 			<ImageOption
-				value={$form?.data?.goals}
-				options={formOptions.goals}
-				error={$errors.goals}
-				onSelect={(value) => handleImageOptionSelect('goals', value)}
+				value={$form?.data?.goals as any}
+				options={formOptions.goals as any}
+				error={$errors?.data?.goals}
+				onSelect={(value: any) => handleImageOptionSelect('goals', value)}
 				fieldName="goals"
 				multiple={false}
 			/>
@@ -432,10 +387,10 @@
 			<!-- Step 5: Campaign Management -->
 		{:else if $currentStepIndex === 5}
 			<ImageOption
-				value={$form?.data?.campaign_management}
-				options={formOptions.campaign_management}
-				error={$errors.campaign_management}
-				onSelect={(value) => handleImageOptionSelect('campaign_management', value)}
+				value={$form?.data?.campaign_management as any}
+				options={formOptions.campaign_management as any}
+				error={$errors?.data?.campaign_management}
+				onSelect={(value: any) => handleImageOptionSelect('campaign_management', value)}
 				fieldName="campaign_management"
 				multiple={false}
 			/>
@@ -443,10 +398,10 @@
 			<!-- Step 6: Online Reviews -->
 		{:else if $currentStepIndex === 6}
 			<ImageOption
-				value={$form?.data?.online_reviews}
-				options={formOptions.online_reviews}
-				error={$errors.online_reviews}
-				onSelect={(value) => handleImageOptionSelect('online_reviews', value)}
+				value={$form?.data?.online_reviews as any}
+				options={formOptions.online_reviews as any}
+				error={$errors?.data?.online_reviews}
+				onSelect={(value: any) => handleImageOptionSelect('online_reviews', value)}
 				fieldName="online_reviews"
 				multiple={false}
 			/>
@@ -454,10 +409,10 @@
 			<!-- Step 7: Previous Campaigns -->
 		{:else if $currentStepIndex === 7}
 			<ImageOption
-				value={$form?.data?.previous_campaigns}
-				options={formOptions.previous_campaigns}
-				error={$errors.previous_campaigns}
-				onSelect={(value) => handleImageOptionSelect('previous_campaigns', value)}
+				value={$form?.data?.previous_campaigns as any}
+				options={formOptions.previous_campaigns as any}
+				error={$errors?.data?.previous_campaigns}
+				onSelect={(value: any) => handleImageOptionSelect('previous_campaigns', value)}
 				fieldName="previous_campaigns"
 				multiple={false}
 			/>
@@ -465,10 +420,10 @@
 			<!-- Step 8: Business Phase -->
 		{:else if $currentStepIndex === 8}
 			<ImageOption
-				value={$form?.data?.business_phase}
-				options={formOptions.business_phase}
-				error={$errors.business_phase}
-				onSelect={(value) => handleImageOptionSelect('business_phase', value)}
+				value={$form?.data?.business_phase as any}
+				options={formOptions.business_phase as any}
+				error={$errors?.data?.business_phase}
+				onSelect={(value: any) => handleImageOptionSelect('business_phase', value)}
 				fieldName="business_phase"
 				multiple={false}
 			/>
@@ -476,10 +431,10 @@
 			<!-- Step 9: Implementation Time -->
 		{:else if $currentStepIndex === 9}
 			<ImageOption
-				value={$form?.data?.implementation_time}
-				options={formOptions.implementation_time}
-				error={$errors.implementation_time}
-				onSelect={(value) => handleImageOptionSelect('implementation_time', value)}
+				value={$form?.data?.implementation_time as any}
+				options={formOptions.implementation_time as any}
+				error={$errors?.data?.implementation_time}
+				onSelect={(value: any) => handleImageOptionSelect('implementation_time', value)}
 				fieldName="implementation_time"
 				multiple={false}
 			/>
@@ -488,7 +443,7 @@
 		{:else if $currentStepIndex === 10 && last_step}
 			<ContactForm
 				{form}
-				{errors}
+				errors={$errors}
 				onValidation={(isValid) => {
 					contactFormValid = isValid;
 				}}
@@ -534,7 +489,6 @@
 					disabled={($currentStepIndex === 10 && !contactFormValid) ||
 						($currentStepIndex === 2 && isWebsiteAnalysisInProgress && !isSkipButtonEnabled)}
 					on:click={() => {
-						// Für Schritt 10: Prüfen ob das Kontaktformular gültig ist
 						if ($currentStepIndex === 10) {
 							formSubmissionAttempted = true;
 							if (contactFormValid) {
@@ -543,13 +497,9 @@
 							} else {
 								stepperStore.markStepIncomplete($currentStepIndex);
 							}
-						}
-						// Für Schritt 2: Einfach überspringen ohne Validierung
-						else if ($currentStepIndex === 2) {
+						} else if ($currentStepIndex === 2) {
 							stepperStore.nextStep();
-						}
-						// Für alle anderen Schritte: Normales Verhalten
-						else {
+						} else {
 							stepperStore.markStepValid($currentStepIndex);
 							stepperStore.nextStep();
 						}

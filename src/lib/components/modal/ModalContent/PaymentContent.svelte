@@ -14,6 +14,7 @@
 	import { taxInfo } from '$lib/stores/taxStore';
 	import { currencyStore } from '$lib/stores/currencyStore';
 	import { i18n, currentLocale } from '$lib/i18n';
+	import { env } from '$lib/config/env';
 
 	// Props
 	const {
@@ -415,7 +416,7 @@
 				id: 'DP-TEST-' + Math.random().toString(36).substring(2, 10),
 				status: 'COMPLETED',
 				payer: {
-					email_address: 'test@example.com',
+					email_address: env.DEMO_EMAIL,
 					name: {
 						given_name: 'Test',
 						surname: 'User'

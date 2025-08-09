@@ -1,21 +1,14 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { ImageOption as ImageOptionType } from '$lib/schema';
-	import { getLocalizedLabel, getLocalizedDescription, currentLocale, i18n } from '$lib/i18n';
+	import {
+		getLocalizedLabel,
+		getLocalizedDescription,
+		currentLocale,
+		i18n,
+		getTextDirection
+	} from '$lib/i18n';
 	import Icon from './Icon.svelte';
 	import Countdown from '$lib/components/Countdown.svelte';
-
-	interface Props {
-		value?: string | string[];
-		options: ImageOptionType[];
-		error?: string;
-		onSelect?: (value: string | string[]) => void;
-		multiple?: boolean;
-		maxSelections?: number;
-		countdownTime?: number;
-		fieldName?: string;
-		special?: boolean;
-	}
 
 	// Props mit Standardwerten
 	const {
@@ -28,7 +21,7 @@
 		countdownTime = 3,
 		fieldName = '',
 		special = false
-	} = $props<Props>();
+	} = $props();
 
 	// Event Dispatcher mit modernem TypeScript-Typ
 	const dispatch = createEventDispatcher<{
@@ -45,10 +38,14 @@
 	let navigationTriggered = $state(false);
 
 	// Use a direct DOM reference with Svelte 5 instead of binding to 'this'
-	let countdownElement: (HTMLElement & { reset?: () => void }) | null = null;
+	let countdownElement: any = null;
 
 	// A trigger to create a new countdown instance when needed
 	let countdownKey = $state(0);
+
+	// RTL/LTR Support - reaktive Textrichtung
+	let textDirection = $derived(getTextDirection());
+	let currentLang = $derived($currentLocale);
 
 	// Update selection and count when an option is clicked
 	function handleOptionSelect(optionValue: string): void {
@@ -125,6 +122,7 @@
 	$effect(() => {
 		// Trigger für Neurendern bei Sprachänderung
 		console.log('Current locale:', $currentLocale);
+		console.log('Text direction:', textDirection);
 	});
 
 	// Option-Auswahlstatus prüfen
@@ -134,7 +132,12 @@
 
 {#key $currentLocale}
 	{#if multiple}
-		<div class="mb-4 text-center text-xs text-gray-600">
+		<div
+			class="mb-4 text-center text-xs text-gray-600"
+			dir={textDirection}
+			role="status"
+			aria-live="polite"
+		>
 			<div class="font-medium text-primary-700">
 				{#if showCountdown && selectedValues.length > 0}
 					<!-- Use key to force re-creation when needed -->
@@ -163,8 +166,11 @@
 
 	<div
 		class="grid grid-cols-1 gap-4 pt-2 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:grid-rows-1"
+		dir={textDirection}
+		role="group"
+		aria-label={fieldName ? `Optionen für ${fieldName}` : 'Verfügbare Optionen'}
 	>
-		{#each options as option}
+		{#each options as option, index}
 			<button
 				type="button"
 				class="relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 shadow-custom transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
@@ -175,21 +181,30 @@
 				onclick={() => handleOptionSelect(option.value)}
 				aria-label={getLocalizedDescription(fieldName, option.value)}
 				aria-pressed={isSelected(option.value)}
+				aria-describedby={fieldName ? `${fieldName}-option-${index}` : undefined}
+				role="radio"
+				tabindex={isSelected(option.value) ? 0 : -1}
+				dir={textDirection}
+				lang={currentLang}
 			>
 				{#if isSelected(option.value)}
 					<div
 						class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary-50 text-secondary lg:bg-primary-500"
+						role="presentation"
+						aria-hidden="true"
 					>
 						<Icon name="check" size={18} fill="none" strokeWidth="2" stroke="currentColor" />
 					</div>
 				{/if}
 
 				{#if option.imgSrc}
-					<div class="mx-auto p-2 md:p-4">
+					<div class="mx-auto p-2 md:p-4" role="presentation">
 						<img
 							src={option.imgSrc}
 							alt={getLocalizedDescription(fieldName, option.value)}
 							class="h-16 w-auto transform object-contain transition-transform hover:scale-110 md:h-24 lg:h-32"
+							role="img"
+							aria-hidden="true"
 						/>
 					</div>
 				{/if}
@@ -198,8 +213,12 @@
 					class={`flex w-full flex-col justify-center border-t border-primary-200 ${
 						special ? 'bg-primary' : ''
 					} px-1 py-2 lg:block`}
+					dir={textDirection}
 				>
-					<h3 class="hyphens-auto break-words text-base font-semibold text-secondary">
+					<h3
+						class="hyphens-auto break-words text-base font-semibold text-secondary"
+						id={fieldName ? `${fieldName}-option-${index}` : undefined}
+					>
 						{getLocalizedLabel(fieldName, option.value)}
 					</h3>
 
@@ -212,6 +231,14 @@
 	</div>
 
 	{#if error}
-		<p class="mt-2 text-sm text-red-600">{error}</p>
+		<p
+			class="mt-2 text-sm text-red-600"
+			dir={textDirection}
+			lang={currentLang}
+			role="alert"
+			aria-live="assertive"
+		>
+			{error}
+		</p>
 	{/if}
 {/key}

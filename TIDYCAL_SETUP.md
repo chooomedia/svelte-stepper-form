@@ -187,7 +187,7 @@ Bucht einen Termin bei TidyCal.
 	"time": "14:00",
 	"firstName": "Max",
 	"lastName": "Mustermann",
-	"email": "max@example.com",
+	"email": "hi@digitalpusher.de",
 	"phone": "+49123456789",
 	"companyName": "Digital Pusher GmbH",
 	"companyUrl": "https://digitalpusher.de"
@@ -281,7 +281,7 @@ curl -X POST http://localhost:5173/api/booking \
     "time": "14:00",
     "firstName": "Test",
     "lastName": "User",
-    "email": "test@example.com"
+    "email": "hi@digitalpusher.de"
   }'
 
 # Test availability

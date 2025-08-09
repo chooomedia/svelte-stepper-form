@@ -13,6 +13,11 @@ export type ImageOption = z.infer<typeof imageOptionSchema>;
 
 export const baseFormSchema = createDynamicFormSchema();
 
+// Neues Schema für SuperForms mit data-Objekt
+export const superFormSchema = z.object({
+	data: baseFormSchema
+});
+
 export const step_1 = baseFormSchema.pick({ visibility: true });
 export const step_2 = baseFormSchema.pick({ company_url: true });
 export const step_3 = baseFormSchema.pick({
@@ -100,7 +105,8 @@ export const last_step = baseFormSchema.pick({
 	email: true,
 	phone: true,
 	privacy_agreement: true,
-	marketing_consent: true
+	marketing_consent: true,
+	visibility_score: true
 });
 
 export let formOptions = {
@@ -356,6 +362,7 @@ export const FORM_STEPS = [
 export type StepSchema = (typeof FORM_STEPS)[number];
 export type StepName = keyof FormData;
 export type FormData = z.infer<typeof baseFormSchema>;
+export type SuperFormData = z.infer<typeof superFormSchema>;
 
 export const TOTAL_STEPS = 12;
 export const LAST_STEP_INDEX = TOTAL_STEPS - 1;

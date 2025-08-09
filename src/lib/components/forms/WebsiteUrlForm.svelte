@@ -7,8 +7,8 @@
 	import { i18n } from '$lib/i18n';
 	import {
 		extractScoreFromResponse,
-		calculateFinalScore,
-		calculateVisibilityScore,
+		calculateAdvancedScore,
+		calculateIconBasedScore,
 		extractScreenshot,
 		analyzeResponseStructure
 	} from '$lib/utils/scoring';
@@ -16,6 +16,7 @@
 	import { scoreStore } from '$lib/utils/scoring';
 	import { websiteLoading } from '$lib/stores/loadingStore';
 	import Icon from '../Icon.svelte';
+
 	interface Props {
 		form: SuperValidated<FormData>;
 		errors: Record<string, string>;
@@ -30,7 +31,7 @@
 		onAnalysisComplete,
 		onAnalysisStart = () => {},
 		onAnalysisEnd = () => {}
-	} = $props<Props>();
+	} = $props();
 
 	const features = ['performance', 'seo', 'accessibility', 'security'];
 
@@ -38,7 +39,7 @@
 	let isLoading = $state(false);
 	let showSeoTips = $state(true);
 	let analysisError = $state('');
-	let autoAdvanceTimeout: number | undefined;
+	let autoAdvanceTimeout: ReturnType<typeof setTimeout> | undefined;
 	let currentProgress = $state(0);
 	let analysisData = $state<any>(null);
 	let formattedUrl = $state('');
@@ -49,7 +50,7 @@
 	let analysisComplete = $state(false);
 
 	// Für erweiterte SEO-Tips
-	let tipInterval: number | undefined;
+	let tipInterval: ReturnType<typeof setInterval> | undefined;
 
 	// URL validation function
 	function validateUrl(url: string): { isValid: boolean; error: string } {
@@ -260,7 +261,7 @@
 				// Extract screenshot if available in the response
 				const screenshotData = extractScreenshot(data);
 				if (screenshotData) {
-					processed.screenshot = screenshotData;
+					(processed as any).screenshot = screenshotData;
 					console.log('Screenshot erfolgreich verarbeitet');
 				} else {
 					console.log('Kein Screenshot in den API-Daten gefunden');
@@ -388,7 +389,7 @@
 			analysisComplete = true;
 		} catch (error) {
 			console.warn('Error fetching from webhook, using mock data:', error);
-			analysisError = `Fehler bei der API-Anfrage: ${error.message}. Fallback-Daten werden verwendet.`;
+			analysisError = `Fehler bei der API-Anfrage: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}. Fallback-Daten werden verwendet.`;
 
 			analysisData = generateMockData(formattedUrl);
 
@@ -403,13 +404,19 @@
 		}
 
 		// Calculate final score
-		const formScore = calculateVisibilityScore($form);
+		const formScore = calculateIconBasedScore($form.data);
 		const websiteScore = analysisData?.score || formScore;
-		const finalScore = calculateFinalScore(websiteScore, $form);
+		const finalScore = calculateAdvancedScore(analysisData || { score: websiteScore }, $form.data);
 
-		// Update form with calculated score - this is crucial
-		if ($form && typeof $form === 'object') {
-			$form.visibility_score = finalScore;
+		// Update form with calculated score - korrigiert für data-Objekt
+		if ($form && typeof $form === 'object' && typeof $form.update === 'function') {
+			$form.update((current: any) => ({
+				...current,
+				data: {
+					...current.data,
+					visibility_score: finalScore
+				}
+			}));
 		}
 
 		// Call the callback with the data and score
@@ -559,7 +566,10 @@
 								<span class="flex items-start gap-1 text-green-500">
 									<Icon name="checkCircle" size={24} stroke="none" />
 								</span>
-								<span class="text-sm text-gray-700">{$i18n.forms.checkpoints[feature]}</span>
+								<span class="text-sm text-gray-700">
+									{$i18n.forms.checkpoints[feature as keyof typeof $i18n.forms.checkpoints] ||
+										feature}
+								</span>
 							</div>
 						{/each}
 					</div>

@@ -27,16 +27,68 @@
 	let isEmbedded = false;
 	let isIframe = false;
 	let parentFontFamily = 'Baron Neue';
-	let textDirection = $state('ltr');
 
-	// Track text direction based on locale
+	// RTL/LTR Support - reaktive Textrichtung
+	let textDirection = $derived(getTextDirection());
+	let currentLang = $derived($currentLocale);
+
+	// Track text direction based on locale - nur html element
 	$effect(() => {
 		textDirection = getTextDirection();
+		currentLang = $currentLocale;
+
+		// Update document attributes for A11y - nur html element
+		if (typeof document !== 'undefined') {
+			document.documentElement.lang = currentLang;
+			document.documentElement.dir = textDirection;
+		}
 	});
 
 	onMount(() => {
 		isIframe = window.self !== window.top;
 		isEmbedded = isIframe;
+
+		// Remove automatically added classes from head elements
+		const removeHeadClasses = () => {
+			const headElements = document.head.querySelectorAll('link, meta, title');
+			headElements.forEach((element) => {
+				if (element.classList && element.classList.length > 0) {
+					element.removeAttribute('class');
+				}
+			});
+		};
+
+		// Remove classes immediately
+		removeHeadClasses();
+
+		// Set up mutation observer to remove classes from new head elements
+		let observer: MutationObserver | null = null;
+		let interval: ReturnType<typeof setInterval> | null = null;
+
+		if (typeof MutationObserver !== 'undefined') {
+			observer = new MutationObserver((mutations) => {
+				mutations.forEach((mutation) => {
+					if (mutation.type === 'childList') {
+						mutation.addedNodes.forEach((node) => {
+							if (node.nodeType === Node.ELEMENT_NODE) {
+								const element = node as Element;
+								if (element.classList && element.classList.length > 0) {
+									element.removeAttribute('class');
+								}
+							}
+						});
+					}
+				});
+			});
+
+			observer.observe(document.head, {
+				childList: true,
+				subtree: true
+			});
+		} else {
+			// Fallback: periodically check for new head elements
+			interval = setInterval(removeHeadClasses, 1000);
+		}
 
 		// If embedded, try to get font styles from parent
 		if (isEmbedded) {
@@ -124,25 +176,21 @@
 
 		window.addEventListener('navigateToStep', handleNavigateToStep);
 
-		return () => {
-			window.removeEventListener('navigateToStep', handleNavigateToStep);
-		};
-
 		// Schema Markup hinzufügen
 		const script = document.createElement('script');
 		script.setAttribute('type', 'application/ld+json');
 		script.innerHTML = JSON.stringify(schemaMarkup);
 		document.head.appendChild(script);
 
-		// Meta Description dynamisch aktualisieren
-		const metaDesc = document.querySelector('meta[name="description"]');
-		if (!metaDesc) {
-			const meta = document.createElement('meta');
-			meta.name = 'description';
-			meta.content =
-				'Ermittle Deine digitalen Marketing-Score und erhalte exklusive Tipps aus Deiner Branche für Dein Unternehmen mit Digital Pusher.';
-			document.head.appendChild(meta);
-		}
+		return () => {
+			window.removeEventListener('navigateToStep', handleNavigateToStep);
+			if (observer) {
+				observer.disconnect();
+			}
+			if (interval) {
+				clearInterval(interval);
+			}
+		};
 	});
 
 	function navigateHome() {
@@ -161,20 +209,28 @@
 	<meta name="twitter:card" content="summary_large_image" />
 	<link rel="canonical" href={$page.url.href} />
 	<meta name="robots" content="index, follow" />
-	<meta name="language" content={$currentLocale} />
-	<link rel="alternate" hreflang={$currentLocale} href={$page.url.href} />
+	<link rel="alternate" hreflang={currentLang} href={$page.url.href} />
+	<!-- A11y Meta Tags -->
+	<meta name="theme-color" content="#1f2937" />
+	<meta name="color-scheme" content="light dark" />
 </svelte:head>
 
-<!-- Add dir attribute based on current text direction -->
-<div class="rtl-wrapper" dir={textDirection}>
+<!-- RTL/LTR Support mit HTML-Attributen - E-E-A-T und A11y Best Practices -->
+<div dir={textDirection} role="main" aria-label={$i18n.meta.title}>
 	<!-- Main content -->
-	<main class="mx-auto flex min-h-screen max-w-screen-lg flex-col">
-		<header itemscope itemtype="https://schema.org/WPHeader">
+	<main
+		class="mx-auto flex min-h-screen max-w-screen-lg flex-col"
+		role="main"
+		aria-label="Hauptinhalt"
+	>
+		<header itemscope itemtype="https://schema.org/WPHeader" role="banner">
 			<div class="mx-auto cursor-pointer px-4 py-2 sm:px-6 lg:px-8">
 				<nav
 					class="flex justify-center"
 					itemscope
 					itemtype="https://schema.org/SiteNavigationElement"
+					role="navigation"
+					aria-label="Hauptnavigation"
 				>
 					<div class="flex items-center">
 						<a
@@ -183,8 +239,16 @@
 							class="flex items-center space-x-2"
 							aria-label="Digital Pusher - Zur Startseite"
 							itemprop="url"
+							role="link"
 						>
-							<img src={logoMain} alt="Digital Pusher Logo" class="h-14 w-auto" itemprop="logo" />
+							<img
+								src={logoMain}
+								alt="Digital Pusher Logo"
+								class="h-14 w-auto"
+								itemprop="logo"
+								role="img"
+								aria-label="Digital Pusher Logo"
+							/>
 							<span class="sr-only text-xl font-semibold text-gray-900" itemprop="name">
 								Digital Pusher - {$i18n.meta.title}
 							</span>
@@ -199,20 +263,31 @@
 			</div>
 			<!-- Breadcrumb Navigation für SEO -->
 			<div class="p-lg-2 sr-only mx-auto mb-8 max-w-4xl">
-				<nav aria-label="Breadcrumb" class="mb-4">
+				<nav aria-label="Breadcrumb" class="mb-4" role="navigation">
 					<ol
 						class="flex text-sm text-gray-500"
 						itemscope
 						itemtype="https://schema.org/BreadcrumbList"
+						role="list"
 					>
-						<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-							<a href="/" itemprop="item" class="hover:text-gray-700">
+						<li
+							itemprop="itemListElement"
+							itemscope
+							itemtype="https://schema.org/ListItem"
+							role="listitem"
+						>
+							<a href="/" itemprop="item" class="hover:text-gray-700" role="link">
 								<span itemprop="name">Home</span>
 							</a>
 							<meta itemprop="position" content="1" />
 						</li>
-						<li class="mx-2">/</li>
-						<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+						<li class="mx-2" aria-hidden="true">/</li>
+						<li
+							itemprop="itemListElement"
+							itemscope
+							itemtype="https://schema.org/ListItem"
+							role="listitem"
+						>
 							<span itemprop="name" class="text-gray-900">Marketing Assessment</span>
 							<meta itemprop="position" content="2" />
 						</li>
@@ -225,6 +300,8 @@
 			class="w-full px-4 py-6 sm:px-6 lg:max-w-6xl lg:px-8"
 			itemscope
 			itemtype="https://schema.org/WebPageElement"
+			role="region"
+			aria-label="Hauptinhalt"
 		>
 			<slot />
 		</section>
@@ -259,16 +336,39 @@
 		background: transparent !important;
 	}
 
-	/* RTL-specific adjustments */
-	:global([dir='rtl'] .icon-flip-rtl) {
+	/* RTL-specific adjustments - E-E-A-T und A11y Best Practices */
+	[dir='rtl'] .icon-flip-rtl {
 		transform: scaleX(-1);
 	}
 
-	:global([dir='rtl'] .space-x-2 > :not([hidden]) ~ :not([hidden])) {
+	[dir='rtl'] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
 		--tw-space-x-reverse: 1;
 	}
 
-	:global([dir='rtl'] .space-x-4 > :not([hidden]) ~ :not([hidden])) {
+	[dir='rtl'] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
 		--tw-space-x-reverse: 1;
+	}
+
+	/* A11y Verbesserungen für RTL */
+	[dir='rtl'] [role='navigation'] {
+		direction: rtl;
+	}
+
+	[dir='rtl'] [role='list'] {
+		direction: rtl;
+	}
+
+	/* E-E-A-T Best Practices - Semantische Struktur */
+	[dir='rtl'] h1,
+	[dir='rtl'] h2,
+	[dir='rtl'] h3,
+	[dir='rtl'] h4,
+	[dir='rtl'] h5,
+	[dir='rtl'] h6 {
+		text-align: right;
+	}
+
+	[dir='rtl'] p {
+		text-align: right;
 	}
 </style>

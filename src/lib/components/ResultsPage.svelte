@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { WebhookService } from '$lib/services/webhookService';
-	import { i18n } from '$lib/i18n';
+	import { i18n, getTextDirection } from '$lib/i18n';
 	import { currencyStore } from '$lib/stores/currencyStore';
 	import type { FormData } from '$lib/schema';
 	import VisibilityScore from './VisibilityScore.svelte';
@@ -11,7 +11,12 @@
 	import ExpertProfile from './sections/ExpertSection.svelte';
 	import ProcessSteps from './ProcessSteps.svelte';
 	import BenefitsSection from './sections/BenefitsSection.svelte';
-	import { scoreStore, getFallbackAuditData, websiteScreenshot } from '$lib/utils/scoring';
+	import {
+		scoreStore,
+		getFallbackAuditData,
+		websiteScreenshot,
+		calculateIconBasedScore
+	} from '$lib/utils/scoring';
 	import Icon from './Icon.svelte';
 	import ErrorDisplay from './ErrorDisplay.svelte';
 
@@ -37,6 +42,14 @@
 	let webhookMessage = $state('');
 	let formErrors = $state<string[]>([]);
 	let emailSendAttempted = $state(false);
+
+	// RTL/LTR Support - reaktive Textrichtung
+	let textDirection = $derived(getTextDirection());
+	let currentLang = $derived($i18n?.meta?.language || 'de');
+
+	// Berechne Icon-basierten Score
+	let iconBasedScore = $derived(calculateIconBasedScore(formData));
+	let finalScore = $derived(Math.round((score + iconBasedScore) / 2));
 
 	async function sendAnalysisResults() {
 		emailSendAttempted = true;
@@ -78,7 +91,9 @@
 	}
 
 	// Process the score value to ensure it's valid
-	let processedScore = $derived(isNaN(score) || score < 0 || score > 100 ? 50 : score);
+	let processedScore = $derived(
+		isNaN(finalScore) || finalScore < 0 || finalScore > 100 ? 50 : finalScore
+	);
 
 	// Get screenshot from store
 	let screenshot = $derived($websiteScreenshot);

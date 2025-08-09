@@ -1,6 +1,6 @@
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { last_step, defaultValues } from '$lib/schema';
+import { defaultValues, superFormSchema } from '$lib/schema';
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -11,11 +11,13 @@ async function mockCreateEntity(data: any) {
 }
 
 export const load: PageServerLoad = async () => {
-	// Initialize the form with default values
-	const form = await superValidate(zod(last_step), {
+	// Initialize the form with default values - nur data-Objekt
+	const form = await superValidate(zod(superFormSchema), {
 		defaults: {
-			...defaultValues,
-			company_url: 'https://chooomedia.de' // Test-URL für Entwicklung
+			data: {
+				...defaultValues,
+				company_url: 'https://digitalpusher.de'
+			}
 		}
 	});
 
@@ -25,7 +27,7 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	default: async ({ request }) => {
-		const form = await superValidate(request, last_step);
+		const form = await superValidate(request, superFormSchema);
 
 		console.log('🔍 Validation errors:', form.errors);
 
