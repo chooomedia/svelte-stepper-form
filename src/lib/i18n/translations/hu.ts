@@ -808,6 +808,41 @@ const hu: Translation = {
 	waitingScreen: {
 		title: 'Elemzés folyamatban - Kérjük várj.',
 		redirect: 'Eredmény {remainingTime} múlva'
+	},
+	email: {
+		subject: 'Weboldal-elemzési eredményei a(z) {company_url} számára',
+		greeting: 'Kedves {firstName} {lastName}',
+		results: {
+			title: 'Weboldal-elemzési eredmények',
+			description:
+				'Itt találja <strong>weboldal-elemzési eredményeit</strong> a(z) <strong>{company_url}</strong> számára, kelt: {currentDate}.',
+			visibilityScore: 'Láthatósági pontszáma: {score}/100',
+			scoreDescription: 'Aktuális online jelenléte és marketing stratégiája alapján'
+		},
+		situation: {
+			title: '📊 Jelenlegi helyzete',
+			visibility: 'Láthatóság:',
+			advertisingFrequency: 'Reklámgyakoriság:',
+			goals: 'Célok:',
+			campaignManagement: 'Kampánykezelés:',
+			businessPhase: 'Vállalati szakasz:',
+			implementationTime: 'Megvalósítási időkeret:'
+		},
+		cta: {
+			title: '🎯 Exkluzív ajánlat Önnek',
+			description:
+				'Szerezzen meg <span class="secrets-highlight">5 ingyenes titkos tippet</span> nagyobb online láthatósághoz személyes tanácsadás során.',
+			highlight: '5 ingyenes titkos tipp',
+			urgency: '⚡ Csak korlátozott ideig elérhető!',
+			button: '🎁 5 titkos tipp ingyenes megszerzése'
+		},
+		footer: {
+			copyright: '© 2025 Digitalpusher - Minden jog fenntartva',
+			unsubscribe: 'Leiratkozás a hírlevélről',
+			privacy: 'Adatvédelem',
+			imprint: 'Impresszum',
+			disclaimer: 'Ezt az e-mailt azért kapta, mert weboldal-elemzést végzett platformunkon.'
+		}
 	}
 };
 

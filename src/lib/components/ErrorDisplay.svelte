@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import Icon from './Icon.svelte';
+	import { i18n } from '$lib/i18n';
 
-	let { errors = [], title = 'Bitte korrigiere die folgenden Fehler:' } = $props<{
+	let { errors = [], title } = $props<{
 		errors: string[];
 		title?: string;
 	}>();
+
+	// Fallback title wenn keiner übergeben wird
+	let displayTitle = $derived(
+		title || $i18n?.common?.formErrorHeading || 'Please correct the following errors:'
+	);
 
 	// Funktion zum Übersetzen technischer Fehlermeldungen in benutzerfreundliche Texte
 	function translateError(error: string): string {
@@ -21,7 +27,10 @@
 			error.includes('_errors.update') ||
 			error.includes('Errors.set')
 		) {
-			return 'Ein technischer Fehler ist aufgetreten. Bitte lade die Seite neu.';
+			return (
+				$i18n?.results?.errors?.technicalError ||
+				'A technical error occurred. Please reload the page.'
+			);
 		}
 
 		// Weitere technische Fehlermeldungen
@@ -30,7 +39,10 @@
 			error.includes('TypeError') ||
 			error.includes('ReferenceError')
 		) {
-			return 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.';
+			return (
+				$i18n?.results?.errors?.unexpectedError ||
+				'An unexpected error occurred. Please try again later.'
+			);
 		}
 
 		// Wenn es eine normale Fehlermeldung ist, gib sie zurück
@@ -42,30 +54,18 @@
 </script>
 
 {#if translatedErrors.length > 0}
-	<div
-		class="mb-4 rounded-md bg-red-100 p-4"
-		transition:slide={{ duration: 300 }}
-		role="alert"
-		aria-labelledby="form-errors-heading"
-	>
-		<div class="align-center flex">
-			<div class="flex-shrink-0">
-				<div class="h-5 w-5 rounded-full bg-red-500 text-white">
-					<Icon name="closeX" size={20} stroke="currentColor" />
-				</div>
-			</div>
-			<div class="ml-3">
-				<h3 id="form-errors-heading" class="text-sm font-medium text-red-800">
-					{title}
-				</h3>
-				<div class="text-sm text-red-700">
-					<ul>
-						{#each translatedErrors as error}
-							<li>{error}</li>
-						{/each}
-					</ul>
-				</div>
-			</div>
+	<div class="error-container" role="alert" aria-live="polite" transition:slide={{ duration: 300 }}>
+		<div class="error-header">
+			<Icon name="alert-circle" size={20} stroke="currentColor" strokeWidth="2" fill="none" />
+			<h3 class="error-title">{displayTitle}</h3>
 		</div>
+		<ul class="error-list">
+			{#each translatedErrors as error, index}
+				<li class="error-item" key={index}>
+					<span class="error-bullet">•</span>
+					<span class="error-text">{error}</span>
+				</li>
+			{/each}
+		</ul>
 	</div>
 {/if}

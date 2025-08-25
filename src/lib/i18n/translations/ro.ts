@@ -804,6 +804,42 @@ const ro: Translation = {
 	waitingScreen: {
 		title: 'Analiză în curs - Te rugăm așteaptă.',
 		redirect: 'Rezultat în {remainingTime}'
+	},
+	email: {
+		subject: 'Rezultatele analizei site-ului dvs. pentru {company_url}',
+		greeting: 'Bună {firstName} {lastName}',
+		results: {
+			title: 'Rezultate analiză site web',
+			description:
+				'Iată <strong>rezultatele analizei site-ului</strong> pentru <strong>{company_url}</strong> din {currentDate}.',
+			visibilityScore: 'Scorul dvs. de vizibilitate: {score}/100',
+			scoreDescription: 'Bazat pe prezența online actuală și strategia de marketing'
+		},
+		situation: {
+			title: '📊 Situația dvs. actuală',
+			visibility: 'Vizibilitate:',
+			advertisingFrequency: 'Frecvența publicității:',
+			goals: 'Obiective:',
+			campaignManagement: 'Gestionarea campaniei:',
+			businessPhase: 'Faza companiei:',
+			implementationTime: 'Termenul de implementare:'
+		},
+		cta: {
+			title: '🎯 Oferta exclusivă pentru dvs.',
+			description:
+				'Asigurați-vă <span class="secrets-highlight">5 sfaturi secrete gratuite</span> pentru o vizibilitate online sporită într-o consultație personală.',
+			highlight: '5 sfaturi secrete gratuite',
+			urgency: '⚡ Disponibil doar pentru timp limitat!',
+			button: '🎁 Obțineți 5 sfaturi secrete gratuit'
+		},
+		footer: {
+			copyright: '© 2025 Digitalpusher - Toate drepturile rezervate',
+			unsubscribe: 'Dezabonare de la newsletter',
+			privacy: 'Confidențialitate',
+			imprint: 'Informații juridice',
+			disclaimer:
+				'Ați primit acest e-mail because ați efectuat o analiză a site-ului web pe platforma noastră.'
+		}
 	}
 };
 

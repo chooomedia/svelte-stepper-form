@@ -501,3 +501,347 @@ function getRecommendations(visibility: any, goals: any): string {
 	// Ensure max 4 recommendations
 	return recommendations.slice(0, 4).join('');
 }
+
+export async function generatePDF(
+	formData: FormData,
+	score: number,
+	auditData: any,
+	language: string = 'de'
+): Promise<Buffer> {
+	// Übersetzungen basierend auf der Sprache
+	const translations = getTranslations(language);
+
+	const companyName = formData.company_name || 'Unbekanntes Unternehmen';
+	const date = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
+
+	const html = `
+<!DOCTYPE html>
+<html lang="${language}">
+<head>
+  <meta charset="UTF-8">
+  <title>${translations.results.title} - ${companyName}</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      background-color: #6BD0D9;
+      padding: 20px;
+      text-align: center;
+      color: #002B2F;
+    }
+    
+    .content {
+      padding: 20px;
+    }
+    
+    h1, h2, h3 {
+      color: #002B2F;
+    }
+    
+    .score-container {
+      text-align: center;
+      margin: 30px 0;
+    }
+    
+    .score-circle {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 15px solid ${getScoreColor(score)};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      color: ${getScoreColor(score)};
+    }
+    
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    
+    .metric {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      margin: 0 10px;
+    }
+    
+    .metric h3 {
+      margin: 0 0 5px 0;
+      font-size: 16px;
+    }
+    
+    .metric .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #6BD0D9;
+      margin: 5px 0;
+    }
+    
+    .recommendations {
+      margin: 20px 0;
+    }
+    
+    .recommendation-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .recommendation-icon {
+      width: 24px;
+      height: 24px;
+      background-color: #6BD0D9;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    
+    .current-situation {
+      background-color: #f9fafb;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    .situation-item {
+      margin-bottom: 8px;
+    }
+    
+    .situation-label {
+      font-weight: bold;
+      color: #002B2F;
+    }
+    
+    .footer {
+      background-color: #f3f4f6;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #718096;
+    }
+    
+    .cta-container {
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #f3f4f6;
+      border-radius: 8px;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      background-color: #6BD0D9;
+      color: #ffffff;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${translations.results.title} für ${companyName}</h1>
+      <p>${translations.results.description} vom ${date}</p>
+    </div>
+    
+    <div class="content">
+      <div class="score-container">
+        <h2>${translations.results.score.title}: ${score}/100</h2>
+        <div class="score-circle">
+          ${score}
+        </div>
+        <p>${translations.results.score.description}</p>
+      </div>
+      
+      <h2>${translations.results.page.description}:</h2>
+      <div class="metric-row">
+        <div class="metric">
+          <h3>${translations.results.situation.visibility}</h3>
+          <div class="value">${getDynamicMetric('visibility', formData.visibility)}</div>
+          <div class="description">Potenzielle Steigerung</div>
+        </div>
+        
+        <div class="metric">
+          <h3>ROI</h3>
+          <div class="value">${getDynamicMetric('goals', formData.goals)}</div>
+          <div class="description">Return on Investment</div>
+        </div>
+        
+        <div class="metric">
+          <h3>${translations.results.situation.implementationTime}</h3>
+          <div class="value">${getDynamicMetric('implementation_time', formData.implementation_time)} Tagen</div>
+          <div class="description">Erste Verbesserungen</div>
+        </div>
+      </div>
+      
+      <div class="current-situation">
+        <h3>${translations.results.situation.title}</h3>
+        
+        <div class="situation-item">
+          <span class="situation-label">${translations.results.situation.visibility}</span> ${formatValue('visibility', formData.visibility)}
+        </div>
+        
+        <div class="situation-item">
+          <span class="situation-label">${translations.results.situation.advertisingFrequency}</span> ${formatValue('advertising_frequency', formData.advertising_frequency)}
+        </div>
+        
+        <div class="situation-item">
+          <span class="situation-label">${translations.results.situation.goals}</span> ${formatValue('goals', formData.goals)}
+        </div>
+        
+        <div class="situation-item">
+          <span class="situation-label">${translations.results.situation.campaignManagement}</span> ${formatValue('campaign_management', formData.campaign_management)}
+        </div>
+        
+        <div class="situation-item">
+          <span class="situation-label">Online-Bewertungen:</span> ${formatValue('online_reviews', formData.online_reviews)}
+        </div>
+        
+        <div class="situation-item">
+          <span class="situation-label">Bisherige Kampagnen:</span> ${formatValue('previous_campaigns', formData.previous_campaigns)}
+        </div>
+        
+        <div class="situation-item">
+          <span class="situation-label">${translations.results.situation.businessPhase}</span> ${formatValue('business_phase', formData.business_phase)}
+        </div>
+        
+        <div class="situation-item">
+          <span class="situation-label">${translations.results.situation.implementationTime}:</span> ${formatValue('implementation_time', formData.implementation_time)}
+        </div>
+      </div>
+      
+      <h2>Unsere Empfehlungen für Sie:</h2>
+      <div class="recommendations">
+        ${getRecommendations(formData.visibility, formData.goals)}
+      </div>
+      
+      <div class="cta-container">
+        <h2 style="color: #6BD0D9;">${translations.results.cta.title}</h2>
+        <p>${translations.results.cta.description}</p>
+        <p><strong>${translations.results.cta.urgency}</strong></p>
+        <a href="https://tidycal.com/digitalpusher/15-minute-meeting" class="cta-button">${translations.results.cta.button}</a>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>${translations.email.footer.copyright}</p>
+      <p>${translations.email.footer.disclaimer}</p>
+      <p>
+        <a href="https://digitalpusher.de/datenschutz">${translations.email.footer.privacy}</a> •
+        <a href="https://digitalpusher.de/impressum">${translations.email.footer.imprint}</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+	// ... rest of the function
+}
+
+// Hilfsfunktion für Übersetzungen
+function getTranslations(language: string) {
+	const de = {
+		results: {
+			page: {
+				title: 'Ihre Website-Analyse Ergebnisse',
+				description: 'Ergebnisse vom'
+			},
+			score: {
+				title: 'Ihr Visibility Score',
+				description: 'Basierend auf Ihrer aktuellen Online-Präsenz und Marketing-Strategie'
+			},
+			situation: {
+				title: '📊 Ihre aktuelle Situation',
+				visibility: 'Sichtbarkeit:',
+				advertisingFrequency: 'Werbefrequenz:',
+				goals: 'Ziele:',
+				campaignManagement: 'Kampagnenbetreuung:',
+				businessPhase: 'Unternehmensphase:',
+				implementationTime: 'Umsetzungszeitraum:'
+			},
+			cta: {
+				title: '🎯 Exklusives Angebot für Sie',
+				description:
+					'Sichern Sie sich <strong>5 kostenlose Geheimtipps</strong> für mehr Online-Sichtbarkeit in einem persönlichen Beratungsgespräch.',
+				urgency: 'Nur für begrenzte Zeit verfügbar!',
+				button: '5 Geheimtipps kostenlos erhalten'
+			}
+		},
+		email: {
+			footer: {
+				copyright: '© 2025 Digitalpusher - Alle Rechte vorbehalten',
+				disclaimer:
+					'Sie erhalten diesen Bericht, weil Sie eine Website-Analyse auf unserer Plattform durchgeführt haben.',
+				privacy: 'Datenschutz',
+				imprint: 'Impressum'
+			}
+		}
+	};
+
+	const en = {
+		results: {
+			page: {
+				title: 'Your Website Analysis Results',
+				description: 'Results from'
+			},
+			score: {
+				title: 'Your Visibility Score',
+				description: 'Based on your current online presence and marketing strategy'
+			},
+			situation: {
+				title: '📊 Your Current Situation',
+				visibility: 'Visibility:',
+				advertisingFrequency: 'Advertising Frequency:',
+				goals: 'Goals:',
+				campaignManagement: 'Campaign Management:',
+				businessPhase: 'Business Phase:',
+				implementationTime: 'Implementation Time:'
+			},
+			cta: {
+				title: '🎯 Exclusive Offer for You',
+				description:
+					'Secure <strong>5 free insider tips</strong> for more online visibility in a personal consultation.',
+				urgency: 'Limited time only!',
+				button: 'Get 5 Free Insider Tips'
+			}
+		},
+		email: {
+			footer: {
+				copyright: '© 2025 Digitalpusher - All rights reserved',
+				disclaimer:
+					'You are receiving this report because you completed a website analysis on our platform.',
+				privacy: 'Privacy Policy',
+				imprint: 'Imprint'
+			}
+		}
+	};
+
+	return language === 'de' ? de : en;
+}

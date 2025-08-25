@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { WebhookService } from '$lib/services/webhookService';
-	import { i18n, getTextDirection } from '$lib/i18n';
+	import { i18n, getTextDirection, currentLocale } from '$lib/i18n';
 	import { currencyStore } from '$lib/stores/currencyStore';
 	import type { FormData } from '$lib/schema';
 	import VisibilityScore from './VisibilityScore.svelte';
@@ -33,8 +33,6 @@
 	let { score, formData, nextStep, restartAssessment } = $props<Props>();
 
 	// State variables
-	let benefits = $state<string[]>([]);
-	let recommendations = $state<string[]>([]);
 	let pageLoaded = $state(false);
 	let showImprovement = $state(false);
 	let webhookSent = $state(false);
@@ -42,10 +40,17 @@
 	let webhookMessage = $state('');
 	let formErrors = $state<string[]>([]);
 	let emailSendAttempted = $state(false);
+	let recommendations = $state<string[]>([]);
 
 	// RTL/LTR Support - reaktive Textrichtung
 	let textDirection = $derived(getTextDirection());
 	let currentLang = $derived($i18n?.meta?.language || 'de');
+
+	// Debug: Log die aktuelle Sprache
+	$effect(() => {
+		console.log('🌍 ResultsPage - Current locale:', $currentLocale);
+		console.log('🌍 ResultsPage - Current i18n language:', $i18n?.meta?.language);
+	});
 
 	// Berechne Icon-basierten Score
 	let iconBasedScore = $derived(calculateIconBasedScore(formData));
@@ -61,7 +66,7 @@
 
 		// Prüfen, ob tägliches Limit erreicht ist
 		if (WebhookService.hasReachedDailyLimit() && !isDev) {
-			const error = 'Du hast dein tägliches Limit für E-Mails erreicht. Versuche es morgen erneut.';
+			const error = 'You have reached your daily limit for emails. Please try again tomorrow.';
 			webhookMessage = error;
 			formErrors = [error];
 			webhookSuccess = false;
@@ -71,8 +76,17 @@
 
 		// Webhook senden
 		try {
+			// Füge die aktuelle Sprache zu den Formulardaten hinzu
+			const formDataWithLanguage = {
+				...formData,
+				language: $currentLocale
+			};
+
+			console.log('🌍 Sending webhook with language:', $currentLocale);
+			console.log('🌍 Form data with language:', formDataWithLanguage);
+
 			// Übergebe die aktuellen Formulardaten direkt an den Webhook-Service
-			const result = await WebhookService.sendQuizResults(formData);
+			const result = await WebhookService.sendQuizResults(formDataWithLanguage);
 			webhookSent = true;
 			webhookSuccess = result.success;
 			webhookMessage = result.message;
@@ -84,51 +98,19 @@
 		} catch (error) {
 			webhookSent = true;
 			webhookSuccess = false;
-			const errorMessage =
-				error instanceof Error ? error.message : 'Ein unerwarteter Fehler ist aufgetreten';
+			const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 			webhookMessage = errorMessage;
 			formErrors = [errorMessage];
 		}
 	}
 
+	// Get screenshot from store
+	let screenshot = $derived($websiteScreenshot);
+
 	// Process the score value to ensure it's valid
 	let processedScore = $derived(
 		isNaN(finalScore) || finalScore < 0 || finalScore > 100 ? 50 : finalScore
 	);
-
-	// Get screenshot from store
-	let screenshot = $derived($websiteScreenshot);
-
-	// Generate benefits based on form data and score
-	function generateBenefits() {
-		const baseBenefits = [
-			$i18n.results.benefits.visibility,
-			$i18n.results.benefits.traffic,
-			$i18n.results.benefits.conversion
-		];
-
-		const additionalBenefits = [];
-
-		// Add specific benefits based on user selections
-		if (formData?.visibility === 'search_engines') {
-			additionalBenefits.push($i18n.results.benefits.searchEngines);
-		}
-
-		if (formData?.visibility === 'social_media') {
-			additionalBenefits.push($i18n.results.benefits.socialMedia);
-		}
-
-		if (formData?.goals === 'new_clients') {
-			additionalBenefits.push($i18n.results.benefits.newClients);
-		}
-
-		if (formData?.goals === 'new_employees') {
-			additionalBenefits.push($i18n.results.benefits.newEmployees);
-		}
-
-		// Ensure we have at least the base benefits
-		return [...new Set([...baseBenefits, ...additionalBenefits])].slice(0, 5);
-	}
 
 	// Generate recommendations based on score and form data
 	function generateRecommendations() {
@@ -139,25 +121,22 @@
 
 		const metricRecommendations = [];
 
-		const metrics = scoreStore.getState()?.metrics;
-
-		if (metrics) {
-			if (metrics.performance < 70) {
-				metricRecommendations.push($i18n.results.recommendations.performance);
-			}
-
-			if (metrics.seo < 70) {
-				metricRecommendations.push($i18n.results.recommendations.seo);
-			}
-
-			if (metrics.accessibility < 70) {
-				metricRecommendations.push($i18n.results.recommendations.accessibility);
-			}
-
-			if (metrics.content < 70) {
-				metricRecommendations.push($i18n.results.recommendations.contentQuality);
-			}
-		}
+		// Metrics-basierte Empfehlungen temporär deaktiviert
+		// const metrics = scoreStore.getState()?.metrics;
+		// if (metrics) {
+		// 	if (metrics.performance < 70) {
+		// 		metricRecommendations.push($i18n.results.recommendations.performance);
+		// 	}
+		// 	if (metrics.seo < 70) {
+		// 		metricRecommendations.push($i18n.results.recommendations.seo);
+		// 	}
+		// 	if (metrics.accessibility < 70) {
+		// 		metricRecommendations.push($i18n.results.recommendations.accessibility);
+		// 	}
+		// 	if (metrics.content < 70) {
+		// 		metricRecommendations.push($i18n.results.recommendations.contentQuality);
+		// 	}
+		// }
 
 		const additionalRecommendations = [];
 
@@ -293,7 +272,7 @@
 		}
 
 		// Generate benefits and recommendations
-		benefits = generateBenefits();
+		// benefits = generateBenefits(); // This line is removed as per the edit hint
 		recommendations = generateRecommendations();
 
 		// After initial load, show plans

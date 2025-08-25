@@ -806,6 +806,41 @@ const ar: Translation = {
 	waitingScreen: {
 		title: 'جارٍ تحليل بياناتك - الرجاء الانتظار.',
 		redirect: 'ستظهر نتيجتك خلال {remainingTime}'
+	},
+	email: {
+		subject: 'نتائج تحليل موقع الويب الخاص بك لـ {company_url}',
+		greeting: 'مرحبًا {firstName} {lastName}',
+		results: {
+			title: 'نتائج تحليل موقع الويب',
+			description:
+				'ها هي <strong>نتائج تحليل موقع الويب</strong> الخاصة بك لـ <strong>{company_url}</strong> بتاريخ {currentDate}.',
+			visibilityScore: 'نتيجة ظهورك: {score}/100',
+			scoreDescription: 'بناءً على وجودك الحالي على الإنترنت واستراتيجية التسويق'
+		},
+		situation: {
+			title: '📊 وضعك الحالي',
+			visibility: 'الظهور:',
+			advertisingFrequency: 'تكرار الإعلان:',
+			goals: 'الأهداف:',
+			campaignManagement: 'إدارة الحملة:',
+			businessPhase: 'مرحلة الشركة:',
+			implementationTime: 'الإطار الزمني للتنفيذ:'
+		},
+		cta: {
+			title: '🎯 عرض حصري لك',
+			description:
+				'احصل على <span class="secrets-highlight">5 نصائح سرية مجانية</span> لزيادة الظهور على الإنترنت خلال استشارة شخصية.',
+			highlight: '5 نصائح سرية مجانية',
+			urgency: '⚡ متاح لفترة محدودة فقط!',
+			button: '🎁 احصل على 5 نصائح سرية مجانية'
+		},
+		footer: {
+			copyright: '© 2025 Digitalpusher - جميع الحقوق محفوظة',
+			unsubscribe: 'إلغاء الاشتراك من النشرة الإخبارية',
+			privacy: 'الخصوصية',
+			imprint: 'بيانات العلامة التجارية',
+			disclaimer: 'لقد تلقيت هذا البريد الإلكتروني because لأنك أجرت تحليل موقع ويب على منصتنا.'
+		}
 	}
 };
 

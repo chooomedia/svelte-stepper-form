@@ -377,6 +377,7 @@ const de: Translation = {
 	},
 	results: {
 		title: 'Handlungsbedarf: Deine Website-Analyse',
+		description: 'Hier ist Dein individueller Analysebericht',
 		subtitle: 'Hier ist Dein individueller Analysebericht',
 		score: {
 			title: 'Dein Marketing Score',
@@ -595,7 +596,8 @@ const de: Translation = {
 		title: 'Digital Marketing Assessment',
 		description:
 			'Analysiere Deine digitale Präsenz mit unserem kostenlosen Marketing-Assessment. Erhalte personalisierte Empfehlungen für mehr Online-Erfolg.',
-		breadcrumb: 'Marketing Assessment'
+		breadcrumb: 'Marketing Assessment',
+		language: 'de'
 	},
 	pricing: {
 		perDay: 'Täglich',
@@ -836,6 +838,42 @@ const de: Translation = {
 	waitingScreen: {
 		title: 'Deine Angaben werden analysiert - Bitte habe einen Moment Geduld.',
 		redirect: 'Dein Ergebniss in {remainingTime}'
+	},
+	email: {
+		subject: 'Ihre Website-Analyse Ergebnisse für {company_url}',
+		greeting: 'Hallo {firstName} {lastName}',
+		results: {
+			title: 'Website-Analyse Ergebnisse',
+			description:
+				'Hier sind Ihre <strong>Website-Analyse Ergebnisse</strong> für <strong>{company_url}</strong> vom {currentDate}.',
+			visibilityScore: 'Ihr Visibility Score: {score}/100',
+			scoreDescription: 'Basierend auf Ihrer aktuellen Online-Präsenz und Marketing-Strategie'
+		},
+		situation: {
+			title: '📊 Ihre aktuelle Situation',
+			visibility: 'Sichtbarkeit:',
+			advertisingFrequency: 'Werbefrequenz:',
+			goals: 'Ziele:',
+			campaignManagement: 'Kampagnenbetreuung:',
+			businessPhase: 'Unternehmensphase:',
+			implementationTime: 'Umsetzungszeitraum:'
+		},
+		cta: {
+			title: '🎯 Exklusives Angebot für Sie',
+			description:
+				'Sichern Sie sich <span class="secrets-highlight">5 kostenlose Geheimtipps</span> für mehr Online-Sichtbarkeit in einem persönlichen Beratungsgespräch.',
+			highlight: '5 kostenlose Geheimtipps',
+			urgency: '⚡ Nur für begrenzte Zeit verfügbar!',
+			button: '🎁 5 Geheimtipps kostenlos erhalten'
+		},
+		footer: {
+			copyright: '© 2025 Digitalpusher - Alle Rechte vorbehalten',
+			unsubscribe: 'Vom Newsletter abmelden',
+			privacy: 'Datenschutz',
+			imprint: 'Impressum',
+			disclaimer:
+				'Sie erhalten diese E-Mail, weil Sie eine Website-Analyse auf unserer Plattform durchgeführt haben.'
+		}
 	}
 };
 

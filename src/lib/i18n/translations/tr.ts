@@ -804,6 +804,42 @@ const tr: Translation = {
 	waitingScreen: {
 		title: 'Analiz Devam Ediyor - Lütfen Bekleyin.',
 		redirect: 'Sonuç {remainingTime} içinde'
+	},
+	email: {
+		subject: '{company_url} Şirketiniz için Web Sitesi Analiz Sonuçları',
+		greeting: 'Sayın {firstName} {lastName}',
+		results: {
+			title: 'Web Sitesi Analiz Sonuçları',
+			description:
+				'{currentDate} tarihli <strong>{company_url}</strong> için <strong>Web Sitesi Analiz Sonuçlarınız</strong> aşağıdadır.',
+			visibilityScore: 'Görünürlük Puanınız: {score}/100',
+			scoreDescription: 'Mevcut çevrimiçi varlığınız ve pazarlama stratejinize dayanarak'
+		},
+		situation: {
+			title: '📊 Mevcut Durumunuz',
+			visibility: 'Görünürlük:',
+			advertisingFrequency: 'Reklam Sıklığı:',
+			goals: 'Hedefler:',
+			campaignManagement: 'Kampanya Yönetimi:',
+			businessPhase: 'Şirket Aşaması:',
+			implementationTime: 'Uygulama Zaman Çerçevesi:'
+		},
+		cta: {
+			title: '🎯 Size Özel Teklif',
+			description:
+				'Kişisel danışmanlık görüşmesinde daha fazla çevrimiçi görünürlük için <span class="secrets-highlight">5 ücretsiz gizli ipucu</span> edinin.',
+			highlight: '5 ücretsiz gizli ipucu',
+			urgency: '⚡ Sadece sınırlı süre için geçerlidir!',
+			button: '🎁 5 Gizli İpucunu Ücretsiz Alın'
+		},
+		footer: {
+			copyright: '© 2025 Digitalpusher - Tüm hakları saklıdır',
+			unsubscribe: 'Bülten aboneliğinden çıkın',
+			privacy: 'Gizlilik',
+			imprint: 'İletişim Bilgileri',
+			disclaimer:
+				'Bu e-postayı, platformumuzda bir web sitesi analizi gerçekleştirdiğiniz için aldınız.'
+		}
 	}
 };
 

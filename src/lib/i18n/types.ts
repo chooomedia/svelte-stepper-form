@@ -173,6 +173,7 @@ export interface Translation {
 	};
 	results: {
 		title: string;
+		description: string;
 		subtitle: string;
 		score: {
 			title: string;
@@ -338,6 +339,7 @@ export interface Translation {
 		title: string;
 		description: string;
 		breadcrumb: string;
+		language: string;
 	};
 	pricing: {
 		perDay: string;
@@ -557,5 +559,40 @@ export interface Translation {
 	waitingScreen: {
 		title: string;
 		redirect: string;
+	};
+
+	// Neue Übersetzungsschlüssel für E-Mail-Templates und Results-Seite
+	email: {
+		subject: string;
+		greeting: string;
+		results: {
+			title: string;
+			description: string;
+			visibilityScore: string;
+			scoreDescription: string;
+		};
+		situation: {
+			title: string;
+			visibility: string;
+			advertisingFrequency: string;
+			goals: string;
+			campaignManagement: string;
+			businessPhase: string;
+			implementationTime: string;
+		};
+		cta: {
+			title: string;
+			description: string;
+			highlight: string;
+			urgency: string;
+			button: string;
+		};
+		footer: {
+			copyright: string;
+			unsubscribe: string;
+			privacy: string;
+			imprint: string;
+			disclaimer: string;
+		};
 	};
 }

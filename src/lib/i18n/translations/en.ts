@@ -6,7 +6,7 @@ const en: Translation = {
 		text: 'Calculate your <strong>online visibility</strong>, <strong>increase reach</strong>, <strong>save resources</strong>, and <strong>boost revenue</strong> now.',
 		meta: {
 			rating: {
-				user: 'Customers',
+				user: 'User',
 				from: 'of',
 				quiztime: 'minute quiz'
 			}
@@ -62,8 +62,7 @@ const en: Translation = {
 			privacy_agreement: 'Accept privacy policy',
 			privacy_policy: 'Privacy policy',
 			newsletter_terms: 'Newsletter terms',
-			company_url: 'https://www.mywebsite.com',
-			aria: 'Enter your Website Url'
+			company_url: 'https://www.mywebsite.com'
 		},
 		errors: {
 			required: 'This field is required',
@@ -208,75 +207,75 @@ const en: Translation = {
 			campaign_management: {
 				self: {
 					label: 'By myself',
-					description: 'Managed company owner'
+					description: 'Self-managed'
 				},
 				digitalpusher: {
 					label: 'Digitalpusher',
-					description: 'Managed Professional'
+					description: 'Professional management'
 				},
 				employee: {
 					label: 'Employee',
-					description: 'Managed internal'
+					description: 'Internal management'
 				}
 			},
 			online_reviews: {
 				positive: {
-					label: 'Positive Reviews',
-					description: 'Mostly positive feedback from customers'
+					label: 'Mostly positive',
+					description: 'Good reviews'
 				},
 				negative: {
-					label: 'Negative Reviews',
-					description: 'Mostly negative feedback from customers'
+					label: 'Mostly negative',
+					description: 'Room for improvement'
 				},
 				none: {
-					label: 'No Reviews',
-					description: 'I didnt received reviews yet'
+					label: 'None available',
+					description: 'No reviews'
 				}
 			},
 			previous_campaigns: {
 				yes: {
-					label: 'Successful',
-					description: 'Previous campaigns were successful'
+					label: 'Yes',
+					description: 'Existing experience'
 				},
 				no: {
-					label: 'No Ads',
-					description: 'No online advertising to date'
+					label: 'No',
+					description: 'No experience'
 				},
 				would_like: {
-					label: 'I would like to',
-					description: 'I like to advertise in the future'
+					label: 'Would like to',
+					description: 'Interest exists'
 				}
 			},
 			business_phase: {
 				planning: {
-					label: 'In Planning',
-					description: 'I am planning to start a business'
+					label: 'Planning phase',
+					description: 'In planning phase'
 				},
 				less_than_6_months: {
-					label: 'Start-Up',
-					description: 'The company is still unknown'
+					label: 'Younger than 6 months',
+					description: 'Young company'
 				},
 				more_than_6_months: {
-					label: 'Stable Business',
-					description: 'Business is established'
+					label: 'Older than 6 months',
+					description: 'Established company'
 				},
 				family_business: {
-					label: 'Family Business',
-					description: 'Established company'
+					label: 'Family business',
+					description: 'Family company'
 				}
 			},
 			implementation_time: {
 				immediate: {
-					label: 'In record time',
-					description: 'Implement within a few days'
+					label: 'Record time',
+					description: 'Lightning-fast implementation'
 				},
 				medium: {
-					label: 'Vital Growth',
-					description: 'Implement within a few months'
+					label: 'In 2-6 months',
+					description: 'Medium-term planning'
 				},
 				long_term: {
-					label: 'Long Term',
-					description: 'Implement over a longer period of time'
+					label: 'More than 6 months',
+					description: 'Long-term strategy'
 				}
 			}
 		},
@@ -312,7 +311,6 @@ const en: Translation = {
 		},
 		validation: {
 			required: 'This field is required',
-			// Felder-spezifische Validierungsfehler
 			visibility: {
 				required: 'Please select where your business can be found',
 				minSelection: 'Please select at least one option'
@@ -376,23 +374,24 @@ const en: Translation = {
 	},
 	results: {
 		title: 'Action Required: Your Website Analysis',
-		subtitle: 'Here is your personalized analysis report',
+		description: 'Here is your individual analysis report',
+		subtitle: 'Here is your individual analysis report',
 		score: {
 			title: 'Your Marketing Score',
 			low: {
 				title: 'Critical! Your business is barely visible.',
-				suggestion: 'We´ll show you how to reach more customers immediately.'
+				suggestion: 'We show you how to reach more customers immediately.'
 			},
 			medium: {
-				title: 'Your visibility could be improved.',
-				suggestion: 'Increase your reach with smart online marketing strategies.'
+				title: 'Your visibility can be improved.',
+				suggestion: 'Increase your reach through smart online marketing strategies.'
 			},
 			high: {
 				title: 'Good! But there is still potential.',
-				suggestion: 'With targeted optimization, you can gain even more visibility.'
+				suggestion: 'With targeted optimization you can gain even more visibility.'
 			},
 			excellent: {
-				title: 'Outstanding! Your digital presence is excellent.',
+				title: 'Excellent! Your digital presence is outstanding.',
 				suggestion: 'Use advanced strategies to further expand your dominance!'
 			}
 		},
@@ -401,23 +400,23 @@ const en: Translation = {
 			steps: {
 				title: 'What happens after purchase?',
 				purchase: {
-					title: 'Purchase',
-					description: 'Selection of the appropriate plan and seamless purchase completion',
+					title: 'Purchase completion',
+					description: 'Selection of the suitable plan and straightforward purchase process',
 					icon: 'cart'
 				},
 				scheduling: {
-					title: 'Appointment',
+					title: 'Appointment scheduling',
 					description: 'Personal appointment scheduling with our digital expert',
 					icon: 'calendar'
 				},
 				implementation: {
 					title: 'Implementation',
-					description: 'Professional implementation of all agreed-upon measures',
+					description: 'Professional implementation of all agreed measures',
 					icon: 'code'
 				},
 				handover: {
 					title: 'Handover',
-					description: 'Handover and training on your optimized digital system',
+					description: 'Handover and introduction to your optimized digital system',
 					icon: 'check'
 				}
 			},
@@ -427,24 +426,26 @@ const en: Translation = {
 				inspiration: 'INSPIRATIONS',
 				case1: {
 					titleLow: 'From 0 to 100: At least 3 deals daily through maximized online presence',
-					titleHigh: 'Breakthrough: Over 43% more inquiries thanks to strategic marketing',
+					titleHigh:
+						'Breakthrough: more than 43% more inquiries thanks to thoughtful marketing strategy',
 					quote:
-						'We received comprehensive advice and decided to have a targeted long-term social media campaign planned and implemented in addition to the web app and new website. We are very satisfied with the conversions after two years.',
-					author: '- Dr. P. Ullrich, CEO'
+						'We were comprehensively advised and decided to have a targeted and long-term campaign on social media planned and implemented by the service provider, in addition to the webapp and the new website. We are very satisfied with the conversions after two years.',
+					author: '- Dr. P. Ullrich, Managing Director'
 				},
 				case2: {
-					title: 'Efficient Implementation: Landing page, SEO and full channel ads campaign',
+					title: 'Efficient implementation: Landing page, SEO and full channel ads campaign',
 					quote:
-						'The landing page and SEO were quickly implemented based on analyzed data for our e-commerce network using Shopware, and the campaign was a complete success thanks to targeted audience selection and conversion tracking. Highly recommended.',
+						'The landing page and SEO were quickly implemented based on the analyzed data for our e-commerce network based on Shopware, and the campaign was a complete success thanks to targeted audience selection and conversion tracking. Definitely recommended.',
 					author: '- M. Keller, Senior Brand Manager'
 				}
 			},
 			improvement: {
-				title: 'How We Improve Your Results',
+				title: 'How we improve your results',
 				steps: [
 					{
 						title: 'Website Optimization',
-						description: 'Improving loading times, mobile compatibility, and user experience.',
+						description:
+							'Improvement of loading times, mobile compatibility and user-friendliness.',
 						icon: 'deviceDesktop',
 						underScore: 40
 					},
@@ -457,31 +458,32 @@ const en: Translation = {
 					},
 					{
 						title: 'Basic Web Presence',
-						description: 'Building a solid online presence with all essential foundations.',
+						description: 'Building a solid online presence with all necessary basics.',
 						icon: 'home',
 						underScore: 40
 					},
 					{
 						title: 'Local SEO',
-						description: 'Optimizing for local searches so customers in your area can find you.',
+						description: 'Optimization for local searches so customers near you can find you.',
 						icon: 'mapPin',
 						underScore: 40
 					},
 					{
 						title: 'Content Strategy',
-						description: 'Developing a content strategy that engages and convinces your audience.',
+						description:
+							'Development of a content strategy that addresses and convinces your audience.',
 						icon: 'fileText',
 						underScore: 60
 					},
 					{
 						title: 'Social Media Integration',
-						description: 'Connecting your website with social media for greater reach.',
+						description: 'Connection of your website with social media for greater reach.',
 						icon: 'share2',
 						underScore: 60
 					},
 					{
 						title: 'Conversion Optimization',
-						description: 'Targeted improvements to turn more visitors into customers.',
+						description: 'Targeted improvements to convert more visitors into customers.',
 						icon: 'trendingUp',
 						underScore: 80
 					},
@@ -506,8 +508,8 @@ const en: Translation = {
 			regularContent: 'Regular content creation',
 			understanding: 'Basic understanding of digital marketing',
 			quickImprovement: 'Potential for quick improvements',
-			growthPotential: 'High growth potential',
-			visibilityGain: 'Opportunity for rapid visibility increase',
+			growthPotential: 'Great growth potential',
+			visibilityGain: 'Opportunity for quick visibility increase',
 			socialPresence: 'Existing social media presence',
 			seoUnderstanding: 'Understanding of search engine optimization',
 			digitalTransformation: 'Willingness for digital transformation'
@@ -515,21 +517,21 @@ const en: Translation = {
 		weaknesses: {
 			title: 'Improvement Potential',
 			poorVisibility: 'Low digital visibility',
-			noStrategy: 'Lacking online marketing strategy',
+			noStrategy: 'Missing online marketing strategy',
 			poorOptimization: 'Insufficient website optimization',
-			limitedReach: 'Limited search engine reach',
+			limitedReach: 'Limited reach in search engines',
 			underdevelopedContent: 'Underdeveloped content strategy',
-			poorConversion: 'Insufficient conversion optimization',
+			poorConversion: 'Lacking conversion optimization',
 			contentDistribution: 'Gaps in content distribution',
 			competitorAnalysis: 'Limited competitor analysis',
 			conversionRate: 'Optimization potential in conversion rate'
 		},
 		benefits: {
-			title: 'Your Benefits',
-			visibility: 'Higher visibility on Google & Co.',
+			title: 'Your Advantages',
+			visibility: 'Higher visibility in Google & Co.',
 			traffic: 'More qualified visitors to your website',
 			conversion: 'Better conversion rates through optimized content',
-			searchEngines: 'Optimized search engine rankings for relevant keywords',
+			searchEngines: 'Optimized search engine placements for relevant keywords',
 			socialMedia: 'Improved social media presence and engagement',
 			newClients: 'Targeted strategies for new customer acquisition',
 			newEmployees: 'Optimized career page for employee recruitment'
@@ -538,15 +540,15 @@ const en: Translation = {
 			title: 'Our Recommendations',
 			website: 'Website optimization for better user experience',
 			content: 'Content strategy to increase visibility',
-			performance: 'Improve website loading speed by optimizing images and scripts',
+			performance: 'Improve website loading speed through optimization of images and scripts',
 			seo: 'SEO optimization through improved meta tags and structured data',
-			accessibility: 'Improve accessibility for better reach',
+			accessibility: 'Improve accessibility for better access',
 			contentQuality: 'Optimize content quality through better structuring and keywords',
 			basicSeo: 'Basic SEO optimization of your website',
 			googleBusiness: 'Create a Google Business Profile',
 			advancedSeo: 'Advanced SEO measures for more organic traffic',
 			localSeo: 'Local SEO optimization for regional visibility',
-			contentMarketing: 'Content marketing strategy to strengthen market position',
+			contentMarketing: 'Content marketing strategy to strengthen your market position',
 			backlinks: 'Backlink building to increase domain authority',
 			extendedContent: 'Extended content strategy for maximum visibility',
 			competitorAnalysis: 'Competitor analysis to identify growth opportunities'
@@ -554,7 +556,7 @@ const en: Translation = {
 		expertProfile: {
 			name: 'Christopher Matt',
 			role: 'Digital Marketing Expert',
-			bio: 'With over 10 years of experience in the digital world, Christopher helps companies optimize their online presence and achieve measurable success. As a certified Google Partner and social media specialist, he knows all the relevant strategies for sustainable visibility.',
+			bio: 'With over 10 years of experience in the digital world, Christopher helps companies optimize their online presence and achieve measurable results. As a certified Google Partner and social media specialist, he knows all relevant strategies for sustainable visibility.',
 			imageUrl:
 				'https://www.chooomedia.de/wp-content/uploads/2023/03/chooomedia-christopher-matt-ceo-freelancer-webdesigner-ui-designer-information-designer-500x500px__1_-removebg-preview.png',
 			imageAlt: 'Christopher Matt - Digital Marketing Expert',
@@ -570,16 +572,16 @@ const en: Translation = {
 					icon: 'users'
 				},
 				experience: {
-					label: 'Years of Experience',
+					label: 'Years of experience',
 					value: '10+',
 					icon: 'experience'
 				}
 			}
 		},
 		buttons: {
-			restart: 'Restart Quiz and Analysis',
-			getReport: 'Receive Analysis Report by Email',
-			emailError: 'Please enter an email address in the form to receive the results.'
+			restart: 'Restart quiz and analysis',
+			getReport: 'Receive analysis report by email',
+			emailError: 'Please provide an email address in the form to receive the results.'
 		},
 		screenshot: {
 			alt: 'Website Screenshot',
@@ -590,124 +592,118 @@ const en: Translation = {
 		title: 'Digital Marketing Assessment',
 		description:
 			'Analyze your digital presence with our free marketing assessment. Get personalized recommendations for more online success.',
-		breadcrumb: 'Marketing Assessment'
+		breadcrumb: 'Marketing Assessment',
+		language: 'en'
 	},
 	pricing: {
 		perDay: 'Daily',
 		features: {
 			websiteOptimization: 'Website Optimization',
-			basicSeo: 'Essential SEO Strategies',
-			monthlyContent: '1 × Content Creation per month',
-			performanceReport: 'Monthly Performance Report',
-			allBasicFeatures: 'All Features from 1-Month Plan',
+			basicSeo: 'Basic SEO measures',
+			monthlyContent: '1 × content creation per month',
+			performanceReport: 'Monthly performance report',
+			allBasicFeatures: 'All features of the 1-month plan',
 			socialMedia: 'Social Media Management',
-			weeklyContent: 'Weekly Content Creation',
-			keywordOptimization: 'Advanced Keyword Optimization',
-			competitorAnalysis: 'Comprehensive Competitor Analysis',
-			allPremiumFeatures: 'All Features from 3-Month Plan',
-			marketingStrategy: 'Holistic Marketing Strategy',
-			dailyContent: 'Daily Content Updates',
+			weeklyContent: 'Weekly content creation',
+			keywordOptimization: 'Keyword optimization',
+			competitorAnalysis: 'Detailed competitor analysis',
+			allPremiumFeatures: 'All features of the 3-month plan',
+			marketingStrategy: 'Comprehensive marketing strategy',
+			dailyContent: 'Daily content updates',
 			sem: 'Search Engine Marketing (SEM)',
-			personalManager: 'Dedicated Marketing Manager',
+			personalManager: 'Personal marketing manager',
 			cro: 'Conversion Rate Optimization'
 		},
 		included: {
-			longtermBusiness: 'Proven Method for Building a Sustainable Online Business',
-			viralContent: 'Exclusive Strategies for Creating Viral Content',
-			expertFrameworks: 'Proven Expert Frameworks for Rapid and Efficient Scaling',
-			targetedStrategies: 'Data-Driven Strategies Tailored to Your Target Audience'
+			longtermBusiness: 'Method for creating a real, long-term online business',
+			viralContent: 'Exclusive concepts for creating viral content',
+			expertFrameworks: 'Proven expert frameworks for quick and efficient scaling',
+			targetedStrategies: 'Fact-based strategies based on your target group needs'
 		},
 		excluded: {
-			getRichQuick: 'No Get-Rich-Quick Schemes or Overnight Success Fantasies',
-			noContracts: 'No Long-Term Commitments or Binding Contracts',
-			noInvestment: 'No Empty Promises or Unrealistic Investment Claims',
-			pyramidSchemes: 'Avoiding MLM, Dropshipping, or Pyramid Scheme Traps'
+			getRichQuick: 'Get-rich-quick schemes: getting rich overnight',
+			noContracts: 'No long-term commitments or contracts',
+			noInvestment: 'An investment-free possibility that never delivers what it promises',
+			pyramidSchemes: 'MLM, dropshipping or reselling of pyramid schemes'
 		},
-		includedTitle: 'Included',
+		includedTitle: 'Including',
 		inAllPlans: 'in all our packages',
-		excludedTitle: 'We Do Not',
-		notWorking: 'work with',
-		choosePlan: 'Select Your Perfect Plan',
-
-		// Detailed pricing options
+		excludedTitle: 'We do not work',
+		notWorking: 'with',
+		choosePlan: 'Select suitable plan',
 		header: {
-			title: 'Unlock Your Digital Transformation Potential',
-			subtitle:
-				"Based on your score of {score}, we've crafted a precision-targeted strategy just for you"
+			title: 'Choose the perfect plan for your digital transformation',
+			subtitle: 'Based on your score of {score} we recommend a tailored approach'
 		},
 		countdown: {
-			title: 'Limited Time Offer!',
-			subtitle: 'Discount Ends In:'
+			title: 'Special offer!',
+			subtitle: 'Discount expires in:'
 		},
 		bonusBox: {
 			tag: 'EXCLUSIVE BONUS',
-			title: 'FREE High-Impact Blog Article',
+			title: 'High-quality blog article FREE',
 			description:
-				'Book within our promotional window and receive a custom, SEO-optimized blog post designed to dramatically boost your online visibility and reach for longer time!',
+				'When booking during the promotion period, you receive a tailored, SEO-optimized blog article for your company – perfectly adapted to increase your reach long-term!',
 			benefits: [
-				'Tailored exclusively to your business DNA',
-				'SEO-engineered for maximum visibility',
-				'Instant rocket fuel for your online presence'
+				'Individually tailored to your company',
+				'SEO-optimized for more visibility',
+				'Immediate boost to your online presence'
 			],
 			value: 'Value: €99',
-			limited: 'Strictly Limited Time Offer'
+			limited: 'For a limited time only'
 		},
 		paymentOptions: {
-			title: 'Choose Your Power Plan:',
+			title: 'Choose your payment option:',
 			monthly: 'Monthly',
-			oneTime: 'One-Time (-8%)',
-			longTime: 'Enterprise (-20%)', // Changed from 'Longtime'
+			oneTime: 'One-time (-8%)',
+			longTime: 'Enterprise (-20%)',
 			hotLabel: 'HOT'
 		},
 		planLabels: {
 			oneTime: 'ONE-TIME',
 			oneMonth: '1-MONTH PLAN',
-			threeMonth: '3-MONTHS PLAN',
-			sixMonth: '6-MONTHS PLAN',
+			threeMonth: '3-MONTH PLAN',
+			sixMonth: '6-MONTH PLAN',
 			popular: '★ MOST POPULAR',
 			longTimeSuffix: {
-				oneMonth: 'ENTERPRISE BASIS',
+				oneMonth: 'ENTERPRISE BASIC',
 				threeMonth: 'ENTERPRISE PREMIUM',
 				business: 'ENTERPRISE BUSINESS'
 			}
 		},
 		additionalBenefits: {
-			oneTime: ['8% Discount on Total Price', 'Zero Monthly Recurring Fees'],
-			longTime: [
-				'Year of Unlimited Access', // Changed from 'Years'
-				'Massive 20% Discount',
-				'All Future Updates Included'
-			],
+			oneTime: ['8% discount on total price', 'No monthly fees'],
+			longTime: ['1 year access', 'Massive 20% discount', 'All future updates'],
 			savings: 'Save',
 			savingsOption: 'with this option!'
 		},
 		ctaButton: {
-			monthly: 'SUBSCRIBE NOW',
-			oneTime: 'SECURE MY PLAN',
-			longTime: 'LOCK IN ENTERPRISE ACCESS', // Changed from 'LONGTIME'
-			selectPlan: 'Choose Plan'
+			monthly: 'SUBSCRIBE TO PLAN',
+			oneTime: 'BUY NOW',
+			longTime: 'SECURE ENTERPRISE ACCESS',
+			selectPlan: 'Select plan'
 		},
 		savings: 'You save',
-		trustBadges: ['Secure & Protected Payment', '30-Day Money-Back Guarantee'],
-		consultationText: 'Or want to play it safe?',
+		trustBadges: ['Secure & protected payment', '30-day money-back guarantee'],
+		consultationText: 'Or do you want to play it safe?',
 		consultationLink: 'Book free consultation',
 		discountBanner: {
-			title: 'Enterprise Access with 20% Mega Discount!', // Changed from 'Longtime'
-			discount: ' 20% Discount!',
+			title: 'Enterprise access with',
+			discount: ' with 20% discount!',
 			description:
-				'Secure your 1-year growth accelerator NOW! One strategic investment, endless business potential. Skip monthly payments and future-proof your success!', // Changed from '5-year'
-			buttonText: 'Claim My Advantage!'
+				'Secure your <span class="font-bold">NOW</span> your 1-year access to all features and updates! Instead of monthly payments - invest once and benefit permanently.',
+			buttonText: 'Secure now!'
 		},
 		terms: {
 			monthly: {
-				main: "To ensure uninterrupted service, your selected plan {selectedPlan} will automatically renew at the full price for consecutive periods, billing you {monthlyPrice} monthly. You can cancel anytime by contacting our service team via email at abo@digitalpusher.de if you've selected more than one subscription month.",
+				main: 'To avoid interruptions, you agree that your selected plan {selectedPlan} will automatically renew at the full price for subsequent renewal periods and you will be billed {totalPrice.toFixed(2)} monthly. You can cancel your subscription at any time by contacting our service team by email at abo@digitalpusher.de if you have selected more than one subscription month.',
 				reminder:
-					"We'll send a friendly reminder email 5 working days before your subscription expires, giving you the option to continue or pause."
+					'Otherwise, you will receive an email 5 working days before the subscription expires with the option to cancel the subscription.'
 			},
 			oneTime:
-				'A one-time charge of {totalPrice}€ grants you complete access. No hidden fees, no automatic renewals. Your enterprise access is locked in for 1 full year of digital empowerment.',
+				'The total amount of {totalPrice.toFixed(2)}€ will be charged once. There are no further costs or automatic renewals. Your Enterprise access is valid for 1 year.',
 			acceptance:
-				'By clicking "{ctaText}", you confirm acceptance of our Terms of Service and Privacy Policy.'
+				'By clicking "{paymentType === $i18n.pricing.paymentOptions.monthly ? $i18n.pricing.ctaButton.monthly : $i18n.pricing.ctaButton.oneTime}", you accept the Terms and Conditions and the Privacy Policy.'
 		}
 	},
 	footer: {
@@ -721,40 +717,40 @@ const en: Translation = {
 			back: 'Back'
 		},
 		payment: {
-			title: 'Complete Payment',
+			title: 'Complete payment',
 			subtitle: 'Choose your payment method',
-			testButton: 'Test Payment',
-			testDescription: 'Test payment with Sandbox account',
+			testButton: 'Test payment',
+			testDescription: 'Test payment with sandbox account',
 			summary: {
 				title: 'Summary',
-				monthly: 'Monthly Payment',
-				oneTime: 'One-time Payment',
-				longtime: 'Enterprise Access',
+				monthly: 'Monthly payment',
+				oneTime: 'One-time payment',
+				longtime: 'Enterprise access',
 				discount: 'Discount',
-				donation: 'incl. Donation',
+				donation: 'incl. donation',
 				tax: 'incl. VAT'
 			},
 			securityBadges: {
 				secure: 'SSL Secured',
-				protection: 'Buyer Protection',
-				instant: 'Instant Access'
+				protection: 'Buyer protection',
+				instant: 'Instant access'
 			},
 			donationBox: {
-				title: 'Add 3% Donation',
+				title: 'Add 3% donation',
 				description:
-					'With your donation, you directly support environmental projects. 93% of your donation goes directly to sustainable projects - verifiable and transparent!'
+					'With your donation you directly support environmental protection projects. 93% of your donation goes directly into sustainable projects - verifiably and transparently!'
 			},
 			errors: {
 				general: 'An error occurred. Please try again later.',
-				validation: 'Please check your payment information',
+				validation: 'Please check your payment details',
 				server: 'The PayPal service is temporarily unavailable. Please try again later.',
 				timeout: 'The request took too long. Please check your internet connection and try again.'
 			}
 		},
 		success: {
-			title: 'Payment Successful!',
+			title: 'Payment successful!',
 			subtitle: 'Thank you for your purchase',
-			modalInfo: 'Please do not close this window, it will show you the next steps.',
+			modalInfo: 'Please do not close this window to complete the process.',
 			paymentDetails: {
 				plan: 'Service',
 				id: 'Payment ID',
@@ -764,14 +760,14 @@ const en: Translation = {
 			},
 			shareContent: {
 				title: 'My success with Digital Pusher',
-				text: 'I just activated my onlinemarketing-plan at Digital Pusher and Im on my way to more visibility and success! 🚀 #DigitalMarketing'
+				text: 'I just activated my online marketing plan at Digital Pusher and am on my way to more visibility and success! 🚀 #DigitalMarketing'
 			},
 			donation: {
-				title: 'Impact Ready!',
+				title: 'Impact ready!',
 				description:
-					'Your generous donation of {amount}€ supports important environmental projects. Together we make a big difference!',
+					'Your generous donation of {amount}€ supports important environmental projects. Together we make a big impact!',
 				impact: {
-					direct: 'Direct Help',
+					direct: 'Direct help',
 					projects: 'Projects',
 					transparency: 'Transparency'
 				}
@@ -780,60 +776,96 @@ const en: Translation = {
 				title: 'Your next steps:',
 				steps: [
 					'Check your email for payment confirmation',
-					'Schedule a personal consultation appointment',
-					'Explore useful resources in your dashboard'
+					'Schedule an appointment for personal consultation',
+					'Invite a team member for better results'
 				]
 			},
 			upgradeOffer: {
 				exclusive: 'Exclusive',
-				title: 'Expand your package and save 30%',
+				title: 'Upgrade your package and save 30%',
 				subtitle:
-					'For new customers only: Add premium features now and take your results to the next level!',
+					'For new customers only: Add premium features now and elevate your results to the next level!',
 				countdown: 'Offer ends in',
-				button: 'Secure Upgrade'
+				button: 'Secure upgrade'
 			},
 			support: {
 				confirmation: 'A confirmation with all details has been sent to your email address.',
 				contact: 'Questions? Contact our customer support'
 			},
 			buttons: {
-				dashboard: 'To Dashboard',
+				dashboard: 'To dashboard',
 				share: 'Share'
 			}
 		},
 		error: {
-			title: 'Payment Error',
+			title: 'Payment error',
 			defaultMessage: 'An error occurred',
 			details: 'Show technical details',
-			support: 'If you continue to have problems, please contact our customer support.',
+			support: 'For further problems, please contact our customer support.',
 			retry: 'Try again'
 		},
 		confirm: {
 			cancelPurchase: 'Do you really want to cancel the purchase process?',
 			confirmButton: 'Yes, cancel',
-			cancelButton: 'Back to checkout'
+			cancelButton: 'Back to purchase process'
 		},
 		booking: {
-			title: 'Book Free Consultation',
+			title: 'Book free consultation',
 			subtitle:
-				'Choose an appointment for your 30-minute free consultation. We discuss your individual needs and show you how to optimize your online visibility.',
-			selectDate: 'Select Date:',
-			selectTime: 'Select Time:',
-			contactInfo: 'Your Contact Information:',
-			confirm: 'Book Free Appointment',
+				'Choose an appointment for your 30-minute free consultation. We will discuss your individual needs and show you how to optimize your online visibility.',
+			selectDate: 'Select date:',
+			selectTime: 'Select time:',
+			contactInfo: 'Your contact details:',
+			confirm: 'Book appointment for free',
 			booking: 'Booking appointment...',
 			cancel: 'Cancel',
 			success: {
-				title: 'Appointment Successfully Booked!',
+				title: 'Appointment successfully booked!',
 				message: 'Your free consultation has been reserved for {date} at {time}.',
 				details:
-					'You will receive a confirmation email shortly with all details and the meeting link.'
+					'You will shortly receive a confirmation email with all details and the meeting link.'
 			}
 		}
 	},
 	waitingScreen: {
-		title: 'Your details are being analysed - please be patient for a moment.',
+		title: 'Your details are being analyzed - Please have a moment of patience.',
 		redirect: 'Your result in {remainingTime}'
+	},
+	email: {
+		subject: 'Your Website Analysis Results for {company_url}',
+		greeting: 'Hello {firstName} {lastName}',
+		results: {
+			title: 'Website Analysis Results',
+			description:
+				'Here are your <strong>website analysis results</strong> for <strong>{company_url}</strong> from {currentDate}.',
+			visibilityScore: 'Your Visibility Score: {score}/100',
+			scoreDescription: 'Based on your current online presence and marketing strategy'
+		},
+		situation: {
+			title: '📊 Your Current Situation',
+			visibility: 'Visibility:',
+			advertisingFrequency: 'Advertising Frequency:',
+			goals: 'Goals:',
+			campaignManagement: 'Campaign Management:',
+			businessPhase: 'Business Phase:',
+			implementationTime: 'Implementation Time:'
+		},
+		cta: {
+			title: '🎯 Exclusive Offer for You',
+			description:
+				'Secure <span class="secrets-highlight">5 free insider tips</span> for more online visibility in a personal consultation.',
+			highlight: '5 free insider tips',
+			urgency: '⚡ Limited time only!',
+			button: '🎁 Get 5 Free Insider Tips'
+		},
+		footer: {
+			copyright: '© 2025 Digitalpusher - All rights reserved',
+			unsubscribe: 'Unsubscribe from newsletter',
+			privacy: 'Privacy Policy',
+			imprint: 'Imprint',
+			disclaimer:
+				'You are receiving this email because you completed a website analysis on our platform.'
+		}
 	}
 };
 

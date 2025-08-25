@@ -804,6 +804,41 @@ const ru: Translation = {
 	waitingScreen: {
 		title: 'Идет анализ - пожалуйста подождите.',
 		redirect: 'Результат через {remainingTime}'
+	},
+	email: {
+		subject: 'Результаты анализа вашего сайта для {company_url}',
+		greeting: 'Здравствуйте, {firstName} {lastName}',
+		results: {
+			title: 'Результаты анализа сайта',
+			description:
+				'Вот <strong>результаты анализа вашего сайта</strong> для <strong>{company_url}</strong> от {currentDate}.',
+			visibilityScore: 'Ваш показатель видимости: {score}/100',
+			scoreDescription: 'На основе вашего текущего онлайн-присутствия и маркетинговой стратегии'
+		},
+		situation: {
+			title: '📊 Ваша текущая ситуация',
+			visibility: 'Видимость:',
+			advertisingFrequency: 'Частота рекламы:',
+			goals: 'Цели:',
+			campaignManagement: 'Управление кампаниями:',
+			businessPhase: 'Стадия компании:',
+			implementationTime: 'Срок реализации:'
+		},
+		cta: {
+			title: '🎯 Эксклюзивное предложение для вас',
+			description:
+				'Получите <span class="secrets-highlight">5 бесплатных секретных советов</span> для повышения онлайн-видимости durante личной консультации.',
+			highlight: '5 бесплатных секретных советов',
+			urgency: '⚡ Доступно ограниченное время!',
+			button: '🎁 Получить 5 секретных советов бесплатно'
+		},
+		footer: {
+			copyright: '© 2025 Digitalpusher - Все права защищены',
+			unsubscribe: 'Отписаться от рассылки',
+			privacy: 'Конфиденциальность',
+			imprint: 'Правовая информация',
+			disclaimer: 'Вы получили это письмо, потому что провели анализ веб-сайта на нашей платформе.'
+		}
 	}
 };
 
