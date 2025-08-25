@@ -71,7 +71,8 @@
 
 		// Webhook senden
 		try {
-			const result = await WebhookService.sendQuizResults();
+			// Übergebe die aktuellen Formulardaten direkt an den Webhook-Service
+			const result = await WebhookService.sendQuizResults(formData);
 			webhookSent = true;
 			webhookSuccess = result.success;
 			webhookMessage = result.message;

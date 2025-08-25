@@ -90,6 +90,7 @@
 
 			// Sync SuperForm data to formStore - nur data-Objekt
 			console.log('🔍 Syncing SuperForm data to formStore');
+			// Aktualisiere den formStore mit den neuen Daten (ohne zu leeren)
 			updateFormData($form.data);
 
 			// Mark form as initialized

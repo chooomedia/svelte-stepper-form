@@ -5,18 +5,21 @@ import { defaultValues, superFormSchema } from '$lib/schema';
 import type { Actions, PageServerLoad } from './$types';
 
 // Simulated Server Function
-async function mockCreateEntity(data: any) {
+async function mockCreateEntity(data: unknown) {
 	console.log('Mock creating:', data);
 	return true;
 }
 
 export const load: PageServerLoad = async () => {
 	// Initialize the form with default values - nur data-Objekt
+	// In der Live-Version sollen Nutzer ihre eigene URL eingeben
+	// Die Test-URL wird nur als Beispiel/Placeholder verwendet
 	const form = await superValidate(zod(superFormSchema), {
 		defaults: {
 			data: {
 				...defaultValues,
-				company_url: 'https://digitalpusher.de'
+				// company_url bleibt leer, damit Nutzer ihre eigene URL eingeben
+				company_url: ''
 			}
 		}
 	});

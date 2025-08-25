@@ -5,6 +5,7 @@ import { get } from 'svelte/store';
 import { formatEmailData, shouldGeneratePdf, isValidEmail } from '$lib/utils/emailUtils';
 import { formData as formStoreData } from '$lib/stores/formStore';
 import { scoreStore } from '$lib/utils/scoring';
+import { env } from '$lib/config/env';
 
 // Store for rate limiting data
 const STORAGE_KEY = 'digitalpusher_email_reports';
@@ -15,19 +16,27 @@ const STORAGE_KEY = 'digitalpusher_email_reports';
 export interface WebhookResponse {
 	success: boolean;
 	message: string;
-	data?: any;
+	data?: unknown;
 }
 
 /**
  * Service to handle webhook communications with n8n
  */
 export class WebhookService {
-	private static readonly BASE_URL = 'https://n8n.chooomedia.com/webhook';
-	private static readonly WEBHOOK_URL = 'https://n8n.chooomedia.com/webhook/quiz-results';
+	private static readonly BASE_URL = env.N8N_BASE_URL;
+	private static readonly WEBHOOK_URL = env.N8N_WEBHOOK_URL;
 	private static readonly ENDPOINTS = {
 		WEBSITE_HEALTH: '/websitehealth',
 		SEND_REPORT: '/websitehealth__done'
 	};
+
+	// Debug: Log the initialized URLs
+	static {
+		console.log('🔧 WebhookService initialized with:');
+		console.log('🔧 BASE_URL:', env.N8N_BASE_URL);
+		console.log('🔧 WEBHOOK_URL:', env.N8N_WEBHOOK_URL);
+		console.log('🔧 N8N_WEBHOOK_URL from env:', env.N8N_WEBHOOK_URL);
+	}
 
 	// Daily limit for email reports
 	private static readonly DAILY_LIMIT = 3;
@@ -261,7 +270,7 @@ export class WebhookService {
 	 * @param url The website URL to analyze
 	 * @returns Promise with website health data
 	 */
-	static async checkWebsiteHealth(url: string): Promise<any> {
+	static async checkWebsiteHealth(url: string): Promise<unknown> {
 		if (!browser) {
 			return { success: false, message: 'Can only be called in browser environment' };
 		}
@@ -302,7 +311,9 @@ export class WebhookService {
 		}
 	}
 
-	public static async sendQuizResults(): Promise<WebhookResponse> {
+	public static async sendQuizResults(
+		formData?: Record<string, unknown>
+	): Promise<WebhookResponse> {
 		if (!browser) {
 			return { success: false, message: 'Cannot send from server environment' };
 		}
@@ -316,21 +327,37 @@ export class WebhookService {
 		}
 
 		try {
-			// Get current form data and score
-			let currentFormData: Record<string, any> = {};
-			formStoreData.update((data) => {
-				currentFormData = data;
-				return data;
-			});
+			console.log('🚀 sendQuizResults called');
+			console.log('📥 Provided formData:', formData);
+
+			// Use provided formData or fall back to store data
+			let currentFormData: Record<string, unknown> = {};
+			if (formData) {
+				currentFormData = formData;
+				console.log('✅ Using provided formData');
+			} else {
+				console.log('⚠️ No formData provided, falling back to store');
+				// Fallback to store data
+				formStoreData.update((data) => {
+					currentFormData = data;
+					return data;
+				});
+			}
+
+			console.log('🔍 Current form data:', currentFormData);
 			const scoreData = get(scoreStore);
+			console.log('🔍 Score data:', scoreData);
 
 			// Validate email
+			console.log('🔍 Validating email:', currentFormData.email);
 			if (!currentFormData.email) {
+				console.log('❌ No email found in form data');
 				return {
 					success: false,
 					message: 'Bitte gib eine E-Mail-Adresse an, um die Ergebnisse zu erhalten.'
 				};
 			}
+			console.log('✅ Email validation passed');
 
 			// Prepare payload
 			const payload = {
@@ -340,7 +367,16 @@ export class WebhookService {
 				metrics: scoreData?.metrics || {}
 			};
 
-			// Send request to webhook
+			// Debug: Log the payload being sent
+			console.log('🔍 Webhook payload being sent:', payload);
+			console.log('🔍 Company URL in payload:', payload.company_url);
+
+			// Send request to webhook using the new URL
+			console.log('🌐 Sending webhook request to:', this.WEBHOOK_URL);
+			console.log('🌐 WEBHOOK_URL value:', this.WEBHOOK_URL);
+			console.log('🌐 env.N8N_WEBHOOK_URL:', env.N8N_WEBHOOK_URL);
+			console.log('📤 Request payload size:', JSON.stringify(payload).length, 'characters');
+
 			const response = await fetch(this.WEBHOOK_URL, {
 				method: 'POST',
 				headers: {
@@ -350,7 +386,11 @@ export class WebhookService {
 			});
 
 			// Handle response
+			console.log('📥 Response received - Status:', response.status, response.statusText);
+			console.log('📥 Response ok:', response.ok);
+
 			if (response.ok) {
+				console.log('✅ Webhook request successful');
 				// Increment the daily email counter
 				this.incrementEmailSendCount();
 
@@ -360,12 +400,12 @@ export class WebhookService {
 				};
 			} else {
 				const errorText = await response.text();
-				console.error('Webhook error:', errorText);
+				console.error('❌ Webhook error response:', errorText);
+				console.error('❌ Response status:', response.status, response.statusText);
 
 				return {
 					success: false,
-					message:
-						'Es ist ein Fehler beim Senden der Ergebnisse aufgetreten. Bitte versuche es später erneut.'
+					message: `Es ist ein Fehler beim Senden der Ergebnisse aufgetreten (Status: ${response.status}). Bitte versuche es später erneut.`
 				};
 			}
 		} catch (error) {

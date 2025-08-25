@@ -31,3 +31,6 @@ vite.config.ts.timestamp-*
 
 # Mail Tempalte
 /mail
+
+# Workflows
+/n8n/workflows

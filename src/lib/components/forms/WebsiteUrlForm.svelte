@@ -16,6 +16,7 @@
 	import { scoreStore } from '$lib/utils/scoring';
 	import { websiteLoading } from '$lib/stores/loadingStore';
 	import Icon from '../Icon.svelte';
+	import { env } from '$lib/config/env';
 
 	interface Props {
 		form: SuperValidated<FormData>;
@@ -334,7 +335,7 @@
 
 		try {
 			// Use the URL directly in the API call
-			const apiUrl = `https://n8n.chooomedia.com/webhook/websitehealth?url=${webhookUrl}`;
+			const apiUrl = `${env.N8N_WEBSITE_HEALTH_URL}?url=${webhookUrl}`;
 
 			// Log for debugging
 			console.log('API URL:', apiUrl);

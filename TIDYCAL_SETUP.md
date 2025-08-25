@@ -190,7 +190,7 @@ Bucht einen Termin bei TidyCal.
 	"email": "hi@digitalpusher.de",
 	"phone": "+49123456789",
 	"companyName": "Digital Pusher GmbH",
-	"companyUrl": "https://digitalpusher.de"
+	"companyUrl": "{{ env.TEST_WEBSITE_URL }}"
 }
 ```
 
