@@ -355,6 +355,21 @@
 	let availableDates = $derived(
 		[...new Set(availableSlots.filter((slot) => slot.available).map((slot) => slot.date))].sort()
 	);
+
+	// ContactForm-Style Funktionen
+	let touchedFields = $state(new Set<string>());
+
+	function handleBlur(fieldName: string) {
+		touchedFields.add(fieldName);
+	}
+
+	function getAriaAttrs(_fieldName: string, label: string) {
+		return {
+			'aria-invalid': false,
+			'aria-describedby': undefined,
+			'aria-label': label
+		};
+	}
 </script>
 
 <div class="booking-content mx-auto max-w-2xl">
@@ -567,8 +582,10 @@
 									id="userName"
 									type="text"
 									bind:value={userName}
-									class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+									class="w-full rounded-lg border border-gray-300 px-3 py-2 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
 									placeholder="Dein Vorname"
+									onblur={() => handleBlur('first_name')}
+									{...getAriaAttrs('first_name', 'Vorname')}
 								/>
 							</div>
 							<div>
@@ -579,8 +596,10 @@
 									id="userLastName"
 									type="text"
 									bind:value={userLastName}
-									class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+									class="w-full rounded-lg border border-gray-300 px-3 py-2 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
 									placeholder="Dein Nachname"
+									onblur={() => handleBlur('last_name')}
+									{...getAriaAttrs('last_name', 'Nachname')}
 								/>
 							</div>
 						</div>
@@ -593,8 +612,10 @@
 									id="userEmail"
 									type="email"
 									bind:value={userEmail}
-									class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+									class="w-full rounded-lg border border-gray-300 px-3 py-2 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
 									placeholder="deine@email.de"
+									onblur={() => handleBlur('email')}
+									{...getAriaAttrs('email', 'E-Mail-Adresse')}
 								/>
 							</div>
 							<div>
@@ -605,8 +626,10 @@
 									id="userPhone"
 									type="tel"
 									bind:value={userPhone}
-									class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+									class="w-full rounded-lg border border-gray-300 px-3 py-2 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
 									placeholder="Telefonnummer"
+									onblur={() => handleBlur('phone')}
+									{...getAriaAttrs('phone', 'Telefonnummer')}
 								/>
 							</div>
 						</div>
@@ -619,8 +642,10 @@
 									id="companyName"
 									type="text"
 									bind:value={companyName}
-									class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+									class="w-full rounded-lg border border-gray-300 px-3 py-2 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
 									placeholder="Dein Unternehmen"
+									onblur={() => handleBlur('company_name')}
+									{...getAriaAttrs('company_name', 'Unternehmensname')}
 								/>
 							</div>
 							<div>
@@ -631,8 +656,10 @@
 									id="companyUrl"
 									type="url"
 									bind:value={companyUrl}
-									class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+									class="w-full rounded-lg border border-gray-300 px-3 py-2 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
 									placeholder="https://www.meinewebsite.de"
+									onblur={() => handleBlur('company_url')}
+									{...getAriaAttrs('company_url', 'Website-URL')}
 								/>
 							</div>
 						</div>

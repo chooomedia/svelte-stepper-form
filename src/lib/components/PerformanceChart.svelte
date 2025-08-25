@@ -85,7 +85,7 @@
 	// Chart colors object with reactive value
 	const chartColors = $derived({
 		current: scoreColor, // Dynamische Farbe basierend auf Score
-		improved: '#8B5CF6', // Purple for improved data
+		improved: '#6bd0d9', // DigitalPusher-Grün für verbesserte Daten
 		average: '#F59E0B', // Amber/Orange
 		optimal: '#002B2F', // Secondary color for optimal line
 		pointBorder: '#FFFFFF'
@@ -143,47 +143,47 @@
 		const clampedScore = Math.min(Math.max(effectiveScore || 50, 0), 100);
 
 		// Create base metrics with dynamic values based on score
-		// Now including improvedValue for each metric
+		// Now including improvedValue for each metric - mit korrekten Mindestwerten
 		const baseMetrics: Metric[] = [
 			{
 				label: seoLabel,
 				value: Math.round(clampedScore * 0.9),
-				improvedValue: Math.min(95, Math.round(clampedScore * 0.9 * 1.5)), // Improved value capped at 95
+				improvedValue: 90, // Mindestwert für SEO
 				color: '#4CAF50',
 				category: 'lighthouse'
 			},
 			{
 				label: performanceLabel,
 				value: Math.round(clampedScore * 0.8),
-				improvedValue: Math.min(95, Math.round(clampedScore * 0.8 * 1.6)),
+				improvedValue: 90, // Mindestwert für Performance
 				color: '#2196F3',
 				category: 'lighthouse'
 			},
 			{
 				label: accessibilityLabel,
 				value: Math.round(clampedScore * 0.7),
-				improvedValue: Math.min(95, Math.round(clampedScore * 0.7 * 1.7)),
+				improvedValue: 85, // Mindestwert für Zugänglichkeit
 				color: '#FF9800',
 				category: 'lighthouse'
 			},
 			{
 				label: bestPracticesLabel,
 				value: Math.round(clampedScore * 0.85),
-				improvedValue: Math.min(95, Math.round(clampedScore * 0.85 * 1.5)),
+				improvedValue: 80, // Mindestwert für Best Practices
 				color: '#F44336',
 				category: 'lighthouse'
 			},
 			{
 				label: contentLabel,
 				value: Math.round(clampedScore * 0.75),
-				improvedValue: Math.min(95, Math.round(clampedScore * 0.75 * 1.6)),
+				improvedValue: 80, // Mindestwert für Content
 				color: '#9C27B0',
 				category: 'content'
 			},
 			{
 				label: securityLabel,
 				value: Math.round(clampedScore * 0.95),
-				improvedValue: Math.min(98, Math.round(clampedScore * 0.95 * 1.2)),
+				improvedValue: 90, // Mindestwert für Sicherheit
 				color: '#00BCD4',
 				category: 'security'
 			}
@@ -212,11 +212,30 @@
 
 						if (dataToUse.metrics[metricKey] !== undefined) {
 							metric.value = dataToUse.metrics[metricKey];
-							// Auch die verbesserten Werte anpassen - min. 20% besser, max. 95 Punkte
-							metric.improvedValue = Math.min(
-								95,
-								Math.round(metric.value * (1.2 + Math.random() * 0.3))
-							);
+							// Auch die verbesserten Werte anpassen - neue Mindestwerte je nach Metrik
+							const minValues = {
+								[$i18n.schema.metrics.seo.label]: 90,
+								[$i18n.schema.metrics.performance.label]: 90,
+								[$i18n.schema.metrics.accessibility.label]: 85,
+								[$i18n.schema.metrics.bestPractices.label]: 80,
+								[$i18n.schema.metrics.content.label]: 80,
+								[$i18n.schema.metrics.security.label]: 90
+							};
+
+							const minValue = minValues[metric.label] || 80;
+							// Garantiere mindestens 30% Verbesserung ODER Mindestwert
+							const improvedValue = Math.max(minValue, Math.round(metric.value * 1.3));
+							metric.improvedValue = improvedValue;
+
+							// Debug: Log die Werte
+							console.log(`Metric: ${metric.label}`, {
+								original: metric.value,
+								improved: metric.improvedValue,
+								minValue,
+								improvement: Math.round(
+									((metric.improvedValue - metric.value) / metric.value) * 100
+								)
+							});
 						}
 					});
 				}
@@ -241,10 +260,30 @@
 							if (typeof score === 'number') {
 								const metricValue = Math.round(score * 100);
 								metric.value = metricValue;
-								metric.improvedValue = Math.min(
-									95,
-									Math.round(metricValue * (1.2 + Math.random() * 0.3))
-								);
+								// Neue Mindestwerte je nach Metrik
+								const minValues = {
+									[$i18n.schema.metrics.seo.label]: 90,
+									[$i18n.schema.metrics.performance.label]: 90,
+									[$i18n.schema.metrics.accessibility.label]: 85,
+									[$i18n.schema.metrics.bestPractices.label]: 80,
+									[$i18n.schema.metrics.content.label]: 80,
+									[$i18n.schema.metrics.security.label]: 90
+								};
+
+								const minValue = minValues[metric.label] || 80;
+								// Garantiere mindestens 30% Verbesserung ODER Mindestwert
+								const improvedValue = Math.max(minValue, Math.round(metricValue * 1.3));
+								metric.improvedValue = improvedValue;
+
+								// Debug: Log die Werte
+								console.log(`Detailed Metric: ${metric.label}`, {
+									original: metricValue,
+									improved: metric.improvedValue,
+									minValue,
+									improvement: Math.round(
+										((metric.improvedValue - metricValue) / metricValue) * 100
+									)
+								});
 								console.log(`Updated ${metric.label} to ${metric.value} from lighthouse data`);
 							}
 						}
@@ -260,7 +299,8 @@
 						const seoMetric = baseMetrics.find((m) => m.label === $i18n.schema.metrics.seo.label);
 						if (seoMetric) {
 							seoMetric.value = dataToUse.detailed_scores.title;
-							seoMetric.improvedValue = Math.min(95, Math.round(seoMetric.value * 1.4));
+							seoMetric.improvedValue = Math.max(90, Math.round(seoMetric.value * 1.3));
+							console.log(`SEO Metric: ${seoMetric.value} -> ${seoMetric.improvedValue}`);
 						}
 					}
 
@@ -270,7 +310,10 @@
 						);
 						if (contentMetric) {
 							contentMetric.value = dataToUse.detailed_scores.meta_description;
-							contentMetric.improvedValue = Math.min(95, Math.round(contentMetric.value * 1.5));
+							contentMetric.improvedValue = Math.max(80, Math.round(contentMetric.value * 1.3));
+							console.log(
+								`Content Metric: ${contentMetric.value} -> ${contentMetric.improvedValue}`
+							);
 						}
 					}
 
@@ -280,9 +323,12 @@
 						);
 						if (accessibilityMetric) {
 							accessibilityMetric.value = dataToUse.detailed_scores.alt_attributes;
-							accessibilityMetric.improvedValue = Math.min(
-								95,
-								Math.round(accessibilityMetric.value * 1.6)
+							accessibilityMetric.improvedValue = Math.max(
+								85,
+								Math.round(accessibilityMetric.value * 1.3)
+							);
+							console.log(
+								`Accessibility Metric: ${accessibilityMetric.value} -> ${accessibilityMetric.improvedValue}`
 							);
 						}
 					}
@@ -294,12 +340,39 @@
 			console.error('Error processing metric data:', error);
 		}
 
-		// Normalize all metric values to ensure they're in the valid range 0-100
-		metrics = baseMetrics.map((metric) => ({
-			...metric,
-			value: Math.min(Math.max(metric.value, 0), 100),
-			improvedValue: Math.min(Math.max(metric.improvedValue, 0), 100)
-		}));
+		// Normalize all metric values and ensure improved values meet minimum requirements
+		metrics = baseMetrics.map((metric) => {
+			// Mindestwerte je nach Metrik
+			const minValues = {
+				[$i18n.schema.metrics.seo.label]: 90,
+				[$i18n.schema.metrics.performance.label]: 90,
+				[$i18n.schema.metrics.accessibility.label]: 85,
+				[$i18n.schema.metrics.bestPractices.label]: 80,
+				[$i18n.schema.metrics.content.label]: 80,
+				[$i18n.schema.metrics.security.label]: 90
+			};
+
+			const minValue = minValues[metric.label] || 80;
+			const normalizedValue = Math.min(Math.max(metric.value, 0), 100);
+			const normalizedImprovedValue = Math.max(
+				minValue,
+				Math.min(Math.max(metric.improvedValue, 0), 100)
+			);
+
+			console.log(`Final metric normalization: ${metric.label}`, {
+				original: metric.value,
+				normalized: normalizedValue,
+				improved: metric.improvedValue,
+				normalizedImproved: normalizedImprovedValue,
+				minValue
+			});
+
+			return {
+				...metric,
+				value: normalizedValue,
+				improvedValue: normalizedImprovedValue
+			};
+		});
 
 		// Calculate averages
 		averageValue = metrics.reduce((acc, m) => acc + m.value, 0) / metrics.length || 0;
@@ -334,7 +407,7 @@
 		console.log('Initializing chart with metrics:', metrics);
 
 		// Create chart configuration with correct data
-		const chartConfig = {
+		const chartConfig: any = {
 			type: 'line',
 			data: {
 				labels: metrics.map((m) => m.label),
@@ -373,7 +446,7 @@
 					},
 					{
 						label: optimalLabel,
-						data: metrics.map(() => 95),
+						data: metrics.map(() => 90),
 						borderColor: chartColors.optimal,
 						borderDash: [3, 3],
 						borderWidth: 1.5,
@@ -408,9 +481,24 @@
 							label: (ctx) => {
 								const value = parseFloat(ctx.parsed.y.toFixed(2));
 								const label = ctx.dataset.label || '';
-								const benchmark = getBenchmarkValue(ctx.label);
-								const comparison = value > benchmark ? 'über' : value < benchmark ? 'unter' : 'im';
-								return `${label}: ${value}/100 (${comparison} Durchschnitt)`;
+
+								// Intelligente Tooltip-Beschreibung basierend auf Dataset
+								if (ctx.dataset.label === currentValueLabel) {
+									// Für aktuelle Werte: Zeige nur "unter Durchschnitt" wenn nötig
+									const benchmark = getBenchmarkForMetric(ctx.label);
+									if (value < benchmark) {
+										return `${label}: ${value}/100 (unter Durchschnitt)`;
+									}
+									return `${label}: ${value}/100`;
+								} else if (ctx.dataset.label === improvedValueLabel) {
+									return `${label}: ${value}/100 (nach Optimierung)`;
+								} else if (ctx.dataset.label === averageLabel) {
+									return `${label}: ${value}/100 (Durchschnitt)`;
+								} else if (ctx.dataset.label === optimalLabel) {
+									return `${label}: ${value}/100 (Optimal)`;
+								}
+
+								return `${label}: ${value}/100`;
 							}
 						}
 					}
@@ -427,18 +515,19 @@
 		await startAnimation();
 	}
 
-	// Get benchmark value for a metric
-	function getBenchmarkValue(label: string): number {
-		const benchmarks = {
-			[$i18n.schema.metrics.seo.label]: 75,
-			[$i18n.schema.metrics.performance.label]: 82,
-			[$i18n.schema.metrics.accessibility.label]: 70,
-			[$i18n.schema.metrics.bestPractices.label]: 85,
-			[$i18n.schema.metrics.content.label]: 78,
-			[$i18n.schema.metrics.security.label]: 90
-		};
+	// Benchmark-Werte für Metriken (wird für Tooltip-Beschreibungen verwendet)
+	const benchmarkValues = {
+		[$i18n.schema.metrics.seo.label]: 75,
+		[$i18n.schema.metrics.performance.label]: 82,
+		[$i18n.schema.metrics.accessibility.label]: 70,
+		[$i18n.schema.metrics.bestPractices.label]: 85,
+		[$i18n.schema.metrics.content.label]: 78,
+		[$i18n.schema.metrics.security.label]: 90
+	};
 
-		return benchmarks[label as keyof typeof benchmarks] || 75;
+	// Funktion zum Abrufen des Benchmark-Werts für eine Metrik
+	function getBenchmarkForMetric(metricLabel: string): number {
+		return benchmarkValues[metricLabel as keyof typeof benchmarkValues] || 75;
 	}
 
 	// Update chart data with current metrics
@@ -449,7 +538,7 @@
 
 		chart.data.labels = metrics.map((m) => m.label);
 		chart.data.datasets[0].data = metrics.map((m) => m.value * $animationTween);
-		chart.data.datasets[0].pointBackgroundColor = metrics.map((m) => m.color);
+		(chart.data.datasets[0] as any).pointBackgroundColor = metrics.map((m) => m.color);
 
 		// Update chart colors when effectiveScore changes
 		chart.data.datasets[0].borderColor = chartColors.current;
@@ -458,6 +547,7 @@
 		// Update improved values dataset
 		if (chart.data.datasets.length > 1) {
 			chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
+			console.log('Updated improved dataset:', chart.data.datasets[1].data);
 		}
 
 		// Update average line
@@ -491,6 +581,7 @@
 			// Update improved values
 			if (chart.data.datasets.length > 1) {
 				chart.data.datasets[1].data = metrics.map((m) => m.improvedValue * $animationTween);
+				console.log('Effect: Updated improved dataset:', chart.data.datasets[1].data);
 			}
 
 			chart.update('none');
@@ -601,14 +692,14 @@
 					></div>
 					<span class="text-[11px] text-gray-700">{currentValueLabel}</span>
 				{:else if i === 1}
-					<div class="mr-2 h-3 w-8 rounded-sm bg-purple-500 opacity-70"></div>
+					<div class="mr-2 h-3 w-8 rounded-sm opacity-70" style="background-color: #6bd0d9;"></div>
 					<span class="text-[11px] text-gray-700">{improvedValueLabel}</span>
 				{:else if i === 2}
 					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-yellow-500"></div>
 					<span class="text-[11px] text-gray-700">{averageLabel} ({Math.round(averageValue)})</span>
 				{:else}
 					<div class="mr-2 h-0.5 w-8 border-t-2 border-dashed border-secondary"></div>
-					<span class="text-[11px] text-gray-700">{optimalLabel} (95)</span>
+					<span class="text-[11px] text-gray-700">{optimalLabel} (90)</span>
 				{/if}
 			</div>
 		{/each}
@@ -676,7 +767,7 @@
 					</div>
 
 					<div class="mt-2 flex items-baseline justify-between">
-						<span class="ml-1 flex items-center text-sm font-medium text-purple-600">
+						<span class="ml-1 flex items-center text-sm font-medium" style="color: #6bd0d9;">
 							<Icon name="improvement" size={16} className="mr-1" stroke="none" />
 							{Math.round(metric.improvedValue * $animationTween)}
 						</span>
@@ -685,8 +776,8 @@
 					<!-- Improved Value Progress -->
 					<div class="mt-1 h-2 rounded-full bg-gray-100">
 						<div
-							class="h-2 rounded-full bg-purple-500 transition-all duration-500"
-							style="width: {metric.improvedValue * $animationTween}%;"
+							class="h-2 rounded-full transition-all duration-500"
+							style="width: {metric.improvedValue * $animationTween}%; background-color: #6bd0d9;"
 						></div>
 					</div>
 				</div>
