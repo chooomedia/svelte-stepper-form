@@ -1,4 +1,5 @@
 import type { Translation } from '../types';
+import { getCommonTranslation } from './common';
 
 const hu: Translation = {
 	start: {
@@ -12,21 +13,7 @@ const hu: Translation = {
 			}
 		}
 	},
-	common: {
-		next: 'Tovább',
-		skip: 'Kihagyás',
-		back: 'Vissza',
-		submit: 'Küldés',
-		loading: 'Betöltés...',
-		error: 'Hiba történt',
-		success: 'Siker!',
-		analyze: 'Elemzés',
-		formErrorHeading: 'Kérjük javítsd a következő hibákat:',
-		support: 'Támogatás',
-		backToHome: 'Vissza a Főoldalra',
-		tryAgainLater: 'Kérjük próbáld újra később vagy lépj kapcsolatba támogatásunkkal.',
-		contactSupport: 'Kapcsolat a Támogatással'
-	},
+	common: getCommonTranslation('hu'),
 	forms: {
 		labels: {
 			company_name: 'Cégnév',
@@ -375,6 +362,7 @@ const hu: Translation = {
 	},
 	results: {
 		title: 'Intézkedés szükséges: Weboldal elemzésed',
+		description: 'Itt a személyre szabott elemzési jelentésed',
 		subtitle: 'Itt a személyre szabott elemzési jelentésed',
 		score: {
 			title: 'Marketing Pontszámod',
@@ -586,7 +574,8 @@ const hu: Translation = {
 	meta: {
 		title: 'Digitális Marketing Értékelés',
 		description: 'Ingyenes marketing elemzés személyre szabott javaslatokkal.',
-		breadcrumb: 'Marketing Értékelés'
+		breadcrumb: 'Marketing Értékelés',
+		language: 'hu'
 	},
 	pricing: {
 		perDay: 'Naponta',

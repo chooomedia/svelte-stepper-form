@@ -2,11 +2,11 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import Stepper from '$lib/components/Stepper.svelte';
+	import Stepper from '$lib/components/organisms/Stepper.svelte';
 	import { currentStepIndex, stepperStore } from '$lib/stores/stepperStore';
 	import { i18n, currentLocale, getTextDirection } from '$lib/i18n';
 	import { FORM_STEPS } from '$lib/schema';
-	import Footer from '$lib/components/Footer.svelte';
+	import Footer from '$lib/components/organisms/Footer.svelte';
 
 	const logoMain = '/logo-digitalpusher.svg';
 

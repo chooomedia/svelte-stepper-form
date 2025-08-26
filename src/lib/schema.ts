@@ -18,96 +18,108 @@ export const superFormSchema = z.object({
 	data: baseFormSchema
 });
 
-export const step_1 = baseFormSchema.pick({ visibility: true });
-export const step_2 = baseFormSchema.pick({ company_url: true });
-export const step_3 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true
-});
-export const step_4 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true
-});
-export const step_5 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true,
-	campaign_management: true
-});
-export const step_6 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true,
-	campaign_management: true,
-	online_reviews: true
-});
-export const step_7 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true,
-	campaign_management: true,
-	online_reviews: true,
-	previous_campaigns: true
-});
-export const step_8 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true,
-	campaign_management: true,
-	online_reviews: true,
-	previous_campaigns: true,
-	business_phase: true
-});
-export const step_9 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true,
-	campaign_management: true,
-	online_reviews: true,
-	previous_campaigns: true,
-	business_phase: true,
-	implementation_time: true
-});
-export const step_10 = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true,
-	campaign_management: true,
-	online_reviews: true,
-	previous_campaigns: true,
-	business_phase: true,
-	implementation_time: true,
-	company_name: true
-});
-export const last_step = baseFormSchema.pick({
-	visibility: true,
-	company_url: true,
-	advertising_frequency: true,
-	goals: true,
-	campaign_management: true,
-	online_reviews: true,
-	previous_campaigns: true,
-	business_phase: true,
-	implementation_time: true,
-	company_name: true,
-	salutation: true,
-	first_name: true,
-	last_name: true,
-	email: true,
-	phone: true,
-	privacy_agreement: true,
-	marketing_consent: true,
-	visibility_score: true
-});
+// ============================================================================
+// SCHEMA GENERATOR FUNCTIONS
+// ============================================================================
+
+/**
+ * Generates step schemas dynamically based on field progression
+ * This eliminates the need for repetitive .pick() calls
+ */
+function createStepSchema(fields: (keyof z.infer<typeof baseFormSchema>)[]): z.ZodSchema {
+	const pickObject = fields.reduce(
+		(acc, field) => {
+			acc[field] = true;
+			return acc;
+		},
+		{} as Record<string, true>
+	);
+
+	return baseFormSchema.pick(pickObject);
+}
+
+// Define the field progression for each step
+const STEP_FIELD_PROGRESSION: (keyof z.infer<typeof baseFormSchema>)[][] = [
+	['visibility'], // step_1
+	['company_url'], // step_2
+	['visibility', 'company_url', 'advertising_frequency'], // step_3
+	['visibility', 'company_url', 'advertising_frequency', 'goals'], // step_4
+	['visibility', 'company_url', 'advertising_frequency', 'goals', 'campaign_management'], // step_5
+	[
+		'visibility',
+		'company_url',
+		'advertising_frequency',
+		'goals',
+		'campaign_management',
+		'online_reviews'
+	], // step_6
+	[
+		'visibility',
+		'company_url',
+		'advertising_frequency',
+		'goals',
+		'campaign_management',
+		'online_reviews',
+		'previous_campaigns'
+	], // step_7
+	[
+		'visibility',
+		'company_url',
+		'advertising_frequency',
+		'goals',
+		'campaign_management',
+		'online_reviews',
+		'previous_campaigns',
+		'business_phase'
+	], // step_8
+	[
+		'visibility',
+		'company_url',
+		'advertising_frequency',
+		'goals',
+		'campaign_management',
+		'online_reviews',
+		'previous_campaigns',
+		'business_phase',
+		'implementation_time'
+	], // step_9
+	[
+		'visibility',
+		'company_url',
+		'advertising_frequency',
+		'goals',
+		'campaign_management',
+		'online_reviews',
+		'previous_campaigns',
+		'business_phase',
+		'implementation_time',
+		'company_name'
+	] // step_10
+];
+
+// Generate step schemas dynamically using the generator function
+export const step_1 = createStepSchema(STEP_FIELD_PROGRESSION[0]);
+export const step_2 = createStepSchema(STEP_FIELD_PROGRESSION[1]);
+export const step_3 = createStepSchema(STEP_FIELD_PROGRESSION[2]);
+export const step_4 = createStepSchema(STEP_FIELD_PROGRESSION[3]);
+export const step_5 = createStepSchema(STEP_FIELD_PROGRESSION[4]);
+export const step_6 = createStepSchema(STEP_FIELD_PROGRESSION[5]);
+export const step_7 = createStepSchema(STEP_FIELD_PROGRESSION[6]);
+export const step_8 = createStepSchema(STEP_FIELD_PROGRESSION[7]);
+export const step_9 = createStepSchema(STEP_FIELD_PROGRESSION[8]);
+export const step_10 = createStepSchema(STEP_FIELD_PROGRESSION[9]);
+// Last step includes all previous fields plus contact information
+export const last_step = createStepSchema([
+	...STEP_FIELD_PROGRESSION[9], // All fields from step_10
+	'salutation',
+	'first_name',
+	'last_name',
+	'email',
+	'phone',
+	'privacy_agreement',
+	'marketing_consent',
+	'visibility_score'
+]);
 
 export let formOptions = {
 	visibility: [
@@ -262,12 +274,6 @@ export let formOptions = {
 		}
 	]
 } as const;
-
-export function getFormOptionWeight(category: keyof typeof formOptions, value: string): number {
-	const options = formOptions[category];
-	const option = options.find((opt) => opt.value === value);
-	return option ? option.weight : 0;
-}
 
 export function getFormOptionByValue<K extends keyof typeof formOptions>(
 	category: K,

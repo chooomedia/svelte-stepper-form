@@ -1,5 +1,14 @@
 // src/lib/utils/pdfGenerator.ts
 import type { FormData } from '$lib/schema';
+import { getPdfTranslations } from './pdfTranslations';
+import { getRecommendations } from './pdfRecommendations';
+import {
+	formatValue,
+	formatUrl,
+	getScoreColor,
+	getScoreDescription,
+	getDynamicMetric
+} from './pdfFormatting';
 
 /**
  * Creates HTML template for PDF generation
@@ -423,84 +432,6 @@ function getDynamicMetric(type: string, value: any): string {
 /**
  * Returns HTML for recommendations
  */
-function getRecommendations(visibility: any, goals: any): string {
-	let recommendations: string[] = [];
-
-	// Based on visibility
-	if (
-		visibility === 'social_media' ||
-		(Array.isArray(visibility) && visibility.includes('social_media'))
-	) {
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>Optimierung Ihrer Social Media Strategie für maximale Reichweite</div>
-      </div>
-    `);
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>Content-Plan mit viralem Potenzial für Ihre Zielgruppe</div>
-      </div>
-    `);
-	}
-
-	if (
-		visibility === 'search_engines' ||
-		(Array.isArray(visibility) && visibility.includes('search_engines'))
-	) {
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>SEO-Optimierung für Top-Rankings bei relevanten Keywords</div>
-      </div>
-    `);
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>Technische Website-Optimierung für bessere Performance und höhere Konversionsraten</div>
-      </div>
-    `);
-	}
-
-	// Based on goals
-	if (goals === 'new_clients' || (Array.isArray(goals) && goals.includes('new_clients'))) {
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>Gezielte Kundenakquise-Strategie mit messbaren Ergebnissen</div>
-      </div>
-    `);
-	}
-
-	if (goals === 'new_employees' || (Array.isArray(goals) && goals.includes('new_employees'))) {
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>Employer Branding und Recruiting-Optimierung für qualifizierte Bewerber</div>
-      </div>
-    `);
-	}
-
-	// General recommendations if needed
-	if (recommendations.length < 3) {
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>Ganzheitliche Digital-Strategie für nachhaltiges Online-Wachstum</div>
-      </div>
-    `);
-		recommendations.push(`
-      <div class="recommendation-item">
-        <div class="recommendation-icon">✓</div>
-        <div>Performance-basierte Kampagnen-Optimierung mit kontinuierlichem Monitoring</div>
-      </div>
-    `);
-	}
-
-	// Ensure max 4 recommendations
-	return recommendations.slice(0, 4).join('');
-}
 
 export async function generatePDF(
 	formData: FormData,
@@ -509,7 +440,7 @@ export async function generatePDF(
 	language: string = 'de'
 ): Promise<Buffer> {
 	// Übersetzungen basierend auf der Sprache
-	const translations = getTranslations(language);
+	const translations = getPdfTranslations(language);
 
 	const companyName = formData.company_name || 'Unbekanntes Unternehmen';
 	const date = new Date().toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US');
@@ -766,82 +697,3 @@ export async function generatePDF(
 }
 
 // Hilfsfunktion für Übersetzungen
-function getTranslations(language: string) {
-	const de = {
-		results: {
-			page: {
-				title: 'Ihre Website-Analyse Ergebnisse',
-				description: 'Ergebnisse vom'
-			},
-			score: {
-				title: 'Ihr Visibility Score',
-				description: 'Basierend auf Ihrer aktuellen Online-Präsenz und Marketing-Strategie'
-			},
-			situation: {
-				title: '📊 Ihre aktuelle Situation',
-				visibility: 'Sichtbarkeit:',
-				advertisingFrequency: 'Werbefrequenz:',
-				goals: 'Ziele:',
-				campaignManagement: 'Kampagnenbetreuung:',
-				businessPhase: 'Unternehmensphase:',
-				implementationTime: 'Umsetzungszeitraum:'
-			},
-			cta: {
-				title: '🎯 Exklusives Angebot für Sie',
-				description:
-					'Sichern Sie sich <strong>5 kostenlose Geheimtipps</strong> für mehr Online-Sichtbarkeit in einem persönlichen Beratungsgespräch.',
-				urgency: 'Nur für begrenzte Zeit verfügbar!',
-				button: '5 Geheimtipps kostenlos erhalten'
-			}
-		},
-		email: {
-			footer: {
-				copyright: '© 2025 Digitalpusher - Alle Rechte vorbehalten',
-				disclaimer:
-					'Sie erhalten diesen Bericht, weil Sie eine Website-Analyse auf unserer Plattform durchgeführt haben.',
-				privacy: 'Datenschutz',
-				imprint: 'Impressum'
-			}
-		}
-	};
-
-	const en = {
-		results: {
-			page: {
-				title: 'Your Website Analysis Results',
-				description: 'Results from'
-			},
-			score: {
-				title: 'Your Visibility Score',
-				description: 'Based on your current online presence and marketing strategy'
-			},
-			situation: {
-				title: '📊 Your Current Situation',
-				visibility: 'Visibility:',
-				advertisingFrequency: 'Advertising Frequency:',
-				goals: 'Goals:',
-				campaignManagement: 'Campaign Management:',
-				businessPhase: 'Business Phase:',
-				implementationTime: 'Implementation Time:'
-			},
-			cta: {
-				title: '🎯 Exclusive Offer for You',
-				description:
-					'Secure <strong>5 free insider tips</strong> for more online visibility in a personal consultation.',
-				urgency: 'Limited time only!',
-				button: 'Get 5 Free Insider Tips'
-			}
-		},
-		email: {
-			footer: {
-				copyright: '© 2025 Digitalpusher - All rights reserved',
-				disclaimer:
-					'You are receiving this report because you completed a website analysis on our platform.',
-				privacy: 'Privacy Policy',
-				imprint: 'Imprint'
-			}
-		}
-	};
-
-	return language === 'de' ? de : en;
-}

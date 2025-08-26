@@ -4,13 +4,13 @@
 	import SuperDebug from 'sveltekit-superforms';
 
 	// Konsolidierte Imports - Redundanzen entfernt
-	import PageMeta from '$lib/components/PageMeta.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import ImageOption from '$lib/components/ImageOption.svelte';
-	import WaitingScreen from '$lib/components/WaitingScreen.svelte';
-	import ContactForm from '$lib/components/forms/ContactForm.svelte';
-	import ResultsPage from '$lib/components/ResultsPage.svelte';
-	import WebsiteUrlForm from '$lib/components/forms/WebsiteUrlForm.svelte';
+	import PageMeta from '$lib/components/atoms/PageMeta.svelte';
+	import Button from '$lib/components/atoms/Button.svelte';
+	import ImageOption from '$lib/components/atoms/ImageOption.svelte';
+	import WaitingScreen from '$lib/components/organisms/WaitingScreen.svelte';
+	import ContactForm from '$lib/components/molecules/ContactForm.svelte';
+	import ResultsPage from '$lib/components/organisms/ResultsPage.svelte';
+	import WebsiteUrlForm from '$lib/components/molecules/WebsiteUrlForm.svelte';
 
 	// Store-Imports konsolidiert
 	import { scoreStore } from '$lib/utils/scoring';

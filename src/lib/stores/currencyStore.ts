@@ -77,6 +77,59 @@ const defaultRates: Record<string, CurrencyRate> = {
 	}
 };
 
+// Helper function for price formatting logic
+function formatPriceInternal(
+	price: number,
+	options: {
+		currencyCode?: string;
+		showSymbol?: boolean;
+		showCode?: boolean;
+	},
+	currentCurrency: string
+): string {
+	const currencyCode = options?.currencyCode || currentCurrency;
+	const showSymbol = options?.showSymbol !== false;
+	const showCode = options?.showCode || false;
+
+	const currencyInfo = defaultRates[currencyCode] || defaultRates.EUR;
+
+	// Special handling for Swiss Francs
+	if (currencyCode === 'CHF') {
+		const formattedNumber = price.toFixed(currencyInfo.decimals);
+		// Swiss format uses apostrophes as thousands separators
+		const swissFormattedNumber = formattedNumber.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+
+		if (showSymbol) {
+			return `CHF ${swissFormattedNumber}`;
+		}
+
+		return swissFormattedNumber;
+	}
+
+	// Regular formatting for other currencies
+	const formattedNumber = price
+		.toFixed(currencyInfo.decimals)
+		.replace('.', currencyInfo.decimalSeparator);
+
+	// Add symbol based on position
+	let result = '';
+	if (currencyInfo.position === 'prefix' && showSymbol) {
+		result += currencyInfo.symbol;
+	}
+
+	result += formattedNumber;
+
+	if (currencyInfo.position === 'suffix' && showSymbol) {
+		result += currencyInfo.symbol;
+	}
+
+	if (showCode) {
+		result += ` ${currencyCode}`;
+	}
+
+	return result;
+}
+
 // Create the currency store
 function createCurrencyStore(): CurrencyStore {
 	// Current active currency
@@ -136,49 +189,9 @@ function createCurrencyStore(): CurrencyStore {
 				currentCurrency = value;
 			})();
 
-			const currencyCode = options?.currencyCode || currentCurrency;
-			const showSymbol = options?.showSymbol !== false;
-			const showCode = options?.showCode || false;
-
-			const currencyInfo = defaultRates[currencyCode] || defaultRates.EUR;
-
-			// Special handling for Swiss Francs
-			if (currencyCode === 'CHF') {
-				const formattedNumber = price.toFixed(currencyInfo.decimals);
-				// Swiss format uses apostrophes as thousands separators
-				const swissFormattedNumber = formattedNumber.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
-
-				if (showSymbol) {
-					return `CHF ${swissFormattedNumber}`;
-				}
-
-				return swissFormattedNumber;
-			}
-
-			// Regular formatting for other currencies
-			const formattedNumber = price
-				.toFixed(currencyInfo.decimals)
-				.replace('.', currencyInfo.decimalSeparator);
-
-			// Add symbol based on position
-			let result = '';
-			if (currencyInfo.position === 'prefix' && showSymbol) {
-				result += currencyInfo.symbol;
-			}
-
-			result += formattedNumber;
-
-			if (currencyInfo.position === 'suffix' && showSymbol) {
-				result += currencyInfo.symbol;
-			}
-
-			if (showCode) {
-				result += ` ${currencyCode}`;
-			}
-
-			return result;
+			return formatPriceInternal(price, options || {}, currentCurrency);
 		},
-		// Adding the missing getFormattedPrice method as an alias to formatPrice for backward compatibility
+		// Alias to formatPrice for backward compatibility
 		getFormattedPrice: (
 			price: number,
 			options?: {
@@ -187,40 +200,12 @@ function createCurrencyStore(): CurrencyStore {
 				showCode?: boolean;
 			}
 		): string => {
-			// Simply alias to formatPrice for backward compatibility
 			let currentCurrency = 'EUR';
 			subscribe((value) => {
 				currentCurrency = value;
 			})();
 
-			const currencyCode = options?.currencyCode || currentCurrency;
-			const showSymbol = options?.showSymbol !== false;
-			const showCode = options?.showCode || false;
-
-			const currencyInfo = defaultRates[currencyCode] || defaultRates.EUR;
-
-			// Format the number according to locale
-			const formattedNumber = price
-				.toFixed(currencyInfo.decimals)
-				.replace('.', currencyInfo.decimalSeparator);
-
-			// Add symbol based on position
-			let result = '';
-			if (currencyInfo.position === 'prefix' && showSymbol) {
-				result += currencyInfo.symbol;
-			}
-
-			result += formattedNumber;
-
-			if (currencyInfo.position === 'suffix' && showSymbol) {
-				result += currencyInfo.symbol;
-			}
-
-			if (showCode) {
-				result += ` ${currencyCode}`;
-			}
-
-			return result;
+			return formatPriceInternal(price, options || {}, currentCurrency);
 		}
 	};
 }
