@@ -1,4 +1,5 @@
 import type { Translation } from '../types';
+import { getCommonTranslation } from './common';
 
 const ro: Translation = {
 	start: {
@@ -12,21 +13,7 @@ const ro: Translation = {
 			}
 		}
 	},
-	common: {
-		next: 'Continuă',
-		skip: 'Sari peste',
-		back: 'Înapoi',
-		submit: 'Trimite',
-		loading: 'Se încarcă...',
-		error: 'Eroare',
-		success: 'Succes!',
-		analyze: 'Analizează',
-		formErrorHeading: 'Corectează următoarele erori:',
-		support: 'Suport',
-		backToHome: 'Înapoi la Pagina Principală',
-		tryAgainLater: 'Te rugăm să încerci din nou mai târziu sau să contactezi suportul nostru.',
-		contactSupport: 'Contactează Suportul'
-	},
+	common: getCommonTranslation('ro'),
 	forms: {
 		labels: {
 			company_name: 'Nume companie',

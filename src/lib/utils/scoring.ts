@@ -458,15 +458,6 @@ export function getFallbackAuditData(score: number) {
 	};
 }
 
-/**
- * Gets the weight of a specific option
- */
-export function getOptionWeight(category: keyof typeof formOptions, value: string): number {
-	const options = formOptions[category];
-	const option = options.find((opt) => opt.value === value);
-	return option ? option.weight : 0;
-}
-
 // ============================================================================
 // STORE MANAGEMENT
 // ============================================================================
@@ -555,24 +546,6 @@ const createScoreStore = () => {
 export const scoreStore = createScoreStore();
 export const visibilityScore = derived(scoreStore, ($scoreStore) => $scoreStore.finalScore);
 export const websiteScreenshot = derived(scoreStore, ($scoreStore) => $scoreStore.screenshot);
-
-// ============================================================================
-// LEGACY SUPPORT (für Kompatibilität)
-// ============================================================================
-
-/**
- * @deprecated Verwende calculateIconBasedScore statt calculateVisibilityScore
- */
-export function calculateVisibilityScore(formData: Partial<FormData>): number {
-	return calculateIconBasedScore(formData);
-}
-
-/**
- * @deprecated Verwende calculateAdvancedScore statt calculateFinalScore
- */
-export function calculateFinalScore(websiteScore: number, formData: Partial<FormData>): number {
-	return calculateAdvancedScore({ score: websiteScore }, formData);
-}
 
 /**
  * Helper function to update form and store simultaneously

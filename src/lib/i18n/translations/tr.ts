@@ -1,4 +1,5 @@
 import type { Translation } from '../types';
+import { getCommonTranslation } from './common';
 
 const tr: Translation = {
 	start: {
@@ -12,21 +13,7 @@ const tr: Translation = {
 			}
 		}
 	},
-	common: {
-		next: 'İleri',
-		skip: 'Atla',
-		back: 'Geri',
-		submit: 'Gönder',
-		loading: 'Yükleniyor...',
-		error: 'Hata oluştu',
-		success: 'Başarılı!',
-		analyze: 'Analiz Et',
-		formErrorHeading: 'Lütfen hataları düzeltin:',
-		support: 'Destek',
-		backToHome: 'Ana Sayfaya Dön',
-		tryAgainLater: 'Lütfen daha sonra tekrar deneyin veya destek ekibimizle iletişime geçin.',
-		contactSupport: 'Destek İle İletişim'
-	},
+	common: getCommonTranslation('tr'),
 	forms: {
 		labels: {
 			company_name: 'Şirket Adı',

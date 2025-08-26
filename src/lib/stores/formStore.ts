@@ -15,9 +15,6 @@ export const formErrors = writable<Record<string, string>>({});
 // Store für die Formularvalidierung
 export const formValidation = writable<Record<string, boolean>>({});
 
-// Store für den aktuellen Schritt des Formulars
-export const currentStep = writable<number>(0);
-
 // Store für die Formularhistorie (für Undo/Redo)
 export const formHistory = writable<Array<Record<string, any>>>([]);
 export const historyIndex = writable<number>(-1);
@@ -53,7 +50,7 @@ export function resetFormStore() {
 	formStatus.set('idle');
 	formErrors.set({});
 	formValidation.set({});
-	currentStep.set(0);
+
 	formHistory.set([]);
 	historyIndex.set(-1);
 }
@@ -90,24 +87,9 @@ export function setFormValidation(validation: Record<string, boolean>) {
 	formValidation.set(validation);
 }
 
-// Funktion zum Setzen des aktuellen Schritts
-export function setCurrentStep(step: number) {
-	currentStep.set(step);
-}
-
 // Funktion zum Hinzufügen zur Historie
 function addToHistory(data: Record<string, any>) {
 	// Verwende einen einfacheren Ansatz ohne Historie für jetzt
-	// TODO: Historie-Funktionalität später implementieren
-}
-
-// Funktion zum Rückgängig machen (Undo)
-export function undoFormChange() {
-	// TODO: Historie-Funktionalität später implementieren
-}
-
-// Funktion zum Wiederholen (Redo)
-export function redoFormChange() {
 	// TODO: Historie-Funktionalität später implementieren
 }
 
@@ -168,38 +150,6 @@ export function loadFromLocalStorage(): boolean {
 	}
 }
 
-// Funktion zum Teilen der Formulardaten (für Debugging/Support)
-export function shareFormData(): string {
-	let data = {};
-	let score = 0;
-	let status = 'idle';
-
-	formData.update((current) => {
-		data = current;
-		return current;
-	});
-
-	calculatedScore.update((current) => {
-		score = current;
-		return current;
-	});
-
-	formStatus.update((current) => {
-		status = current;
-		return current;
-	});
-
-	const shareData = {
-		formData: data,
-		score,
-		status,
-		timestamp: new Date().toISOString(),
-		version: '1.0.0'
-	};
-
-	return JSON.stringify(shareData, null, 2);
-}
-
 // Funktion zum Validieren der Formulardaten
 export function validateFormData(): { isValid: boolean; errors: Record<string, string> } {
 	let data = {};
@@ -234,7 +184,7 @@ export function resetToDefaults(defaults: Record<string, any>) {
 	formData.set({ ...defaults });
 	formErrors.set({});
 	formValidation.set({});
-	currentStep.set(0);
+
 	formHistory.set([]);
 	historyIndex.set(-1);
 }

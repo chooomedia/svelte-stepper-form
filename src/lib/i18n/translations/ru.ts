@@ -1,4 +1,5 @@
 import type { Translation } from '../types';
+import { getCommonTranslation } from './common';
 
 const ru: Translation = {
 	start: {
@@ -12,21 +13,7 @@ const ru: Translation = {
 			}
 		}
 	},
-	common: {
-		next: 'Далее',
-		skip: 'Пропустить',
-		back: 'Назад',
-		submit: 'Отправить',
-		loading: 'Загрузка...',
-		error: 'Произошла ошибка',
-		success: 'Успешно!',
-		analyze: 'Анализировать',
-		formErrorHeading: 'Пожалуйста, исправьте следующие ошибки:',
-		support: 'Поддержка',
-		backToHome: 'Вернуться на главную',
-		tryAgainLater: 'Пожалуйста, попробуйте позже или свяжитесь с нашей поддержкой.',
-		contactSupport: 'Связаться с поддержкой'
-	},
+	common: getCommonTranslation('ru'),
 	forms: {
 		labels: {
 			company_name: 'Название компании',
