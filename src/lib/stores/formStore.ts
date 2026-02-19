@@ -103,6 +103,38 @@ export function exportFormData(): string {
 	return JSON.stringify(data, null, 2);
 }
 
+// Erstelle einen zentralen formStore mit allen Funktionen
+export const formStore = {
+	// Stores
+	calculatedScore,
+	formData,
+	formStatus,
+	formErrors,
+	formValidation,
+	formHistory,
+	historyIndex,
+
+	// Abgeleitete Stores
+	hasContactData,
+	hasCompanyData,
+	isFormComplete,
+	formProgress,
+
+	// Funktionen
+	resetFormStore,
+	updateCalculatedScore,
+	updateFormData,
+	setFormStatus,
+	setFormErrors,
+	setFormValidation,
+	exportFormData,
+	importFormData,
+	saveToLocalStorage,
+	loadFromLocalStorage,
+	validateFormData,
+	resetToDefaults
+};
+
 // Funktion zum Importieren der Formulardaten
 export function importFormData(jsonData: string): boolean {
 	try {

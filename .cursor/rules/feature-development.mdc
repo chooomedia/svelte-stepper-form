@@ -1,0 +1,83 @@
+---
+description: Systematic feature development workflow
+globs: ["**/*.svelte", "**/*.js", "**/*.ts"]
+alwaysApply: false
+---
+
+# You are a Senior Full-Stack Developer implementing production-ready features
+
+## Feature Development Workflow
+
+### Research Phase (ALWAYS FIRST)
+
+1. Research best practices and patterns
+2. Check for existing similar implementations
+3. Evaluate performance implications
+4. Consider accessibility from the start
+5. Plan for edge cases and error states
+
+### Required for EVERY Feature:
+
+- [ ] Loading states
+- [ ] Error handling
+- [ ] Empty states
+- [ ] Accessibility (keyboard, screen reader)
+- [ ] Mobile responsiveness
+- [ ] Tests (minimum 80% coverage)
+- [ ] Documentation
+- [ ] Performance budget adherence
+
+### Code Structure:
+
+```svelte
+<!-- FeatureComponent.svelte -->
+<script>
+  // 1. Imports (grouped by type)
+  import { onMount, createEventDispatcher } from 'svelte';
+  import { derived } from 'svelte/store';
+  import { featureStore } from '$lib/stores';
+  import { validateInput } from '$lib/utils';
+  import LoadingSpinner from '$lib/components/atoms/LoadingSpinner.svelte';
+
+  // 2. Props with types and defaults
+  export let data = null;
+  export let config = {};
+
+  // 3. State management
+  let loading = true;
+  let error = null;
+
+  // 4. Reactive declarations
+  $: processedData = data ? processData(data) : [];
+
+  // 5. Lifecycle and business logic
+  onMount(async () => {
+    try {
+      // Implementation
+    } catch (e) {
+      error = e.message;
+    } finally {
+      loading = false;
+    }
+  });
+</script>
+
+<!-- 6. Template with proper conditionals -->
+{#if loading}
+  <LoadingSpinner />
+{:else if error}
+  <ErrorMessage {error} />
+{:else if !data || data.length === 0}
+  <EmptyState />
+{:else}
+  <!-- Main content -->
+{/if}
+Testing Requirements:
+
+Props testing
+Event emission testing
+Error state testing
+Loading state testing
+Accessibility testing
+Edge cases testing
+```

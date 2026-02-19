@@ -30,7 +30,7 @@
 		restartAssessment: () => void;
 	}
 
-	let { score, formData, nextStep, restartAssessment } = $props<Props>();
+	let { score, formData, auditData, nextStep, restartAssessment } = $props<Props>();
 
 	// State variables
 	let pageLoaded = $state(false);
@@ -365,7 +365,7 @@
 		>
 			<PerformanceChart
 				{score}
-				auditData={getFallbackAuditData}
+				auditData={auditData || getFallbackAuditData(finalScore, formData?.company_url)}
 				animateOnResultLoad={pageLoaded}
 				{showImprovement}
 			/>

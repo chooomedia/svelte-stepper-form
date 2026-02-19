@@ -821,12 +821,52 @@ const en: Translation = {
 	email: {
 		subject: 'Your Website Analysis Results for {company_url}',
 		greeting: 'Hello {firstName} {lastName}',
+		title: 'Action Required: Your Website Analysis',
+		subtitle: 'Here is your individual analysis report',
+		companyName: 'Company',
+		website: 'Website',
 		results: {
 			title: 'Website Analysis Results',
 			description:
 				'Here are your <strong>website analysis results</strong> for <strong>{company_url}</strong> from {currentDate}.',
 			visibilityScore: 'Your Visibility Score: {score}/100',
 			scoreDescription: 'Based on your current online presence and marketing strategy'
+		},
+		score: {
+			title: 'Your Marketing Score',
+			low: {
+				title: 'Critical! Your business is barely visible.',
+				suggestion: 'We show you how to reach more customers immediately.'
+			},
+			medium: {
+				title: 'Your visibility can be improved.',
+				suggestion: 'Increase your reach through smart online marketing strategies.'
+			},
+			high: {
+				title: 'Good! But there is still potential.',
+				suggestion: 'With targeted optimization you can gain even more visibility.'
+			},
+			excellent: {
+				title: 'Excellent! Your digital presence is outstanding.',
+				suggestion: 'Use advanced strategies to further expand your dominance!'
+			}
+		},
+		recommendations: {
+			title: 'Our Recommendations',
+			website: 'Website optimization for better user experience',
+			content: 'Content strategy to increase visibility',
+			performance: 'Improve website loading speed through optimization of images and scripts',
+			seo: 'SEO optimization through improved meta tags and structured data',
+			accessibility: 'Improve accessibility for better access',
+			contentQuality: 'Optimize content quality through better structuring and keywords',
+			basicSeo: 'Basic SEO optimization of your website',
+			googleBusiness: 'Create a Google Business Profile',
+			advancedSeo: 'Advanced SEO measures for more organic traffic',
+			localSeo: 'Local SEO optimization for regional visibility',
+			contentMarketing: 'Content marketing strategy to strengthen your market position',
+			backlinks: 'Backlink building to increase domain authority',
+			extendedContent: 'Extended content strategy for maximum visibility',
+			competitorAnalysis: 'Competitor analysis to identify growth opportunities'
 		},
 		situation: {
 			title: '📊 Your Current Situation',
@@ -843,15 +883,30 @@ const en: Translation = {
 				'Secure <span class="secrets-highlight">5 free insider tips</span> for more online visibility in a personal consultation.',
 			highlight: '5 free insider tips',
 			urgency: '⚡ Limited time only!',
-			button: '🎁 Get 5 Free Insider Tips'
+			button: '🎁 Get 5 Free Insider Tips',
+			downloadLink: 'https://digitalpusher.de/download/5-geheimtipps-pdf'
+		},
+		secrets: {
+			title: '🔒 Insider Tips for Your Online Success',
+			subtitle: 'Discover the strategies our clients use to double their visibility in just 30 days'
+		},
+		sharing: {
+			positive:
+				'🎉 Clients report better leads after our optimizations. Share the result with a colleague — this usually creates the best growth boost.',
+			negative:
+				"💡 Use these tips as a starting point — we're happy to help with implementation. Share your results and inspire other entrepreneurs!"
+		},
+		links: {
+			shareEmail: 'Share via Email',
+			shareWhatsApp: 'Share',
+			bookCalendar: 'Book & Calendar'
 		},
 		footer: {
 			copyright: '© 2025 Digitalpusher - All rights reserved',
 			unsubscribe: 'Unsubscribe from newsletter',
 			privacy: 'Privacy Policy',
 			imprint: 'Imprint',
-			disclaimer:
-				'You are receiving this email because you completed a website analysis on our platform.'
+			disclaimer: 'This email was sent to {email}. Please do not reply directly to this message.'
 		}
 	}
 };

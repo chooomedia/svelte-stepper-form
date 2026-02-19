@@ -829,12 +829,52 @@ const de: Translation = {
 	email: {
 		subject: 'Ihre Website-Analyse Ergebnisse für {company_url}',
 		greeting: 'Hallo {firstName} {lastName}',
+		title: 'Action Required: Your Website Analysis',
+		subtitle: 'Here is your individual analysis report',
+		companyName: 'Unternehmen',
+		website: 'Website',
 		results: {
 			title: 'Website-Analyse Ergebnisse',
 			description:
 				'Hier sind Ihre <strong>Website-Analyse Ergebnisse</strong> für <strong>{company_url}</strong> vom {currentDate}.',
 			visibilityScore: 'Ihr Visibility Score: {score}/100',
 			scoreDescription: 'Basierend auf Ihrer aktuellen Online-Präsenz und Marketing-Strategie'
+		},
+		score: {
+			title: 'Your Marketing Score',
+			low: {
+				title: 'Critical! Your business is barely visible.',
+				suggestion: 'We show you how to reach more customers immediately.'
+			},
+			medium: {
+				title: 'Your visibility can be improved.',
+				suggestion: 'Increase your reach through smart online marketing strategies.'
+			},
+			high: {
+				title: 'Good! But there is still potential.',
+				suggestion: 'With targeted optimization you can gain even more visibility.'
+			},
+			excellent: {
+				title: 'Excellent! Your digital presence is outstanding.',
+				suggestion: 'Use advanced strategies to further expand your dominance!'
+			}
+		},
+		recommendations: {
+			title: 'Our Recommendations',
+			website: 'Website optimization for better user experience',
+			content: 'Content strategy to increase visibility',
+			performance: 'Improve website loading speed through optimization of images and scripts',
+			seo: 'SEO optimization through improved meta tags and structured data',
+			accessibility: 'Improve accessibility for better access',
+			contentQuality: 'Optimize content quality through better structuring and keywords',
+			basicSeo: 'Basic SEO optimization of your website',
+			googleBusiness: 'Create a Google Business Profile',
+			advancedSeo: 'Advanced SEO measures for more organic traffic',
+			localSeo: 'Local SEO optimization for regional visibility',
+			contentMarketing: 'Content marketing strategy to strengthen your market position',
+			backlinks: 'Backlink building to increase domain authority',
+			extendedContent: 'Extended content strategy for maximum visibility',
+			competitorAnalysis: 'Competitor analysis to identify growth opportunities'
 		},
 		situation: {
 			title: '📊 Ihre aktuelle Situation',
@@ -851,7 +891,24 @@ const de: Translation = {
 				'Sichern Sie sich <span class="secrets-highlight">5 kostenlose Geheimtipps</span> für mehr Online-Sichtbarkeit in einem persönlichen Beratungsgespräch.',
 			highlight: '5 kostenlose Geheimtipps',
 			urgency: '⚡ Nur für begrenzte Zeit verfügbar!',
-			button: '🎁 5 Geheimtipps kostenlos erhalten'
+			button: '🎁 5 Geheimtipps kostenlos erhalten',
+			downloadLink: 'https://digitalpusher.de/download/5-geheimtipps-pdf'
+		},
+		secrets: {
+			title: '🔒 Geheimtipps für Ihren Online-Erfolg',
+			subtitle:
+				'Entdecken Sie die Strategien, mit denen unsere Kunden ihre Sichtbarkeit in nur 30 Tagen verdoppeln'
+		},
+		sharing: {
+			positive:
+				'🎉 Klienten berichten von besseren Leads nach unseren Optimierungen. Teile das Ergebnis mit einem Kollegen — meist entsteht so der beste Wachstumsschub.',
+			negative:
+				'💡 Nutze diese Tipps als Ausgangspunkt — wir helfen gern bei der Umsetzung. Teile Deine Ergebnisse und inspiriere andere Unternehmer!'
+		},
+		links: {
+			shareEmail: 'Per E-Mail teilen',
+			shareWhatsApp: 'Share',
+			bookCalendar: 'Buchen & Kalender'
 		},
 		footer: {
 			copyright: '© 2025 Digitalpusher - Alle Rechte vorbehalten',
@@ -859,7 +916,7 @@ const de: Translation = {
 			privacy: 'Datenschutz',
 			imprint: 'Impressum',
 			disclaimer:
-				'Sie erhalten diese E-Mail, weil Sie eine Website-Analyse auf unserer Plattform durchgeführt haben.'
+				'Diese E-Mail wurde gesendet an {email}. Bitte nicht direkt auf diese Nachricht antworten.'
 		}
 	}
 };

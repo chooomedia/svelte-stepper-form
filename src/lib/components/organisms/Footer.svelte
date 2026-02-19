@@ -9,7 +9,7 @@
 	// Dynamically get supported languages from translations object
 	const supportedLanguages = Object.keys(translations).map((code) => {
 		// Get native language name based on code
-		const nativeNames = {
+		const nativeNames: Record<string, string> = {
 			de: 'Deutsch',
 			en: 'English',
 			ar: 'العربية',
@@ -39,7 +39,16 @@
 >
 	<div class="flex flex-col items-center justify-center lg:flex-row">
 		<div class="text-center text-xs text-gray-500">
-			© {new Date().getFullYear()} Digital Pusher. {$i18n.footer.copyright}
+			© {new Date().getFullYear()} Digital Pusher by
+			<a
+				href="https://matt-interfaces.ch"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="inline-flex items-center gap-1 transition-colors hover:text-primary-600"
+			>
+				<img src="/matt-interfaces-logo.png" alt="Matt Interfaces" class="h-3 w-auto" />
+			</a>
+			. {$i18n.footer.copyright}
 		</div>
 
 		<div class="mt-2 flex space-x-1 lg:ml-4 lg:mt-0">

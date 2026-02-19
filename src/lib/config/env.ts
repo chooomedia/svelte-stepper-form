@@ -21,13 +21,21 @@ export const env = {
 	TIDYCAL_API_TOKEN: import.meta.env.VITE_TIDYCAL_API_TOKEN || '',
 
 	// n8n Webhook Configuration
-	N8N_BASE_URL: import.meta.env.VITE_N8N_BASE_URL || 'https://n8n.chooomedia.com/webhook-test',
+	N8N_BASE_URL: import.meta.env.VITE_N8N_BASE_URL || 'https://n8n.chooomedia.com/webhook',
 	N8N_WEBHOOK_URL:
 		import.meta.env.VITE_N8N_WEBHOOK_URL ||
-		'https://n8n.chooomedia.com/webhook-test/websitehealth__done',
+		'https://n8n.chooomedia.com/webhook/websitehealth__done',
 	N8N_WEBSITE_HEALTH_URL:
 		import.meta.env.VITE_N8N_WEBSITE_HEALTH_URL ||
-		'https://n8n.chooomedia.com/webhook-test/websitehealth',
+		'https://n8n.chooomedia.com/webhook/websitehealth',
+	N8N_INVOICE_WEBHOOK_URL:
+		import.meta.env.VITE_N8N_INVOICE_WEBHOOK_URL || 'https://n8n.chooomedia.com/webhook/invoice',
+
+	// Betterplace API Configuration
+	BETTERPLACE_API_URL: import.meta.env.VITE_BETTERPLACE_API_URL || 'https://api.betterplace.org',
+	BETTERPLACE_API_KEY: import.meta.env.VITE_BETTERPLACE_API_KEY || '',
+	BETTERPLACE_FUNDRAISING_EVENT_ID:
+		import.meta.env.VITE_BETTERPLACE_FUNDRAISING_EVENT_ID || '49121',
 
 	// Development Settings
 	DEV_MODE: import.meta.env.VITE_DEV_MODE === 'true',

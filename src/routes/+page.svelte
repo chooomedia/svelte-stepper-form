@@ -38,9 +38,6 @@
 	const { data } = $props();
 	const isDev = import.meta.env.DEV;
 
-	// Demo-URL Konstante - aus zentraler Konfiguration
-	const DEMO_URL = env.DEMO_URL;
-
 	// Initialize the form with SuperForms - korrigiert für data-Objekt
 	const { form, errors } = superForm(data?.form || { data: defaultValues }, {
 		dataType: 'json',
@@ -71,18 +68,6 @@
 	// Konsolidierter Form-Initialisierungs-Effect - korrigiert für data-Objekt
 	$effect(() => {
 		if ($form?.data) {
-			// Setze Demo-URL nur für Step 2 (Website Analysis) - nicht für andere Steps
-			if ($currentStepIndex === 2 && (!$form.data.company_url || $form.data.company_url === '')) {
-				console.log('🔍 Setting demo URL for Step 2 testing');
-				form.update((current) => ({
-					...current,
-					data: {
-						...current.data,
-						company_url: DEMO_URL
-					}
-				}));
-			}
-
 			// Update calculatedScore store when visibility_score changes
 			if ($form.data.visibility_score !== undefined) {
 				calculatedScore.set($form.data.visibility_score);
@@ -112,7 +97,7 @@
 				email: env.DEMO_EMAIL,
 				phone: env.DEMO_PHONE,
 				company_name: env.DEMO_COMPANY_NAME,
-				company_url: DEMO_URL,
+				// company_url wird nicht voreingestellt - Nutzer sollen ihre eigene URL eingeben
 				privacy_agreement: false,
 				marketing_consent: false
 			};

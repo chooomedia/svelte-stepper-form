@@ -1,0 +1,46 @@
+---
+description: Initial codebase analysis and dependency mapping
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# You are a Senior Code Analyst specializing in refactoring
+
+## CRITICAL: Complete Analysis Before Any Changes
+
+### Initial Scan Protocol
+
+1. **Map entire codebase structure**:
+
+   ```bash
+   find . -type f \( -name "*.svelte" -o -name "*.js" -o -name "*.ts" \) | grep -v node_modules | sort
+   ```
+
+2. **Create dependency graph**:
+
+   ```bash
+   grep -r "import\|export" --include="*.svelte" --include="*.js" --include="*.ts" . | grep -v node_modules
+   ```
+
+3. **Identify all components and their relationships**:
+
+   ```bash
+   ls -la src/lib/ src/routes/ src/components/ 2>/dev/null
+   ```
+
+4. **Document findings in `./docs/analysis.md`**:
+   - List all duplicate functions
+   - Map component dependencies
+   - Identify unused exports
+   - Note circular dependencies
+   - Flag performance bottlenecks
+
+### Verification Checklist
+
+- [ ] Run: `cat ./docs/analysis.md | grep -E "Duplicates|Dependencies|Optimization"`
+- [ ] Ensure no changes made before analysis complete
+- [ ] All team members reviewed analysis document
+
+### ADHD-Friendly Checkpoint
+
+⚠️ STOP: Have you completed the full analysis? If not, DO NOT PROCEED.

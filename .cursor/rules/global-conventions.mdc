@@ -1,0 +1,41 @@
+Analyze the changes in the current git diff and create a professional commit message:
+
+1. Run: git diff --staged
+2. Create commit message following Conventional Commits:
+   - Format: type(scope): description
+   - Types: feat|fix|refactor|test|docs|style|perf|chore
+   - Scope: component or module name
+   - Description: imperative, present tense, lowercase
+3. Add bullet points for body if multiple changes
+4. Include "Breaking Change" footer if applicable
+5. Reference issue numbers if relevant
+
+Output format:
+git commit -m "type(scope): description" -m "body" -m "footer"
+
+Example output:
+git commit -m "refactor(stepper): extract duplicate validation logic"
+-m "• Move validation to shared utility validateStep()
+
+Update 4 components to use new utility
+Remove 120 lines of duplicate code
+Add JSDoc documentation"
+-m "Reduces bundle size by 15KB"
+
+## External Integrations
+
+### n8n Workflows
+
+- Webhook definitions in `n8n/workflows/`
+- Type definitions in `shared/types/`
+- Handlers in `src/lib/webhooks/`
+- Always use typed interfaces
+- Implement retry logic
+- Handle offline scenarios
+
+### Data Flow Rules
+
+1. Svelte → n8n: Via webhooks
+2. n8n → Svelte: Via REST API or WebSocket
+3. Error handling: Circuit breaker pattern
+4. Monitoring: Log all interactions

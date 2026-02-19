@@ -33,8 +33,10 @@ export function formatEmailData(formData: Partial<FormData>) {
 		email: formData.email || '',
 		phone: formData.phone || '',
 
-		// Form selections
-		visibility: formData.visibility || 'social_media',
+		// Form selections - ensure arrays are properly formatted
+		visibility: Array.isArray(formData.visibility)
+			? formData.visibility
+			: [formData.visibility || 'social_media'],
 		advertising_frequency: formData.advertising_frequency || 'monthly',
 		goals: formData.goals || 'more_online',
 		campaign_management: formData.campaign_management || 'self',
@@ -43,18 +45,24 @@ export function formatEmailData(formData: Partial<FormData>) {
 		business_phase: formData.business_phase || 'planning',
 		implementation_time: formData.implementation_time || 'immediate',
 
-		// Scores and metrics
-		visibility_score: visibilityScore,
+		// Scores and metrics - ensure number type
+		visibility_score: Number(visibilityScore),
 		marketing_consent: formData.marketing_consent || false,
 
 		// Additional metadata
+		language: locale, // Use 'language' instead of 'locale' for n8n compatibility
 		locale: locale,
 		date: formattedDate,
 		source: 'digital-pusher-assessment',
 		timestamp: new Date().toISOString(),
 
 		// For PDF generation
-		requiresPdf: true
+		requiresPdf: true,
+
+		// Include template data with translations
+		templateData: {
+			templateTexts: formData.templateData?.templateTexts || {}
+		}
 	};
 }
 

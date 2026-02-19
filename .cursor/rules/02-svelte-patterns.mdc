@@ -1,0 +1,473 @@
+---
+description: Svelte-specific optimization patterns
+globs: ["**/*.svelte", "**/+*.js", "**/+*.ts"]
+alwaysApply: true
+---
+
+# You are a Svelte Expert implementing best practices
+
+## Store Management
+
+### Centralized State Architecture
+
+```javascript
+// src/lib/stores/stepperStore.js
+import { writable, derived } from "svelte/store";
+
+// Core state
+export const currentStep = writable(0);
+export const formData = writable({});
+export const validation = writable({});
+
+// Derived states
+export const progress = derived(
+  [currentStep],
+  ([$currentStep]) => ($currentStep / totalSteps) * 100
+);
+
+// Custom store with methods
+function createStepperStore() {
+  const { subscribe, set, update } = writable({
+    currentStep: 0,
+    formData: {},
+    validation: {},
+    history: [],
+  });
+
+  return {
+    subscribe,
+    nextStep: () =>
+      update((state) => ({
+        ...state,
+        history: [...state.history, state.currentStep],
+        currentStep: state.currentStep + 1,
+      })),
+    prevStep: () =>
+      update((state) => ({
+        ...state,
+        currentStep: state.history.pop() || 0,
+        history: state.history,
+      })),
+    reset: () =>
+      set({ currentStep: 0, formData: {}, validation: {}, history: [] }),
+  };
+}
+
+export const stepper = createStepperStore();
+```
+
+### Component Patterns
+
+```svelte
+<!-- Use composition with slots -->
+<StepperContainer>
+  <StepperHeader slot="header" {title} {subtitle} />
+  <StepperContent>
+    <slot />
+  </StepperContent>
+  <StepperNavigation slot="footer" {onNext} {onPrev} />
+</StepperContainer>
+
+<!-- Props spreading for flexibility -->
+<Button {...$$restProps} on:click>
+  <slot />
+</Button>
+```
+
+### Performance Optimizations
+
+- Use `{#key}` blocks for transition resets
+- Implement `use:` actions for DOM manipulation
+- Leverage compile-time optimizations with `{#if}` over runtime checks
+- Use `bind:this` sparingly
+
+## Component Architecture
+
+### Atomic Design Structure
+
+```
+src/lib/components/
+├── atoms/           # Basic building blocks
+│   ├── Button.svelte
+│   ├── Input.svelte
+│   └── Icon.svelte
+├── molecules/       # Combinations of atoms
+│   ├── FormField.svelte
+│   ├── StepIndicator.svelte
+│   └── ProgressBar.svelte
+├── organisms/       # Complex components
+│   ├── StepperHeader.svelte
+│   ├── StepperContent.svelte
+│   └── StepperNavigation.svelte
+└── templates/       # Page-level components
+    └── StepperContainer.svelte
+```
+
+### Component Best Practices
+
+```svelte
+<script>
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { derived } from 'svelte/store';
+
+  // Props with defaults
+  export let step = 0;
+  export let maxSteps = 5;
+  export let disabled = false;
+
+  // Event dispatcher
+  const dispatch = createEventDispatcher();
+
+  // Reactive declarations
+  $: isLastStep = step === maxSteps - 1;
+  $: isFirstStep = step === 0;
+  $: progressPercentage = (step / (maxSteps - 1)) * 100;
+
+  // Lifecycle
+  onMount(() => {
+    // Setup code
+    return () => {
+      // Cleanup code
+    };
+  });
+</script>
+```
+
+## Form Handling
+
+### Form Store Pattern
+
+```javascript
+// src/lib/stores/formStore.js
+import { writable, get } from "svelte/store";
+
+export function createFormStore(initialValues = {}) {
+  const values = writable(initialValues);
+  const errors = writable({});
+  const touched = writable({});
+  const isSubmitting = writable(false);
+
+  function setFieldValue(field, value) {
+    values.update((v) => ({ ...v, [field]: value }));
+  }
+
+  function setFieldError(field, error) {
+    errors.update((e) => ({ ...e, [field]: error }));
+  }
+
+  function setFieldTouched(field, isTouched = true) {
+    touched.update((t) => ({ ...t, [field]: isTouched }));
+  }
+
+  function validateField(field, value) {
+    // Your validation logic here
+    const error = validateValue(field, value);
+    setFieldError(field, error);
+    return !error;
+  }
+
+  function handleSubmit(onSubmit) {
+    return async (event) => {
+      event.preventDefault();
+      isSubmitting.set(true);
+
+      try {
+        const currentValues = get(values);
+        await onSubmit(currentValues);
+      } catch (error) {
+        console.error("Form submission error:", error);
+      } finally {
+        isSubmitting.set(false);
+      }
+    };
+  }
+
+  return {
+    values,
+    errors,
+    touched,
+    isSubmitting,
+    setFieldValue,
+    setFieldError,
+    setFieldTouched,
+    validateField,
+    handleSubmit,
+    reset: () => {
+      values.set(initialValues);
+      errors.set({});
+      touched.set({});
+      isSubmitting.set(false);
+    },
+  };
+}
+```
+
+## Actions & Directives
+
+### Custom Actions
+
+```javascript
+// src/lib/actions/validation.js
+export function validate(node, options) {
+  let { schema, onError } = options;
+
+  function handleBlur(event) {
+    const value = node.value;
+    const result = schema.safeParse(value);
+
+    if (!result.success) {
+      onError(result.error);
+      node.setAttribute("aria-invalid", "true");
+    } else {
+      node.setAttribute("aria-invalid", "false");
+    }
+  }
+
+  node.addEventListener("blur", handleBlur);
+
+  return {
+    update(newOptions) {
+      schema = newOptions.schema;
+      onError = newOptions.onError;
+    },
+    destroy() {
+      node.removeEventListener("blur", handleBlur);
+    },
+  };
+}
+
+// Usage in component
+// <input use:validate={{ schema: emailSchema, onError: handleError }} />
+```
+
+### Transition Actions
+
+```javascript
+// src/lib/transitions/stepper.js
+import { cubicOut } from "svelte/easing";
+
+export function stepTransition(
+  node,
+  { delay = 0, duration = 300, easing = cubicOut } = {}
+) {
+  const style = getComputedStyle(node);
+  const opacity = +style.opacity;
+  const transform = style.transform === "none" ? "" : style.transform;
+
+  return {
+    delay,
+    duration,
+    easing,
+    css: (t) => `
+      transform: ${transform} translateX(${(1 - t) * 100}%);
+      opacity: ${t * opacity};
+    `,
+  };
+}
+```
+
+## Context API Usage
+
+### Provider Pattern
+
+```svelte
+<!-- StepperProvider.svelte -->
+<script>
+  import { setContext } from 'svelte';
+  import { createStepperStore } from '$lib/stores/stepperStore';
+
+  const stepperStore = createStepperStore();
+  setContext('stepper', stepperStore);
+</script>
+
+<div class="stepper-provider">
+  <slot />
+</div>
+```
+
+### Consumer Pattern
+
+```svelte
+<!-- StepContent.svelte -->
+<script>
+  import { getContext } from 'svelte';
+
+  const stepper = getContext('stepper');
+
+  // Now you can use $stepper.currentStep, etc.
+</script>
+```
+
+## Reactive Patterns
+
+### Computed Properties
+
+```javascript
+// Use derived stores for complex computations
+import { derived } from "svelte/store";
+
+export const stepValidation = derived(
+  [currentStep, formData],
+  ([$currentStep, $formData]) => {
+    // Complex validation logic
+    return validateStep($currentStep, $formData);
+  }
+);
+```
+
+### Auto-subscriptions
+
+```svelte
+<script>
+  import { stepperStore } from '$lib/stores';
+
+  // Auto-subscription with $
+  $: console.log('Current step:', $stepperStore.currentStep);
+
+  // Reactive statements
+  $: if ($stepperStore.currentStep === finalStep) {
+    handleCompletion();
+  }
+</script>
+```
+
+## Error Boundaries
+
+### Error Handling Component
+
+```svelte
+<!-- ErrorBoundary.svelte -->
+<script>
+  import { onMount } from 'svelte';
+
+  let hasError = false;
+  let error = null;
+
+  onMount(() => {
+    const handleError = (event) => {
+      hasError = true;
+      error = event.error;
+      console.error('Caught error:', error);
+      event.preventDefault();
+    };
+
+    window.addEventListener('error', handleError);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  });
+</script>
+
+{#if hasError}
+  <div class="error-boundary">
+    <h2>Something went wrong</h2>
+    <details>
+      <summary>Error details</summary>
+      <pre>{error?.stack || error?.message || 'Unknown error'}</pre>
+    </details>
+    <button on:click={() => location.reload()}>
+      Reload page
+    </button>
+  </div>
+{:else}
+  <slot />
+{/if}
+```
+
+## Testing Patterns
+
+### Component Testing Setup
+
+```javascript
+// src/lib/components/Button.test.js
+import { render, fireEvent } from "@testing-library/svelte";
+import { vi } from "vitest";
+import Button from "./Button.svelte";
+
+describe("Button Component", () => {
+  it("should handle click events", async () => {
+    const handleClick = vi.fn();
+
+    const { getByRole } = render(Button, {
+      props: {
+        label: "Click me",
+      },
+      on: {
+        click: handleClick,
+      },
+    });
+
+    const button = getByRole("button");
+    await fireEvent.click(button);
+
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+## File Organization
+
+### Export Pattern
+
+```javascript
+// src/lib/components/index.js
+export { default as Button } from "./atoms/Button.svelte";
+export { default as Input } from "./atoms/Input.svelte";
+export { default as StepperContainer } from "./templates/StepperContainer.svelte";
+
+// Usage
+import { Button, Input, StepperContainer } from "$lib/components";
+```
+
+### Configuration Files
+
+```javascript
+// src/lib/config/stepper.config.js
+export const STEPPER_CONFIG = {
+  animation: {
+    duration: 300,
+    easing: "cubicOut",
+  },
+  validation: {
+    showErrorsOnBlur: true,
+    validateOnChange: false,
+  },
+  accessibility: {
+    announceStepChanges: true,
+    focusOnStepChange: true,
+  },
+};
+```
+
+## ADHD-Friendly Development Tips
+
+### Code Organization Rules
+
+1. **One component per file** - Never mix multiple components
+2. **Clear naming** - StepperHeader not SH or Header2
+3. **Consistent structure** - Same order: script, markup, style
+4. **Small files** - Max 150 lines per component
+5. **Clear dependencies** - Import at top, no hidden deps
+
+### Development Workflow
+
+```bash
+# Before starting any work
+git status              # Check current state
+git checkout -b feature/component-name
+
+# After each small change
+npm run check          # Type checking
+git add -p            # Review changes
+git commit -m "type: description"
+
+# Every 25 minutes
+# Take 5-minute break
+# Review what you've done
+# Plan next 25 minutes
+```
+
+@src/lib/stores/index.js
+@src/lib/components/index.js
+@vite.config.js

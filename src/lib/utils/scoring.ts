@@ -421,12 +421,24 @@ export function extractScreenshot(data: any): string | null {
 
 /**
  * Generiert Fallback-Audit-Daten
+ * @param score - Der Score-Wert
+ * @param url - Optionale URL. Wenn nicht angegeben, wird ein generischer Platzhalter verwendet
  */
-export function getFallbackAuditData(score: number) {
+export function getFallbackAuditData(score: number, url?: string) {
 	const performanceScore = Math.min(0.9, Math.max(0.4, score / 100));
 
+	// Verwende die übergebene URL oder einen generischen Platzhalter
+	let displayUrl = 'N/A';
+	if (url && url.trim() !== '') {
+		// Entferne Protokoll und trailing slash für saubere Darstellung
+		displayUrl = url.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+		if (displayUrl.startsWith('www.')) {
+			displayUrl = displayUrl.substring(4);
+		}
+	}
+
 	return {
-		url: env.DEMO_URL.replace('https://', '').replace('http://', ''),
+		url: displayUrl,
 		score: score,
 		lighthouse_report: {
 			categories: {
@@ -494,7 +506,9 @@ const createScoreStore = () => {
 				const websiteScore = calculateWebsitePerformanceScore(data);
 				const businessScore = calculateIconBasedScore(formData);
 				const marketScore = calculateMarketPositioningScore(formData, data);
-				const auditData = data || getFallbackAuditData(finalScore);
+				// Verwende die URL aus formData, falls verfügbar
+				const url = formData?.company_url || data?.url || undefined;
+				const auditData = data || getFallbackAuditData(finalScore, url);
 
 				console.log('🔍 Erweiterte Scoring-Analyse:', {
 					websiteScore,
@@ -522,7 +536,9 @@ const createScoreStore = () => {
 				const businessScore = calculateIconBasedScore(formData);
 				const finalScore =
 					state.websiteScore > 0 ? calculateAdvancedScore(state.rawData, formData) : businessScore;
-				const auditData = state.auditData || getFallbackAuditData(finalScore);
+				// Verwende die URL aus formData oder aus vorhandenen auditData
+				const url = formData?.company_url || state.auditData?.url || undefined;
+				const auditData = state.auditData || getFallbackAuditData(finalScore, url);
 
 				return {
 					...state,

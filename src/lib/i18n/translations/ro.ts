@@ -819,13 +819,29 @@ const ro: Translation = {
 			urgency: '⚡ Disponibil doar pentru timp limitat!',
 			button: '🎁 Obțineți 5 sfaturi secrete gratuit'
 		},
+		secrets: {
+			title: '🔒 Sfaturi secrete pentru succesul online',
+			subtitle:
+				'Descoperă strategiile pe care le folosesc clienții noștri pentru a-și dubla vizibilitatea în doar 30 de zile'
+		},
+		sharing: {
+			positive:
+				'🎉 Clienții raportează lead-uri mai bune după optimizările noastre. Împărtășește rezultatul cu un coleg — de obicei asta creează cel mai bun impuls de creștere.',
+			negative:
+				'💡 Folosește aceste sfaturi ca punct de plecare — suntem bucuroși să ajutăm la implementare. Împărtășește rezultatele tale și inspiră alți antreprenori!'
+		},
+		links: {
+			shareEmail: 'Împărtășește prin Email',
+			shareWhatsApp: 'Share',
+			bookCalendar: 'Rezervă & Calendar'
+		},
 		footer: {
 			copyright: '© 2025 Digitalpusher - Toate drepturile rezervate',
 			unsubscribe: 'Dezabonare de la newsletter',
 			privacy: 'Confidențialitate',
 			imprint: 'Informații juridice',
 			disclaimer:
-				'Ați primit acest e-mail because ați efectuat o analiză a site-ului web pe platforma noastră.'
+				'Acest e-mail a fost trimis la {email}. Vă rugăm să nu răspundeți direct la acest mesaj.'
 		}
 	}
 };

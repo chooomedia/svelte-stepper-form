@@ -77,11 +77,13 @@ export class WebhookService {
 			const shouldGenerate = shouldGeneratePdf(formData);
 			console.log('📧 Should generate PDF:', shouldGenerate);
 
-			// Prepare payload
+			// Prepare payload with correct structure for n8n workflow
 			const payload = {
-				...emailData,
-				shouldGeneratePdf: shouldGenerate,
-				timestamp: new Date().toISOString()
+				body: {
+					...emailData,
+					shouldGeneratePdf: shouldGenerate,
+					timestamp: new Date().toISOString()
+				}
 			};
 
 			console.log('📤 Sending payload to webhook:', this.WEBHOOK_URL);

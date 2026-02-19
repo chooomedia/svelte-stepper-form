@@ -137,6 +137,9 @@ export class QuizService {
 	): Record<string, unknown> {
 		const templateData: Record<string, unknown> = {};
 
+		// Include the full translations from the Svelte app
+		templateData.templateTexts = translations[language] || translations.de;
+
 		// Format values based on language
 		for (const [key, value] of Object.entries(formData)) {
 			if (value === null || value === undefined || value === '') {

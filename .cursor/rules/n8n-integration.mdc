@@ -1,0 +1,144 @@
+---
+description: n8n webhook integration and data flow management
+globs: ["**/api/**", "**/stores/**", "**/webhooks/**"]
+alwaysApply: true
+---
+
+# You are integrating n8n workflows with Svelte
+
+## n8n Project Structure
+
+### Expected Directory Layout:
+
+project-root/
+├── src/ # Svelte application
+│ ├── lib/
+│ │ ├── api/ # API integrations
+│ │ ├── stores/ # State management
+│ │ └── webhooks/ # Webhook handlers
+├── n8n/ # n8n workflows (EXTERNAL)
+│ ├── workflows/ # Workflow JSON exports
+│ ├── credentials/ # Credential configs (git-ignored)
+│ └── docs/ # Workflow documentation
+└── shared/ # Shared type definitions
+└── types/ # TypeScript interfaces
+
+## Webhook Integration Pattern
+
+### 1. Type Definitions
+
+```typescript
+// shared/types/n8n.types.ts
+export interface N8nWebhookPayload {
+  workflow_id: string;
+  execution_id: string;
+  timestamp: number;
+  data: Record<string, any>;
+}
+
+export interface StepperWebhookData extends N8nWebhookPayload {
+  data: {
+    step: number;
+    formData: FormData;
+    validationResult: ValidationResult;
+    metadata: {
+      user_id: string;
+      session_id: string;
+      ip: string;
+    };
+  };
+}
+2. Webhook Handler
+javascript// src/lib/webhooks/n8n.js
+import { n8nConfig } from '$lib/config/n8n.config';
+
+export async function triggerN8nWorkflow(workflowId, data) {
+  const webhookUrl = `${n8nConfig.baseUrl}/webhook/${workflowId}`;
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-N8N-API-KEY': n8nConfig.apiKey
+      },
+      body: JSON.stringify({
+        ...data,
+        timestamp: Date.now(),
+        source: 'svelte-stepper'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Webhook failed: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`[n8n Webhook Error]:`, error);
+    // Implement retry logic or fallback
+    throw error;
+  }
+}
+3. Store Integration
+javascript// src/lib/stores/n8nStore.js
+import { writable, derived } from 'svelte/store';
+import { triggerN8nWorkflow } from '$lib/webhooks/n8n';
+
+export const n8nWorkflows = writable({
+  onStepComplete: 'workflow_123',
+  onFormSubmit: 'workflow_456',
+  onValidationFail: 'workflow_789'
+});
+
+export function createN8nIntegratedStore() {
+  const store = writable({
+    currentStep: 0,
+    formData: {},
+    webhookStatus: 'idle'
+  });
+
+  return {
+    ...store,
+    nextStepWithWebhook: async () => {
+      store.update(s => ({ ...s, webhookStatus: 'pending' }));
+
+      try {
+        const state = get(store);
+        await triggerN8nWorkflow('onStepComplete', {
+          step: state.currentStep,
+          formData: state.formData
+        });
+
+        store.update(s => ({
+          ...s,
+          currentStep: s.currentStep + 1,
+          webhookStatus: 'success'
+        }));
+      } catch (error) {
+        store.update(s => ({ ...s, webhookStatus: 'error' }));
+      }
+    }
+  };
+}
+Configuration Management
+Environment Variables
+javascript// src/lib/config/n8n.config.js
+export const n8nConfig = {
+  baseUrl: import.meta.env.VITE_N8N_BASE_URL || 'http://localhost:5678',
+  apiKey: import.meta.env.VITE_N8N_API_KEY,
+  workflows: {
+    onboarding: import.meta.env.VITE_N8N_WORKFLOW_ONBOARDING,
+    notification: import.meta.env.VITE_N8N_WORKFLOW_NOTIFICATION,
+    analytics: import.meta.env.VITE_N8N_WORKFLOW_ANALYTICS
+  },
+  retry: {
+    maxAttempts: 3,
+    delay: 1000
+  }
+};
+@n8n/workflows/
+@shared/types/
+@src/lib/webhooks/
+@src/lib/config/n8n.config.js
+```

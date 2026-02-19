@@ -15,6 +15,8 @@
 	import { currencyStore } from '$lib/stores/currencyStore';
 	import { i18n, currentLocale } from '$lib/i18n';
 	import { env } from '$lib/config/env';
+	import { InvoiceService } from '$lib/services/invoiceService';
+	import { loadFundraisingEventTitle, donationDisplayText } from '$lib/stores/betterplaceStore';
 
 	// Props
 	const {
@@ -295,6 +297,23 @@
 							// Call success callback with details
 							onSuccess(details);
 
+							// Generate and send invoice
+							try {
+								const invoiceData = InvoiceService.createInvoiceData(details, {
+									first_name: details.payer?.name?.given_name || '',
+									last_name: details.payer?.name?.surname || '',
+									email: details.payer?.email_address || '',
+									company_name: '',
+									address: ''
+								});
+
+								await InvoiceService.sendInvoiceEmail(invoiceData, 'invoice-template');
+								console.log('✅ Invoice sent successfully');
+							} catch (invoiceError) {
+								console.warn('⚠️ Invoice generation failed:', invoiceError);
+								// Don't fail the payment process if invoice fails
+							}
+
 							// Open success modal
 							modalStore.open('success', successData);
 						} catch (error) {
@@ -440,7 +459,10 @@
 	}
 
 	// Load PayPal SDK when component mounts
-	onMount(() => {
+	onMount(async () => {
+		// Load Betterplace fundraising event title
+		await loadFundraisingEventTitle();
+
 		// Set a timeout to load PayPal SDK
 		const loadTimeout = addTimer(() => {
 			loadPayPalSDK().catch((error) => {
@@ -612,7 +634,8 @@
 			>
 				<div class="heart-icon animate-pulse text-2xl">❤️</div>
 				<p class="text-xs text-emerald-700">
-					{$i18n.modal.payment.donationBox.description}
+					Mit Deiner Spende unterstützt Du direkt <strong>{$donationDisplayText}</strong>. 93%
+					Deiner Spende fließt unmittelbar in nachhaltige Projekte - nachweislich und transparent!
 				</p>
 			</div>
 		{/if}

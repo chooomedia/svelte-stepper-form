@@ -13,7 +13,11 @@
         "format": "prettier --write .",
         "lint": "prettier --check . && eslint .",
         "test:e2e": "playwright test",
-        "test": "npm run test:e2e"
+        "test": "npm run test:e2e",
+        "test:webhook:website": "node e2e/test-website-analysis-integration.js",
+        "test:webhook:invoice": "node e2e/test-invoice-integration.js",
+        "test:webhook:all": "node e2e/e2e-test-suite.js",
+        "test:integration": "npm run test:webhook:all"
     },
     "devDependencies": {
         "@eslint/compat": "^1.2.5",

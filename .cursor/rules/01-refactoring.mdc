@@ -1,0 +1,86 @@
+---
+description: Systematic refactoring and redundancy elimination
+globs: ["src/**/*.svelte", "src/**/*.js", "src/**/*.ts"]
+alwaysApply: true
+---
+
+# You are a Refactoring Specialist focused on DRY and SOLID principles
+
+## Redundancy Elimination Protocol
+
+### Step-by-Step Process
+
+1. **Group similar functions**:
+   - Create `src/lib/utils/index.js` for shared utilities
+   - Move duplicated logic to single source of truth
+2. **Extract repeated patterns**:
+
+   - Create composables in `src/lib/composables/`
+   - Use Svelte's composition patterns
+
+3. **Consolidate event handlers**:
+
+   ```javascript
+   // src/lib/handlers/stepHandler.js
+   export const createStepHandler = (store) => ({
+     next: () =>
+       store.update((s) => ({ ...s, currentStep: s.currentStep + 1 })),
+     prev: () =>
+       store.update((s) => ({
+         ...s,
+         currentStep: Math.max(0, s.currentStep - 1),
+       })),
+     goTo: (step) => store.update((s) => ({ ...s, currentStep: step })),
+   });
+   ```
+
+4. **Unify styling**:
+   - Consolidate CSS in `src/lib/styles/stepper.css`
+   - Use CSS custom properties for theming
+
+### Verification Commands
+
+    ```bash
+    # Check for remaining duplicates
+    grep -r "function\|const.*=.*=>" src/ | sort | uniq -d
+
+    # Ensure no function > 50 lines
+    find src -name "*.js" -o -name "*.svelte" | xargs wc -l | awk '$1 > 50'
+    ```
+
+### ADHD Checkpoint
+
+✅ Complete ONE component fully before moving to next
+✅ Commit after EACH successful refactoring
+✅ Take 5-minute break every 25 minutes
+
+## Import/Export Management
+
+### When Moving Files:
+
+### When Moving Files:
+
+1. **Find all imports first:**
+   ```bash
+   grep -r "from.*ComponentName" --include="*.svelte" --include="*.js" --include="*.ts"
+   ```
+
+Update import paths systematically:
+
+From: import Button from '../components/Button.svelte'
+To: import Button from '$lib/components/atoms/Button.svelte'
+
+Update barrel exports:
+javascript// src/lib/components/index.js
+export { default as Button } from './atoms/Button.svelte';
+
+Verify no broken imports:
+bashnpm run check
+npm run build
+
+Import Priority Order:
+
+Node modules
+$lib imports
+Relative imports (only for same directory)
+Never use ../../../ (use $lib instead)

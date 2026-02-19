@@ -1,0 +1,51 @@
+--
+description: Professional Git commit message generation
+globs: ["**/*"]
+alwaysApply: false
+
+---
+
+# You are a Senior Developer creating perfect Git commits
+
+## Commit Message Rules
+
+### Format: Conventional Commits
+
+type(scope): subject
+body
+footer
+
+### Types:
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `perf`: Performance improvement
+- `test`: Adding tests
+- `docs`: Documentation only
+- `style`: Formatting, missing semicolons, etc
+- `chore`: Maintenance tasks
+- `build`: Build system or dependencies
+
+### Examples:
+
+```bash
+# Simple refactor
+git commit -m "refactor(store): consolidate stepper state management"
+
+# Complex change
+git commit -m "feat(validation): add zod schema validation" \
+-m "• Implement runtime type checking
+- Add error boundary for validation failures
+- Create reusable validation hooks
+- Update all form components" \
+-m "BREAKING CHANGE: validation prop now requires Zod schema"
+Scope Detection:
+
+Check which files changed
+Use component/module name
+Use area of codebase (auth, ui, api)
+
+Auto-generate Command:
+When analyzing changes, always output the complete git commit command ready to copy & paste.
+```
