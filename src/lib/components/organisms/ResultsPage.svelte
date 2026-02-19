@@ -9,7 +9,7 @@
 	import ExpertProfile from '../templates/ExpertSection.svelte';
 	import ProcessSteps from '../molecules/ProcessSteps.svelte';
 	import BenefitsSection from '../templates/BenefitsSection.svelte';
-	import BookingContent from './modal/ModalContent/BookingContent.svelte';
+	import TidyCalBooking from './TidyCalBooking.svelte';
 	import {
 		getFallbackAuditData,
 		websiteScreenshot,
@@ -31,13 +31,6 @@
 	// State variables
 	let webhookSent = $state(false);
 	let formErrors = $state<string[]>([]);
-
-	// SuperForm-like structure for BookingContent compatibility
-	let bookingForm = $derived({
-		form: {
-			data: formData
-		}
-	} as any);
 
 	// Debug: Log die aktuelle Sprache
 	$effect(() => {
@@ -257,22 +250,10 @@
 
 	<!-- TidyCal Booking Section - Direct Integration -->
 	<div
-		class="my-16 overflow-hidden rounded-xl bg-white p-8 shadow-lg"
+		class="booking-content my-16 overflow-hidden rounded-xl bg-white p-8 shadow-lg"
 		in:fade={{ duration: 500, delay: 1200 }}
 	>
-		<div class="mx-auto max-w-4xl">
-			<div class="mb-8 text-center">
-				<h2 class="mb-4 text-3xl font-bold tracking-tight text-gray-900">
-					{$i18n.results.sections.cta.title}
-				</h2>
-				<p class="text-lg text-gray-600">
-					{$i18n.results.sections.cta.subtitle}
-				</p>
-			</div>
-			
-			<!-- Direct TidyCal Booking Integration -->
-			<BookingContent form={bookingForm} />
-		</div>
+		<TidyCalBooking {formData} />
 	</div>
 
 	<!-- Before/After Comparison with Real Results -->
