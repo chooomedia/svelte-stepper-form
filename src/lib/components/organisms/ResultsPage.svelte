@@ -6,10 +6,9 @@
 	import type { FormData } from '$lib/schema';
 	import VisibilityScore from '../atoms/VisibilityScore.svelte';
 	import PerformanceChart from './PerformanceChart.svelte';
-	import ExpertProfile from '../templates/ExpertSection.svelte';
 	import ProcessSteps from '../molecules/ProcessSteps.svelte';
 	import BenefitsSection from '../templates/BenefitsSection.svelte';
-	import TidyCalBooking from './TidyCalBooking.svelte';
+	import OptimizedBooking from './OptimizedBooking.svelte';
 	import {
 		getFallbackAuditData,
 		websiteScreenshot,
@@ -245,15 +244,12 @@
 	<!-- Process Steps Section - NEW -->
 	<ProcessSteps />
 
-	<!-- Expert Profile Section - NEW -->
-	<ExpertProfile />
-
-	<!-- TidyCal Booking Section - Direct Integration -->
+	<!-- Optimized Booking Section with Expert Profile Integration -->
 	<div
-		class="booking-content my-16 overflow-hidden rounded-xl bg-white p-8 shadow-lg"
+		class="booking-content my-16"
 		in:fade={{ duration: 500, delay: 1200 }}
 	>
-		<TidyCalBooking {formData} />
+		<OptimizedBooking {formData} />
 	</div>
 
 	<!-- Before/After Comparison with Real Results -->
