@@ -31,7 +31,8 @@
 		{$i18n.results.sections.steps.title}
 	</h2>
 
-	<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+	<!-- 3 Steps + 1 Bonus Card -->
+	<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 mb-8">
 		{#each processSteps as step, index (step.key)}
 			<div
 				class="flex h-full flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -59,12 +60,14 @@
 			</div>
 		{/each}
 
-		<!-- Bonus: Dein Bonus -->
+		<!-- Bonus Card: 7 Geheimtipps -->
 		<div
-			class="flex h-full flex-col rounded-lg bg-gradient-to-br from-yellow-50 to-orange-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
+			class="flex h-full flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
 			in:fly={{ y: 20, duration: 500, delay: staggerDelay * 4 }}
 		>
-			<div class="mb-4 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 text-white shadow-md">
+			<div
+				class="mb-4 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-white"
+			>
 				<Icon
 					name="gift"
 					size={24}
@@ -75,34 +78,29 @@
 				/>
 			</div>
 			<div class="mb-2 flex items-center gap-2">
-				<span class="text-2xl font-bold text-yellow-600 flex-shrink-0">+</span>
+				<span class="text-2xl font-bold text-primary-600 flex-shrink-0">+</span>
 				<h3 class="font-bold text-gray-900 leading-tight">Dein Bonus</h3>
 			</div>
-			<ul class="flex-1 space-y-2.5 text-sm text-gray-700">
-				<li class="flex items-start gap-2">
-					<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
-					<span class="leading-relaxed"><strong>7 Geheimtipps</strong> – praxiserprobt & sofort umsetzbar</span>
-				</li>
-				<li class="flex items-start gap-2">
-					<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
-					<span class="leading-relaxed"><strong>Handlungsempfehlungen</strong> für deine Branche</span>
-				</li>
-				<li class="flex items-start gap-2">
-					<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
-					<span class="leading-relaxed"><strong>Exklusive Insights</strong> aus 500+ Projekten</span>
-				</li>
-			</ul>
-			<div class="mt-auto pt-4">
-				<div class="rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-center shadow-md">
-					<div class="mb-1 flex items-center justify-center gap-1.5">
-						<span class="text-2xl">💡</span>
-						<span class="text-sm font-bold text-white">Erfolgsgarantie</span>
-					</div>
-					<p class="text-xs font-semibold text-white/95 leading-relaxed">
-						Durchschnittlich <span class="text-yellow-300 font-bold">3x mehr Anfragen</span> nach Umsetzung
-					</p>
-				</div>
+			<p class="flex-1 text-sm text-gray-600 leading-relaxed">
+				<strong>7 Geheimtipps</strong> für sofortigen Erfolg – exklusiv aus 500+ Projekten
+			</p>
+		</div>
+	</div>
+
+	<!-- Erfolgsgarantie: Full Width Banner -->
+	<div
+		class="rounded-xl bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 p-6 shadow-xl"
+		in:fly={{ y: 20, duration: 500, delay: staggerDelay * 5 }}
+	>
+		<div class="flex flex-col items-center justify-center gap-3 text-center md:flex-row md:gap-4">
+			<div class="flex items-center gap-2">
+				<span class="text-4xl">💡</span>
+				<h3 class="text-xl font-bold text-white md:text-2xl">Erfolgsgarantie</h3>
 			</div>
+			<div class="h-px w-16 bg-white/30 md:h-8 md:w-px"></div>
+			<p class="text-base font-semibold text-white/95 md:text-lg">
+				Durchschnittlich <span class="text-yellow-300 font-bold">3x mehr Anfragen</span> nach Umsetzung
+			</p>
 		</div>
 	</div>
 </div>
