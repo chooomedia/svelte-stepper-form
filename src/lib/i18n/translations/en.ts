@@ -398,7 +398,7 @@ const en: Translation = {
 				},
 				handover: {
 					title: 'Your system runs',
-					description: 'You get your optimized system – fully set up, ready to convert',
+					description: 'Fully set up and ready to go – from now on it works for you and brings you inquiries automatically',
 					icon: 'check'
 				}
 			},
