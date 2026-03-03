@@ -66,7 +66,7 @@
 			in:fly={{ y: 20, duration: 500, delay: staggerDelay * 4 }}
 		>
 			<div
-				class="mb-4 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-white"
+				class="mb-4 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary text-secondary"
 			>
 				<Icon
 					name="gift"
