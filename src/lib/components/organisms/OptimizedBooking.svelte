@@ -348,12 +348,13 @@
 			<div class="flex flex-col gap-6 lg:col-span-5">
 				<!-- Expert Profile Card - kompakt für gleiche Höhe -->
 				<div
-					class="expert-card h-full rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-6 text-white shadow-xl"
+					class="expert-card flex h-full flex-col rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-6 text-white shadow-xl"
 					in:fade={{ duration: 500 }}
 				>
-					<div class="mb-4 flex items-center gap-4">
+					<!-- Expert Profile - größeres Bild -->
+					<div class="mb-6 flex flex-col items-center text-center">
 						<div
-							class="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full border-4 border-white/30 shadow-lg"
+							class="relative mb-4 h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border-4 border-white/30 shadow-lg"
 						>
 							<img
 								src={profile.imageUrl}
@@ -362,13 +363,13 @@
 								loading="lazy"
 							/>
 						</div>
-						<div class="flex-1">
-							<h3 class="text-lg font-bold">{profile.name}</h3>
+						<div>
+							<h3 class="text-xl font-bold">{profile.name}</h3>
 							<p class="text-sm text-primary-100">{profile.role}</p>
 						</div>
 					</div>
 
-					<div class="mb-4">
+					<div class="mb-6">
 						<h4 class="mb-2 text-xl font-bold">{booking.expert.title}</h4>
 						<p class="text-sm leading-relaxed text-primary-50">
 							{booking.expert.description}
@@ -376,7 +377,7 @@
 					</div>
 
 					<!-- Trust Elements - kompakter -->
-					<div class="space-y-2">
+					<div class="mb-6 space-y-2">
 						{#each trustElements as trust, i}
 							<div
 								class="flex items-center gap-3 rounded-lg bg-white/10 p-2.5 backdrop-blur-sm"
@@ -399,6 +400,60 @@
 								</div>
 							</div>
 						{/each}
+					</div>
+
+					<!-- Partner Logos -->
+					<div class="mt-auto">
+						<div class="mb-3 border-t border-white/20 pt-4">
+							<p class="text-center text-xs font-semibold uppercase tracking-wide text-primary-100">
+								Unsere Partner
+							</p>
+						</div>
+						<div
+							class="grid grid-cols-2 gap-3 lg:grid-cols-4"
+							in:fly={{ y: 20, delay: 600, duration: 400 }}
+						>
+							<div
+								class="flex items-center justify-center rounded-lg bg-white/10 p-2 backdrop-blur-sm transition-all hover:bg-white/20"
+							>
+								<img
+									src="/wordpress-vip.png"
+									alt="WordPress VIP Partner"
+									class="h-auto w-full max-w-[80px] object-contain brightness-0 invert"
+									loading="lazy"
+								/>
+							</div>
+							<div
+								class="flex items-center justify-center rounded-lg bg-white/10 p-2 backdrop-blur-sm transition-all hover:bg-white/20"
+							>
+								<img
+									src="/google-partner.png"
+									alt="Google Partner"
+									class="h-auto w-full max-w-[80px] object-contain brightness-0 invert"
+									loading="lazy"
+								/>
+							</div>
+							<div
+								class="flex items-center justify-center rounded-lg bg-white/10 p-2 backdrop-blur-sm transition-all hover:bg-white/20"
+							>
+								<img
+									src="/meta-business.png"
+									alt="Meta Business Partner"
+									class="h-auto w-full max-w-[80px] object-contain brightness-0 invert"
+									loading="lazy"
+								/>
+							</div>
+							<div
+								class="flex items-center justify-center rounded-lg bg-white/10 p-2 backdrop-blur-sm transition-all hover:bg-white/20"
+							>
+								<img
+									src="/brevo.png"
+									alt="Brevo Partner"
+									class="h-auto w-full max-w-[80px] object-contain brightness-0 invert"
+									loading="lazy"
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
