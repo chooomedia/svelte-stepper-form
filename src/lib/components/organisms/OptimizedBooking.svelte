@@ -24,7 +24,9 @@
 	let phone = $state(formData?.phone || '');
 
 	// Determine if we have existing contact data
-	let hasExistingData = $derived(Boolean(formData?.first_name && formData?.last_name && formData?.email));
+	let hasExistingData = $derived(
+		Boolean(formData?.first_name && formData?.last_name && formData?.email)
+	);
 
 	// Available slots structure
 	let availableSlotsByDate = $state<Record<string, string[]>>({});
@@ -46,7 +48,7 @@
 		},
 		{
 			icon: 'users',
-			title: '500+ Projekte',
+			title: '200+ Projekte',
 			subtitle: 'Erfolgreich umgesetzt'
 		}
 	];
@@ -61,7 +63,7 @@
 
 		const firstDayOfWeek = firstDay.getDay();
 		const daysFromPrevMonth = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-		
+
 		for (let i = daysFromPrevMonth; i > 0; i--) {
 			days.push(new Date(year, month, 1 - i));
 		}
@@ -72,7 +74,7 @@
 
 		const lastDayOfWeek = lastDay.getDay();
 		const daysFromNextMonth = lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek;
-		
+
 		for (let i = 1; i <= daysFromNextMonth; i++) {
 			days.push(new Date(year, month + 1, i));
 		}
@@ -92,8 +94,10 @@
 	}
 
 	function isCurrentMonth(date: Date): boolean {
-		return date.getMonth() === currentMonth.getMonth() && 
-		       date.getFullYear() === currentMonth.getFullYear();
+		return (
+			date.getMonth() === currentMonth.getMonth() &&
+			date.getFullYear() === currentMonth.getFullYear()
+		);
 	}
 
 	function formatDate(date: Date): string {
@@ -111,7 +115,7 @@
 
 		try {
 			const promises = days
-				.filter(day => !isPastDate(day) && !isWeekend(day) && isCurrentMonth(day))
+				.filter((day) => !isPastDate(day) && !isWeekend(day) && isCurrentMonth(day))
 				.map(async (day) => {
 					const dateStr = formatDate(day);
 					try {
@@ -151,8 +155,8 @@
 		const timeSlots = ['10:00', '11:00', '14:00', '15:00', '16:00'];
 
 		days
-			.filter(day => !isPastDate(day) && !isWeekend(day) && isCurrentMonth(day))
-			.forEach(day => {
+			.filter((day) => !isPastDate(day) && !isWeekend(day) && isCurrentMonth(day))
+			.forEach((day) => {
 				const dateStr = formatDate(day);
 				const availableCount = Math.floor(Math.random() * 3) + 2;
 				mockSlots[dateStr] = timeSlots.slice(0, availableCount);
@@ -248,9 +252,10 @@
 			isBookingSuccessful = true;
 		} catch (error) {
 			console.error('❌ Booking error:', error);
-			errorMessage = error instanceof Error 
-				? error.message 
-				: 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.';
+			errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.';
 		} finally {
 			isLoading = false;
 		}
@@ -263,8 +268,18 @@
 	let availableTimes = $derived(availableSlotsByDate[selectedDate] || []);
 
 	const monthNames = [
-		'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-		'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
+		'Januar',
+		'Februar',
+		'März',
+		'April',
+		'Mai',
+		'Juni',
+		'Juli',
+		'August',
+		'September',
+		'Oktober',
+		'November',
+		'Dezember'
 	];
 
 	const dayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
@@ -282,14 +297,17 @@
 				</div>
 				<h3 class="mb-4 text-3xl font-bold text-gray-900">🎉 Perfekt! Dein Termin steht!</h3>
 				<p class="mb-6 text-lg text-gray-600">
-					Wir freuen uns auf das Gespräch am <strong class="text-primary-600">{new Date(selectedDate).toLocaleDateString('de-DE', { 
-						weekday: 'long', 
-						year: 'numeric', 
-						month: 'long', 
-						day: 'numeric' 
-					})}</strong> um <strong class="text-primary-600">{selectedTime} Uhr</strong>
+					Wir freuen uns auf das Gespräch am <strong class="text-primary-600"
+						>{new Date(selectedDate).toLocaleDateString('de-DE', {
+							weekday: 'long',
+							year: 'numeric',
+							month: 'long',
+							day: 'numeric'
+						})}</strong
+					>
+					um <strong class="text-primary-600">{selectedTime} Uhr</strong>
 				</p>
-				
+
 				<!-- Bonus Section -->
 				<div class="mb-6 rounded-xl bg-gradient-to-br from-primary-50 to-blue-50 p-6">
 					<div class="mb-3 flex items-center justify-center gap-2">
@@ -297,10 +315,18 @@
 						<h4 class="text-xl font-bold text-gray-900">🎁 Dein Bonus wartet!</h4>
 					</div>
 					<p class="mb-4 text-gray-700">
-						Als Dankeschön erhältst du unsere <strong>7 Geheimtipps für deinen Online-Marketing-Erfolg</strong> – bewährte Strategien, die deine Konkurrenz noch nicht kennt.
+						Als Dankeschön erhältst du unsere <strong
+							>7 Geheimtipps für deinen Online-Marketing-Erfolg</strong
+						> – bewährte Strategien, die deine Konkurrenz noch nicht kennt.
 					</p>
 					<div class="text-sm text-gray-600">
-						<Icon name="mail" size={16} className="mr-2 inline text-primary-600" stroke="currentColor" strokeWidth="2" />
+						<Icon
+							name="mail"
+							size={16}
+							className="mr-2 inline text-primary-600"
+							stroke="currentColor"
+							strokeWidth="2"
+						/>
 						Die Tipps senden wir dir direkt per E-Mail zu!
 					</div>
 				</div>
@@ -331,9 +357,14 @@
 			<!-- Left Side: Expert Profile & Info -->
 			<div class="flex flex-col gap-6 lg:col-span-5">
 				<!-- Expert Profile Card - kompakt für gleiche Höhe -->
-				<div class="expert-card h-fit rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-6 text-white shadow-xl" in:fade={{ duration: 500 }}>
+				<div
+					class="expert-card h-full rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-6 text-white shadow-xl"
+					in:fade={{ duration: 500 }}
+				>
 					<div class="mb-4 flex items-center gap-4">
-						<div class="relative h-16 w-16 overflow-hidden rounded-full border-4 border-white/30 shadow-lg flex-shrink-0">
+						<div
+							class="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full border-4 border-white/30 shadow-lg"
+						>
 							<img
 								src={profile.imageUrl}
 								alt={profile.imageAlt}
@@ -349,19 +380,31 @@
 
 					<div class="mb-4">
 						<h4 class="mb-2 text-xl font-bold">Kostenlose Strategieberatung</h4>
-						<p class="text-sm text-primary-50 leading-relaxed">
-							Dein direkter Draht zum Experten. In 30 Minuten analysieren wir deine aktuelle Situation und zeigen dir konkrete Wachstumschancen.
+						<p class="text-sm leading-relaxed text-primary-50">
+							Dein direkter Draht zum Experten. In 30 Minuten analysieren wir deine aktuelle
+							Situation und zeigen dir konkrete Wachstumschancen.
 						</p>
 					</div>
 
 					<!-- Trust Elements - kompakter -->
 					<div class="space-y-2">
 						{#each trustElements as trust, i}
-							<div class="flex items-center gap-3 rounded-lg bg-white/10 p-2.5 backdrop-blur-sm" in:fly={{ x: -20, delay: 300 + i * 100, duration: 400 }}>
-								<div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/20">
-									<Icon name={trust.icon} size={16} stroke="currentColor" strokeWidth="2" fill="none" />
+							<div
+								class="flex items-center gap-3 rounded-lg bg-white/10 p-2.5 backdrop-blur-sm"
+								in:fly={{ x: -20, delay: 300 + i * 100, duration: 400 }}
+							>
+								<div
+									class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/20"
+								>
+									<Icon
+										name={trust.icon}
+										size={16}
+										stroke="currentColor"
+										strokeWidth="2"
+										fill="none"
+									/>
 								</div>
-								<div class="flex-1 min-w-0">
+								<div class="min-w-0 flex-1">
 									<div class="text-sm font-semibold">{trust.title}</div>
 									<div class="text-xs text-primary-100">{trust.subtitle}</div>
 								</div>
@@ -369,7 +412,6 @@
 						{/each}
 					</div>
 				</div>
-
 			</div>
 
 			<!-- Right Side: Calendar - größer -->
@@ -379,25 +421,32 @@
 					<div class="mb-6">
 						<h3 class="mb-2 text-2xl font-bold text-gray-900">Wähle deinen Wunschtermin</h3>
 						<p class="text-gray-600">
-							<Icon name="clock" size={16} className="mr-1 inline text-primary-600" stroke="currentColor" strokeWidth="2" />
+							<Icon
+								name="clock"
+								size={16}
+								className="mr-1 inline text-primary-600"
+								stroke="currentColor"
+								strokeWidth="2"
+							/>
 							30 Minuten • Videocall
 						</p>
 					</div>
 
 					<!-- Month Navigation -->
 					<div class="mb-6 flex items-center justify-between rounded-lg bg-gray-50 p-4">
-						<button 
-							class="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-gray-300 bg-white text-gray-700 transition-all hover:border-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
+						<button
+							class="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-gray-300 bg-white text-gray-700 transition-all hover:border-primary-500 hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-50"
 							onclick={previousMonth}
-							disabled={currentMonth.getMonth() === new Date().getMonth() && 
-							         currentMonth.getFullYear() === new Date().getFullYear()}
+							disabled={currentMonth.getMonth() === new Date().getMonth() &&
+								currentMonth.getFullYear() === new Date().getFullYear()}
 						>
 							<Icon name="chevronLeft" size={20} stroke="currentColor" strokeWidth="2" />
 						</button>
 						<h4 class="text-xl font-bold text-gray-900">
-							{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+							{monthNames[currentMonth.getMonth()]}
+							{currentMonth.getFullYear()}
 						</h4>
-						<button 
+						<button
 							class="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-gray-300 bg-white text-gray-700 transition-all hover:border-primary-500 hover:bg-primary-50"
 							onclick={nextMonth}
 						>
@@ -415,7 +464,9 @@
 					<!-- Calendar Grid -->
 					{#if isLoadingSlots}
 						<div class="flex flex-col items-center justify-center py-12">
-							<div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"></div>
+							<div
+								class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"
+							></div>
 							<p class="text-gray-600">Lade verfügbare Termine...</p>
 						</div>
 					{:else}
@@ -428,7 +479,7 @@
 								{@const isOtherMonth = !isCurrentMonth(day)}
 								{@const hasSlots = hasAvailableSlots(day)}
 								{@const isClickable = !isPast && !isWeekendDay && !isOtherMonth && hasSlots}
-								
+
 								<button
 									class="calendar-day relative flex h-12 flex-col items-center justify-center rounded-lg border-2 text-sm font-medium transition-all"
 									class:border-primary-600={isSelected}
@@ -449,7 +500,11 @@
 								>
 									{day.getDate()}
 									{#if hasSlots && !isPast && !isWeekendDay && isCurrentMonth(day)}
-										<span class="absolute bottom-1 h-1 w-1 rounded-full {isSelected ? 'bg-white' : 'bg-primary-600'}"></span>
+										<span
+											class="absolute bottom-1 h-1 w-1 rounded-full {isSelected
+												? 'bg-white'
+												: 'bg-primary-600'}"
+										></span>
 									{/if}
 								</button>
 							{/each}
@@ -483,7 +538,10 @@
 
 					<!-- Contact Form -->
 					{#if selectedDate && selectedTime}
-						<div class="contact-form border-t-2 border-gray-100 pt-6" in:fly={{ y: 20, duration: 300 }}>
+						<div
+							class="contact-form border-t-2 border-gray-100 pt-6"
+							in:fly={{ y: 20, duration: 300 }}
+						>
 							{#if hasExistingData}
 								<!-- Existing Data Summary -->
 								<div class="mb-4 rounded-lg bg-green-50 p-4">
@@ -561,7 +619,10 @@
 
 							<!-- Error Message -->
 							{#if errorMessage}
-								<div class="mt-4 flex items-center gap-2 rounded-lg bg-red-50 p-4 text-red-800" in:fly={{ y: -10, duration: 300 }}>
+								<div
+									class="mt-4 flex items-center gap-2 rounded-lg bg-red-50 p-4 text-red-800"
+									in:fly={{ y: -10, duration: 300 }}
+								>
 									<Icon name="alertCircle" size={20} stroke="currentColor" strokeWidth="2" />
 									<span class="text-sm font-medium">{errorMessage}</span>
 								</div>
@@ -575,12 +636,20 @@
 							>
 								{#if isLoading}
 									<span class="flex items-center justify-center gap-3">
-										<div class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+										<div
+											class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+										></div>
 										Termin wird gebucht...
 									</span>
 								{:else}
 									<span class="flex items-center justify-center gap-2">
-										<Icon name="calendar" size={20} stroke="currentColor" strokeWidth="2" fill="none" />
+										<Icon
+											name="calendar"
+											size={20}
+											stroke="currentColor"
+											strokeWidth="2"
+											fill="none"
+										/>
 										Jetzt kostenlos Termin buchen
 									</span>
 								{/if}
@@ -588,7 +657,13 @@
 
 							<!-- Privacy Note -->
 							<p class="mt-4 text-center text-xs text-gray-500">
-								<Icon name="shield" size={12} className="mr-1 inline text-green-600" stroke="currentColor" strokeWidth="2" />
+								<Icon
+									name="shield"
+									size={12}
+									className="mr-1 inline text-green-600"
+									stroke="currentColor"
+									strokeWidth="2"
+								/>
 								Deine Daten sind bei uns sicher und werden vertraulich behandelt
 							</p>
 						</div>
