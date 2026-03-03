@@ -69,7 +69,7 @@
 				class="mb-4 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary text-secondary"
 			>
 				<Icon
-					name="gift"
+					name="zap"
 					size={24}
 					className="h-8 w-8"
 					stroke="currentColor"
