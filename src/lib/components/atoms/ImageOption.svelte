@@ -224,13 +224,13 @@
 					dir={textDirection}
 				>
 					<h3
-						class="hyphens-auto break-words text-base font-semibold text-secondary"
+						class={`hyphens-auto break-words text-base font-semibold ${isStep1 && special ? 'text-white' : 'text-secondary'}`}
 						id={fieldName ? `${fieldName}-option-${index}` : undefined}
 					>
 						{getLocalizedLabel(fieldName, option.value)}
 					</h3>
 
-					<p class="mb-1 text-[12px] text-secondary-400 text-opacity-80">
+					<p class={`mb-1 text-[12px] ${isStep1 && special ? 'text-white/80' : 'text-secondary-400 text-opacity-80'}`}>
 						{getLocalizedDescription(fieldName, option.value)}
 					</p>
 				</div>
