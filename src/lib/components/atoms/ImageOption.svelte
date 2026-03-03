@@ -172,16 +172,16 @@
 	>
 		{#each options as option, index}
 			{@const isStep1 = fieldName === 'visibility'}
-			{@const accentColors = [
-				{ footerBorder: 'border-[#124E78]', footerBg: 'bg-[#124E78]' },
-				{ footerBorder: 'border-[#F2BB05]', footerBg: 'bg-[#F2BB05]' },
-				{ footerBorder: 'border-[#D74E09]', footerBg: 'bg-[#D74E09]' },
-				{ footerBorder: 'border-[#129490]', footerBg: 'bg-[#129490]' }
+			{@const shadowColors = [
+				'shadow-[0_4px_14px_0_rgba(18,78,120,0.15)] hover:shadow-[0_8px_24px_0_rgba(18,78,120,0.25)]',
+				'shadow-[0_4px_14px_0_rgba(242,187,5,0.15)] hover:shadow-[0_8px_24px_0_rgba(242,187,5,0.25)]',
+				'shadow-[0_4px_14px_0_rgba(215,78,9,0.15)] hover:shadow-[0_8px_24px_0_rgba(215,78,9,0.25)]',
+				'shadow-[0_4px_14px_0_rgba(18,148,144,0.15)] hover:shadow-[0_8px_24px_0_rgba(18,148,144,0.25)]'
 			]}
-			{@const accentScheme = accentColors[index % accentColors.length]}
+			{@const customShadow = isStep1 ? shadowColors[index % shadowColors.length] : 'shadow-custom hover:shadow-lg'}
 			<button
 				type="button"
-				class="relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 shadow-custom transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
+				class="relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 {customShadow} transition-all duration-300 hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
 					option.value
 				)
 					? 'border-primary-500 shadow-primary-100 ring-1 ring-primary-500'
@@ -218,19 +218,19 @@
 				{/if}
 
 				<div
-					class={`flex w-full flex-col justify-center border-t ${isStep1 && special ? accentScheme.footerBorder : 'border-primary-200'} ${
-						special ? (isStep1 ? accentScheme.footerBg : 'bg-primary') : ''
+					class={`flex w-full flex-col justify-center border-t border-primary-200 ${
+						special ? 'bg-primary' : ''
 					} px-1 py-2 lg:block`}
 					dir={textDirection}
 				>
 					<h3
-						class={`hyphens-auto break-words text-base font-semibold ${isStep1 && special ? 'text-white' : 'text-secondary'}`}
+						class="hyphens-auto break-words text-base font-semibold text-secondary"
 						id={fieldName ? `${fieldName}-option-${index}` : undefined}
 					>
 						{getLocalizedLabel(fieldName, option.value)}
 					</h3>
 
-					<p class={`mb-1 text-[12px] ${isStep1 && special ? 'text-white/80' : 'text-secondary-400 text-opacity-80'}`}>
+					<p class="mb-1 text-[12px] text-secondary-400 text-opacity-80">
 						{getLocalizedDescription(fieldName, option.value)}
 					</p>
 				</div>
