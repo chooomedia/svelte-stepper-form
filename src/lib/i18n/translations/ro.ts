@@ -402,7 +402,7 @@ const ro: Translation = {
 				},
 				handover: {
 					title: 'Predare',
-					description: 'Sistem optimizat gata',
+					description: 'Primești sistemul optimizat – configurat complet, gata să convertească',
 					icon: 'check'
 				}
 			},
