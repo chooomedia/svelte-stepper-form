@@ -172,10 +172,10 @@
 	>
 		{#each options as option, index}
 			{@const accentColors = [
-				{ border: 'border-[#124E78]/30', hover: 'hover:border-[#124E78] hover:shadow-[#124E78]/20', selected: 'border-[#124E78] ring-[#124E78]/20 shadow-[#124E78]/20', check: 'bg-[#124E78]', checkHover: 'group-hover:bg-[#124E78]' },
-				{ border: 'border-[#F2BB05]/30', hover: 'hover:border-[#F2BB05] hover:shadow-[#F2BB05]/20', selected: 'border-[#F2BB05] ring-[#F2BB05]/20 shadow-[#F2BB05]/20', check: 'bg-[#F2BB05]', checkHover: 'group-hover:bg-[#F2BB05]' },
-				{ border: 'border-[#D74E09]/30', hover: 'hover:border-[#D74E09] hover:shadow-[#D74E09]/20', selected: 'border-[#D74E09] ring-[#D74E09]/20 shadow-[#D74E09]/20', check: 'bg-[#D74E09]', checkHover: 'group-hover:bg-[#D74E09]' },
-				{ border: 'border-[#129490]/30', hover: 'hover:border-[#129490] hover:shadow-[#129490]/20', selected: 'border-[#129490] ring-[#129490]/20 shadow-[#129490]/20', check: 'bg-[#129490]', checkHover: 'group-hover:bg-[#129490]' }
+				{ border: 'border-[#124E78]/30', hover: 'hover:border-[#124E78] hover:shadow-[#124E78]/20', selected: 'border-[#124E78] ring-[#124E78]/20 shadow-[#124E78]/20', check: 'bg-[#124E78]', checkHover: 'group-hover:bg-[#124E78]', footerBorder: 'border-[#124E78]/40', footerBg: 'bg-[#124E78]/10' },
+				{ border: 'border-[#F2BB05]/30', hover: 'hover:border-[#F2BB05] hover:shadow-[#F2BB05]/20', selected: 'border-[#F2BB05] ring-[#F2BB05]/20 shadow-[#F2BB05]/20', check: 'bg-[#F2BB05]', checkHover: 'group-hover:bg-[#F2BB05]', footerBorder: 'border-[#F2BB05]/40', footerBg: 'bg-[#F2BB05]/10' },
+				{ border: 'border-[#D74E09]/30', hover: 'hover:border-[#D74E09] hover:shadow-[#D74E09]/20', selected: 'border-[#D74E09] ring-[#D74E09]/20 shadow-[#D74E09]/20', check: 'bg-[#D74E09]', checkHover: 'group-hover:bg-[#D74E09]', footerBorder: 'border-[#D74E09]/40', footerBg: 'bg-[#D74E09]/10' },
+				{ border: 'border-[#129490]/30', hover: 'hover:border-[#129490] hover:shadow-[#129490]/20', selected: 'border-[#129490] ring-[#129490]/20 shadow-[#129490]/20', check: 'bg-[#129490]', checkHover: 'group-hover:bg-[#129490]', footerBorder: 'border-[#129490]/40', footerBg: 'bg-[#129490]/10' }
 			]}
 			{@const accentScheme = accentColors[index % accentColors.length]}
 			<button
@@ -223,16 +223,9 @@
 					</div>
 				{/if}
 
-				{@const footerColors = [
-					{ border: 'border-[#124E78]/40', bg: 'bg-[#124E78]/10' },
-					{ border: 'border-[#F2BB05]/40', bg: 'bg-[#F2BB05]/10' },
-					{ border: 'border-[#D74E09]/40', bg: 'bg-[#D74E09]/10' },
-					{ border: 'border-[#129490]/40', bg: 'bg-[#129490]/10' }
-				]}
-				{@const footerScheme = footerColors[index % footerColors.length]}
 				<div
-					class={`flex w-full flex-col justify-center border-t-2 ${footerScheme.border} ${
-						special ? footerScheme.bg : ''
+					class={`flex w-full flex-col justify-center border-t-2 ${accentScheme.footerBorder} ${
+						special ? accentScheme.footerBg : ''
 					} px-1 py-2 lg:block`}
 					dir={textDirection}
 				>
