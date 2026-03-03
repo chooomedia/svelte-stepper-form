@@ -99,7 +99,7 @@
 			</div>
 			<div class="h-px w-16 bg-white/30 md:h-8 md:w-px"></div>
 			<p class="text-base font-semibold text-white/95 md:text-lg">
-				Durchschnittlich <span class="text-yellow-300 font-bold">3x mehr Anfragen</span> nach Umsetzung
+				Durchschnittlich <span class="text-secondary font-bold">3x mehr Anfragen</span> nach Umsetzung
 			</p>
 		</div>
 	</div>
