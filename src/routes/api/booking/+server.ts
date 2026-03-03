@@ -1,16 +1,13 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { env } from '$env/dynamic/private';
 
 // TidyCal API Configuration
 const TIDYCAL_API_URL = 'https://tidycal.com/api';
-const TIDYCAL_API_KEY =
-	process.env.VITE_TIDYCAL_API_TOKEN ||
-	import.meta.env.VITE_TIDYCAL_API_TOKEN ||
-	'your-tidycal-api-token';
-const CALENDAR_ID =
-	process.env.VITE_TIDYCAL_CALENDAR_ID ||
-	import.meta.env.VITE_TIDYCAL_CALENDAR_ID ||
-	'your-calendar-id';
+// WICHTIG: In SvelteKit Server Routes müssen wir $env/dynamic/private verwenden!
+// import.meta.env funktioniert NICHT in +server.ts Files
+const TIDYCAL_API_KEY = env.VITE_TIDYCAL_API_TOKEN || 'your-tidycal-api-token';
+const CALENDAR_ID = env.VITE_TIDYCAL_CALENDAR_ID || 'your-calendar-id';
 
 interface BookingRequest {
 	date: string;
@@ -41,8 +38,9 @@ interface TidyCalBooking {
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		console.log('POST /api/booking called');
-		console.log('TIDYCAL_API_KEY:', TIDYCAL_API_KEY ? 'SET' : 'NOT SET');
-		console.log('CALENDAR_ID:', CALENDAR_ID ? 'SET' : 'NOT SET');
+		console.log('TIDYCAL_API_KEY:', TIDYCAL_API_KEY ? `SET (length: ${TIDYCAL_API_KEY.length})` : 'NOT SET');
+		console.log('TIDYCAL_API_KEY (first 20 chars):', TIDYCAL_API_KEY?.substring(0, 20));
+		console.log('CALENDAR_ID:', CALENDAR_ID ? `SET (${CALENDAR_ID})` : 'NOT SET');
 
 		const body: BookingRequest = await request.json();
 		console.log('Request body:', body);
