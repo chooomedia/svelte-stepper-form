@@ -370,32 +370,6 @@
 					</div>
 				</div>
 
-				<!-- NLP Conversion Copy -->
-				<div class="nlp-section rounded-xl bg-gradient-to-br from-yellow-50 to-orange-50 p-5 shadow-lg" in:fly={{ y: 20, delay: 500, duration: 400 }}>
-					<div class="mb-3 flex items-center gap-2">
-						<Icon name="star" size={20} className="text-yellow-500" fill="currentColor" />
-						<h4 class="text-base font-bold text-gray-900">Was dich erwartet:</h4>
-					</div>
-					<ul class="space-y-2 text-sm text-gray-700">
-						<li class="flex items-start gap-2">
-							<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
-							<span><strong>7 Geheimtipps</strong> – praxiserprobt und sofort umsetzbar</span>
-						</li>
-						<li class="flex items-start gap-2">
-							<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
-							<span><strong>Konkrete Handlungsempfehlungen</strong> für deine Branche</span>
-						</li>
-						<li class="flex items-start gap-2">
-							<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
-							<span><strong>Exklusive Insights</strong> aus 500+ Projekten</span>
-						</li>
-					</ul>
-					<div class="mt-3 rounded-lg bg-white p-3 text-center">
-						<p class="text-xs font-medium text-gray-900">
-							💡 <strong>Erfolgsgarantie:</strong> Durchschnittlich <span class="text-primary-600">3x mehr Anfragen</span> nach Umsetzung
-						</p>
-					</div>
-				</div>
 			</div>
 
 			<!-- Right Side: Calendar - größer -->

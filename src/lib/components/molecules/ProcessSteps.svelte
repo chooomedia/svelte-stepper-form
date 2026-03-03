@@ -50,14 +50,51 @@
 						fill="none"
 					/>
 				</div>
-				<div class="mb-2 flex items-center">
-					<span class="mr-2 text-2xl font-bold text-primary-600">{index + 1}</span>
-					<h3 class="font-bold text-gray-900">{step.title}</h3>
+				<div class="mb-2 flex items-center gap-2">
+					<span class="text-2xl font-bold text-primary-600 flex-shrink-0">{index + 1}</span>
+					<h3 class="font-bold text-gray-900 leading-tight">{step.title}</h3>
 				</div>
-				<p class="text-gray-600">
+				<p class="text-sm text-gray-600 leading-relaxed">
 					{step.description}
 				</p>
 			</div>
 		{/each}
+
+		<!-- Bonus: Was dich erwartet -->
+		<div
+			class="flex flex-col rounded-lg bg-gradient-to-br from-yellow-50 to-orange-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
+			in:fly={{ y: 20, duration: 500, delay: staggerDelay * 4 }}
+		>
+			<div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-400 text-white">
+				<Icon
+					name="star"
+					size={24}
+					className="h-8 w-8"
+					fill="currentColor"
+				/>
+			</div>
+			<div class="mb-3">
+				<h3 class="font-bold text-gray-900 leading-tight">Was dich erwartet:</h3>
+			</div>
+			<ul class="space-y-2 text-sm text-gray-700">
+				<li class="flex items-start gap-2">
+					<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
+					<span class="leading-relaxed"><strong>7 Geheimtipps</strong> – praxiserprobt und sofort umsetzbar</span>
+				</li>
+				<li class="flex items-start gap-2">
+					<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
+					<span class="leading-relaxed"><strong>Konkrete Handlungsempfehlungen</strong> für deine Branche</span>
+				</li>
+				<li class="flex items-start gap-2">
+					<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
+					<span class="leading-relaxed"><strong>Exklusive Insights</strong> aus 500+ Projekten</span>
+				</li>
+			</ul>
+			<div class="mt-3 rounded-lg bg-white p-3 text-center">
+				<p class="text-xs font-medium text-gray-900 leading-relaxed">
+					💡 <strong>Erfolgsgarantie:</strong> Durchschnittlich <span class="text-primary-600">3x mehr Anfragen</span> nach Umsetzung
+				</p>
+			</div>
+		</div>
 	</div>
 </div>
