@@ -255,12 +255,20 @@
 
 			bookingResult = result;
 			isBookingSuccessful = true;
+
+			// Auto-scroll to success message with smooth animation
+			setTimeout(() => {
+				const successElement = document.querySelector('.success-state');
+				if (successElement) {
+					successElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}
+			}, 100);
 		} catch (error) {
 			console.error('❌ Booking error:', error);
 			errorMessage =
 				error instanceof Error
 					? error.message
-					: 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.';
+					: booking.error.generic;
 		} finally {
 			isLoading = false;
 		}
@@ -279,65 +287,103 @@
 
 <div class="optimized-booking">
 	{#if isBookingSuccessful}
-		<!-- Success State -->
-		<div class="success-state rounded-2xl bg-white p-8 shadow-xl" in:scale={{ duration: 400 }}>
-			<div class="text-center">
+		<!-- Success State - Modern & Fancy -->
+		<div class="success-state max-w-3xl mx-auto" in:scale={{ duration: 400, start: 0.95 }}>
+			<!-- Main Success Card -->
+			<div class="rounded-3xl bg-gradient-to-br from-green-50 via-white to-primary-50 p-8 shadow-2xl border border-green-200/50">
+				<!-- Animated Check Icon -->
 				<div class="mb-6 flex justify-center">
-					<div class="rounded-full bg-green-100 p-4">
-						<Icon name="checkCircle" size={64} className="text-green-600" stroke="none" />
-					</div>
-				</div>
-				<h3 class="mb-4 text-3xl font-bold text-gray-900">{booking.success.title}</h3>
-				<p class="mb-6 text-lg text-gray-600">
-					{booking.success.message} <strong class="text-primary-600"
-						>{new Date(selectedDate).toLocaleDateString('de-DE', {
-							weekday: 'long',
-							year: 'numeric',
-							month: 'long',
-							day: 'numeric'
-						})}</strong
-					>
-					{booking.success.at} <strong class="text-primary-600">{selectedTime} {booking.success.oclock}</strong>
-				</p>
-
-				<!-- Bonus Section -->
-				<div class="mb-6 rounded-xl bg-gradient-to-br from-primary-50 to-blue-50 p-6">
-					<div class="mb-3 flex items-center justify-center gap-2">
-						<Icon name="star" size={24} className="text-yellow-500" fill="currentColor" />
-						<h4 class="text-xl font-bold text-gray-900">{booking.success.bonusTitle}</h4>
-					</div>
-					<p class="mb-4 text-gray-700">
-						{booking.success.bonusDescription}
-					</p>
-					<div class="text-sm text-gray-600">
-						<Icon
-							name="mail"
-							size={16}
-							className="mr-2 inline text-primary-600"
-							stroke="currentColor"
-							strokeWidth="2"
-						/>
-						{booking.success.bonusEmail}
+					<div class="relative">
+						<div class="absolute inset-0 rounded-full bg-green-400 blur-xl opacity-50 animate-pulse"></div>
+						<div class="relative rounded-full bg-gradient-to-br from-green-400 to-green-600 p-5 shadow-lg">
+							<Icon name="checkCircle" size={72} className="text-white" stroke="none" />
+						</div>
 					</div>
 				</div>
 
-				<div class="rounded-lg border-2 border-green-200 bg-green-50 p-4">
-					<div class="flex items-center justify-center gap-2 text-green-800">
-						<Icon name="checkCircle" size={20} stroke="currentColor" strokeWidth="2" />
-						<p class="font-medium">{booking.success.confirmationSent.replace('{email}', email || formData.email)}</p>
+				<!-- Success Message -->
+				<div class="text-center mb-8">
+					<h3 class="mb-4 text-4xl font-bold bg-gradient-to-r from-green-600 to-primary-600 bg-clip-text text-transparent">
+						{booking.success.title}
+					</h3>
+					<div class="mb-2 text-xl text-gray-700 leading-relaxed">
+						{booking.success.message}
+					</div>
+					<div class="inline-flex flex-wrap items-center justify-center gap-2 rounded-xl bg-white p-4 shadow-md border border-gray-100">
+						<Icon name="calendar" size={20} className="text-primary-600" stroke="currentColor" strokeWidth="2" />
+						<strong class="text-2xl text-primary-600">
+							{new Date(selectedDate).toLocaleDateString('de-DE', {
+								weekday: 'long',
+								year: 'numeric',
+								month: 'long',
+								day: 'numeric'
+							})}
+						</strong>
+						<span class="text-gray-400">•</span>
+						<Icon name="clock" size={20} className="text-primary-600" stroke="currentColor" strokeWidth="2" />
+						<strong class="text-2xl text-primary-600">{selectedTime} {booking.success.oclock}</strong>
 					</div>
 				</div>
 
+				<!-- Email Confirmation Badge -->
+				<div class="mb-6 flex items-center justify-center gap-3 rounded-xl bg-green-50 border-2 border-green-200 p-4" in:fly={{ y: 10, delay: 200, duration: 400 }}>
+					<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 shadow-md">
+						<Icon name="checkCircle" size={20} className="text-white" stroke="currentColor" strokeWidth="2" />
+					</div>
+					<div class="flex-1 text-left">
+						<p class="text-sm font-semibold text-green-900">Bestätigung versendet</p>
+						<p class="text-xs text-green-700">{email || formData.email}</p>
+					</div>
+				</div>
+
+				<!-- Bonus Section - Enhanced -->
+				<div class="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 shadow-lg border border-yellow-200" in:fly={{ y: 10, delay: 300, duration: 400 }}>
+					<div class="relative p-6">
+						<!-- Decorative Elements -->
+						<div class="absolute top-0 right-0 w-32 h-32 bg-yellow-200 rounded-full blur-3xl opacity-30"></div>
+						<div class="absolute bottom-0 left-0 w-24 h-24 bg-orange-200 rounded-full blur-2xl opacity-30"></div>
+						
+						<div class="relative">
+							<div class="mb-4 flex items-center justify-center gap-3">
+								<div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg">
+									<Icon name="star" size={24} className="text-white" fill="currentColor" />
+								</div>
+								<h4 class="text-2xl font-bold text-gray-900">{booking.success.bonusTitle}</h4>
+							</div>
+							
+							<p class="mb-4 text-center text-gray-700 leading-relaxed">
+								{booking.success.bonusDescription}
+							</p>
+							
+							<div class="flex items-center justify-center gap-2 rounded-lg bg-white/80 backdrop-blur-sm p-3 shadow-sm">
+								<Icon
+									name="mail"
+									size={18}
+									className="text-primary-600"
+									stroke="currentColor"
+									strokeWidth="2"
+								/>
+								<span class="text-sm font-medium text-gray-700">{booking.success.bonusEmail}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Meeting Link Button (if available) -->
 				{#if bookingResult?.booking?.meeting_url}
-					<a
-						href={bookingResult.booking.meeting_url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary-700 hover:shadow-xl"
-					>
-						<Icon name="external-link" size={16} stroke="currentColor" strokeWidth="2" />
-						{booking.success.meetingLink}
-					</a>
+					<div class="flex flex-col gap-3" in:fly={{ y: 10, delay: 400, duration: 400 }}>
+						<a
+							href={bookingResult.booking.meeting_url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="group flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 px-8 py-4 font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:scale-105"
+						>
+							<Icon name="external-link" size={20} stroke="currentColor" strokeWidth="2" />
+							<span>{booking.success.meetingLink}</span>
+							<Icon name="arrowRight" size={20} className="transition-transform group-hover:translate-x-1" stroke="currentColor" strokeWidth="2" />
+						</a>
+						<p class="text-center text-xs text-gray-500">Du kannst den Link auch später in der E-Mail finden</p>
+					</div>
 				{/if}
 			</div>
 		</div>
