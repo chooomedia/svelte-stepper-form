@@ -795,17 +795,75 @@ const en: Translation = {
 			title: 'Book free consultation',
 			subtitle:
 				'Choose an appointment for your 30-minute free consultation. We will discuss your individual needs and show you how to optimize your online visibility.',
-			selectDate: 'Select date:',
-			selectTime: 'Select time:',
-			contactInfo: 'Your contact details:',
-			confirm: 'Book appointment for free',
-			booking: 'Booking appointment...',
-			cancel: 'Cancel',
+			expert: {
+				title: 'Free Strategy Consultation',
+				description:
+					'Your direct line to the expert. In 30 minutes we analyze your current situation and show you concrete growth opportunities.'
+			},
+			trustElements: {
+				free: {
+					title: '100% Free',
+					subtitle: 'No hidden costs'
+				},
+				duration: {
+					title: '30 Minutes',
+					subtitle: 'Personal consultation'
+				},
+				projects: {
+					title: '500+ Projects',
+					subtitle: 'Successfully implemented'
+				}
+			},
+			calendar: {
+				title: 'Choose your preferred time',
+				description: '30 Minutes • Video call',
+				selectDate: 'Select date',
+				selectTime: 'Select time',
+				noSlotsAvailable: 'No appointments available',
+				loadingSlots: 'Loading available times...',
+				months: [
+					'January',
+					'February',
+					'March',
+					'April',
+					'May',
+					'June',
+					'July',
+					'August',
+					'September',
+					'October',
+					'November',
+					'December'
+				],
+				days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+			},
+			form: {
+				title: 'Your contact details',
+				firstName: 'First name',
+				lastName: 'Last name',
+				email: 'Email',
+				phone: 'Phone (optional)',
+				privacy: 'Your data is safe with us and will be treated confidentially',
+				submit: 'Book appointment now',
+				submitting: 'Booking...'
+			},
 			success: {
-				title: 'Appointment successfully booked!',
-				message: 'Your free consultation has been reserved for {date} at {time}.',
-				details:
-					'You will shortly receive a confirmation email with all details and the meeting link.'
+				title: '🎉 Perfect! Your appointment is confirmed!',
+				message: 'We look forward to the conversation on',
+				at: 'at',
+				oclock: '',
+				bonusTitle: '🎁 Your bonus is waiting!',
+				bonusDescription:
+					'As a thank you, you will receive our 7 secret tips for your online marketing success – proven strategies your competitors don\'t know yet.',
+				bonusEmail: 'We will send you the tips directly via email!',
+				confirmationSent: 'Confirmation sent to {email}',
+				meetingLink: 'Open meeting link'
+			},
+			error: {
+				generic: 'An error occurred. Please try again.',
+				dateRequired: 'Please select a date',
+				timeRequired: 'Please select a time',
+				allFieldsRequired: 'Please fill in all required fields'
 			}
 		}
 	},

@@ -31,27 +31,28 @@
 	// Available slots structure
 	let availableSlotsByDate = $state<Record<string, string[]>>({});
 
-	// Get expert profile from i18n
+	// Get expert profile and booking texts from i18n
 	const profile = $derived($i18n.results.expertProfile);
+	const booking = $derived($i18n.modal.booking);
 
-	// Trust elements for conversion optimization
-	const trustElements = [
+	// Trust elements from i18n
+	const trustElements = $derived([
 		{
 			icon: 'shield',
-			title: '100% Kostenlos',
-			subtitle: 'Keine versteckten Kosten'
+			title: booking.trustElements.free.title,
+			subtitle: booking.trustElements.free.subtitle
 		},
 		{
 			icon: 'clock',
-			title: '30 Minuten',
-			subtitle: 'Persönliche Beratung'
+			title: booking.trustElements.duration.title,
+			subtitle: booking.trustElements.duration.subtitle
 		},
 		{
 			icon: 'users',
-			title: '200+ Projekte',
-			subtitle: 'Erfolgreich umgesetzt'
+			title: booking.trustElements.projects.title,
+			subtitle: booking.trustElements.projects.subtitle
 		}
-	];
+	]);
 
 	// Calendar functions
 	function getDaysInMonth(date: Date): Date[] {
@@ -194,14 +195,18 @@
 	}
 
 	function validateBooking(): boolean {
-		if (!selectedDate || !selectedTime) {
-			errorMessage = 'Bitte wähle ein Datum und eine Uhrzeit aus.';
+		if (!selectedDate) {
+			errorMessage = booking.error.dateRequired;
+			return false;
+		}
+		if (!selectedTime) {
+			errorMessage = booking.error.timeRequired;
 			return false;
 		}
 
 		if (!hasExistingData) {
 			if (!firstName || !lastName || !email) {
-				errorMessage = 'Bitte fülle alle erforderlichen Felder aus.';
+				errorMessage = booking.error.allFieldsRequired;
 				return false;
 			}
 
@@ -267,22 +272,9 @@
 
 	let availableTimes = $derived(availableSlotsByDate[selectedDate] || []);
 
-	const monthNames = [
-		'Januar',
-		'Februar',
-		'März',
-		'April',
-		'Mai',
-		'Juni',
-		'Juli',
-		'August',
-		'September',
-		'Oktober',
-		'November',
-		'Dezember'
-	];
-
-	const dayNames = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+	// Month and day names from i18n
+	const monthNames = $derived(booking.calendar.months);
+	const dayNames = $derived(booking.calendar.days);
 </script>
 
 <div class="optimized-booking">
@@ -295,9 +287,9 @@
 						<Icon name="checkCircle" size={64} className="text-green-600" stroke="none" />
 					</div>
 				</div>
-				<h3 class="mb-4 text-3xl font-bold text-gray-900">🎉 Perfekt! Dein Termin steht!</h3>
+				<h3 class="mb-4 text-3xl font-bold text-gray-900">{booking.success.title}</h3>
 				<p class="mb-6 text-lg text-gray-600">
-					Wir freuen uns auf das Gespräch am <strong class="text-primary-600"
+					{booking.success.message} <strong class="text-primary-600"
 						>{new Date(selectedDate).toLocaleDateString('de-DE', {
 							weekday: 'long',
 							year: 'numeric',
@@ -305,19 +297,17 @@
 							day: 'numeric'
 						})}</strong
 					>
-					um <strong class="text-primary-600">{selectedTime} Uhr</strong>
+					{booking.success.at} <strong class="text-primary-600">{selectedTime} {booking.success.oclock}</strong>
 				</p>
 
 				<!-- Bonus Section -->
 				<div class="mb-6 rounded-xl bg-gradient-to-br from-primary-50 to-blue-50 p-6">
 					<div class="mb-3 flex items-center justify-center gap-2">
 						<Icon name="star" size={24} className="text-yellow-500" fill="currentColor" />
-						<h4 class="text-xl font-bold text-gray-900">🎁 Dein Bonus wartet!</h4>
+						<h4 class="text-xl font-bold text-gray-900">{booking.success.bonusTitle}</h4>
 					</div>
 					<p class="mb-4 text-gray-700">
-						Als Dankeschön erhältst du unsere <strong
-							>7 Geheimtipps für deinen Online-Marketing-Erfolg</strong
-						> – bewährte Strategien, die deine Konkurrenz noch nicht kennt.
+						{booking.success.bonusDescription}
 					</p>
 					<div class="text-sm text-gray-600">
 						<Icon
@@ -327,14 +317,14 @@
 							stroke="currentColor"
 							strokeWidth="2"
 						/>
-						Die Tipps senden wir dir direkt per E-Mail zu!
+						{booking.success.bonusEmail}
 					</div>
 				</div>
 
 				<div class="rounded-lg border-2 border-green-200 bg-green-50 p-4">
 					<div class="flex items-center justify-center gap-2 text-green-800">
 						<Icon name="checkCircle" size={20} stroke="currentColor" strokeWidth="2" />
-						<p class="font-medium">Bestätigung wurde an {email || formData.email} gesendet</p>
+						<p class="font-medium">{booking.success.confirmationSent.replace('{email}', email || formData.email)}</p>
 					</div>
 				</div>
 
@@ -346,7 +336,7 @@
 						class="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary-700 hover:shadow-xl"
 					>
 						<Icon name="external-link" size={16} stroke="currentColor" strokeWidth="2" />
-						Meeting-Link öffnen
+						{booking.success.meetingLink}
 					</a>
 				{/if}
 			</div>
@@ -379,10 +369,9 @@
 					</div>
 
 					<div class="mb-4">
-						<h4 class="mb-2 text-xl font-bold">Kostenlose Strategieberatung</h4>
+						<h4 class="mb-2 text-xl font-bold">{booking.expert.title}</h4>
 						<p class="text-sm leading-relaxed text-primary-50">
-							Dein direkter Draht zum Experten. In 30 Minuten analysieren wir deine aktuelle
-							Situation und zeigen dir konkrete Wachstumschancen.
+							{booking.expert.description}
 						</p>
 					</div>
 
@@ -419,7 +408,7 @@
 				<div class="calendar-card h-full rounded-2xl bg-white p-6 shadow-xl">
 					<!-- Calendar Header -->
 					<div class="mb-6">
-						<h3 class="mb-2 text-2xl font-bold text-gray-900">Wähle deinen Wunschtermin</h3>
+						<h3 class="mb-2 text-2xl font-bold text-gray-900">{booking.calendar.title}</h3>
 						<p class="text-gray-600">
 							<Icon
 								name="clock"
@@ -428,7 +417,7 @@
 								stroke="currentColor"
 								strokeWidth="2"
 							/>
-							30 Minuten • Videocall
+							{booking.calendar.description}
 						</p>
 					</div>
 
@@ -564,26 +553,26 @@
 									<div class="grid gap-4 md:grid-cols-2">
 										<div>
 											<label for="firstName" class="mb-2 block text-sm font-medium text-gray-700">
-												Vorname *
+												{booking.form.firstName} *
 											</label>
 											<input
 												id="firstName"
 												type="text"
 												bind:value={firstName}
-												placeholder="Dein Vorname"
+												placeholder={booking.form.firstName}
 												class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
 												required
 											/>
 										</div>
 										<div>
 											<label for="lastName" class="mb-2 block text-sm font-medium text-gray-700">
-												Nachname *
+												{booking.form.lastName} *
 											</label>
 											<input
 												id="lastName"
 												type="text"
 												bind:value={lastName}
-												placeholder="Dein Nachname"
+												placeholder={booking.form.lastName}
 												class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
 												required
 											/>
@@ -591,7 +580,7 @@
 									</div>
 									<div>
 										<label for="email" class="mb-2 block text-sm font-medium text-gray-700">
-											E-Mail-Adresse *
+											{booking.form.email} *
 										</label>
 										<input
 											id="email"
@@ -604,7 +593,7 @@
 									</div>
 									<div>
 										<label for="phone" class="mb-2 block text-sm font-medium text-gray-700">
-											Telefonnummer (optional)
+											{booking.form.phone}
 										</label>
 										<input
 											id="phone"
@@ -639,7 +628,7 @@
 										<div
 											class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
 										></div>
-										Termin wird gebucht...
+										{booking.form.submitting}
 									</span>
 								{:else}
 									<span class="flex items-center justify-center gap-2">
@@ -650,7 +639,7 @@
 											strokeWidth="2"
 											fill="none"
 										/>
-										Jetzt kostenlos Termin buchen
+										{booking.form.submit}
 									</span>
 								{/if}
 							</button>
@@ -664,7 +653,7 @@
 									stroke="currentColor"
 									strokeWidth="2"
 								/>
-								Deine Daten sind bei uns sicher und werden vertraulich behandelt
+								{booking.form.privacy}
 							</p>
 						</div>
 					{/if}
