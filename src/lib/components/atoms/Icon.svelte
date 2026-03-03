@@ -94,7 +94,7 @@
 		chevronLeft: 'M15 18l-6-6 6-6',
 		chevronRight: 'M9 18l6-6-6-6',
 		copy: 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z',
-		gift: 'M20 12v10H4V12M2 7h20v5H2V7zm10 15V7m0 0H8a2 2 0 01-2-2V3a2 2 0 012-2h.5a2 2 0 012 2v2m-.5 2h4m0 0h.5a2 2 0 012-2V3a2 2 0 012-2h.5a2 2 0 012 2v2a2 2 0 01-2 2H16z'
+		gift: 'M12 8v13m-4-5.5 4-2.5m0 0 4 2.5M7 10h10l2-2H5l2 2zm0 0l1-4h8l1 4m-9 0v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9'
 	};
 
 	const shouldUseFill = fill !== '' || name === 'info' || name === 'lock';
