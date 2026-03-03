@@ -171,20 +171,20 @@
 		aria-label={fieldName ? `Optionen für ${fieldName}` : 'Verfügbare Optionen'}
 	>
 		{#each options as option, index}
-			{@const colors = [
-				{ border: 'border-[#124E78]/20', bg: 'from-[#124E78]/10 to-[#124E78]/5', hover: 'hover:border-[#124E78]', selected: 'border-[#124E78] ring-[#124E78]/20' },
-				{ border: 'border-[#F2BB05]/20', bg: 'from-[#F2BB05]/10 to-[#F2BB05]/5', hover: 'hover:border-[#F2BB05]', selected: 'border-[#F2BB05] ring-[#F2BB05]/20' },
-				{ border: 'border-[#D74E09]/20', bg: 'from-[#D74E09]/10 to-[#D74E09]/5', hover: 'hover:border-[#D74E09]', selected: 'border-[#D74E09] ring-[#D74E09]/20' },
-				{ border: 'border-[#129490]/20', bg: 'from-[#129490]/10 to-[#129490]/5', hover: 'hover:border-[#129490]', selected: 'border-[#129490] ring-[#129490]/20' }
+			{@const accentColors = [
+				{ border: 'border-[#124E78]/30', hover: 'hover:border-[#124E78] hover:shadow-[#124E78]/20', selected: 'border-[#124E78] ring-[#124E78]/20 shadow-[#124E78]/20', check: 'bg-[#124E78]', checkHover: 'group-hover:bg-[#124E78]' },
+				{ border: 'border-[#F2BB05]/30', hover: 'hover:border-[#F2BB05] hover:shadow-[#F2BB05]/20', selected: 'border-[#F2BB05] ring-[#F2BB05]/20 shadow-[#F2BB05]/20', check: 'bg-[#F2BB05]', checkHover: 'group-hover:bg-[#F2BB05]' },
+				{ border: 'border-[#D74E09]/30', hover: 'hover:border-[#D74E09] hover:shadow-[#D74E09]/20', selected: 'border-[#D74E09] ring-[#D74E09]/20 shadow-[#D74E09]/20', check: 'bg-[#D74E09]', checkHover: 'group-hover:bg-[#D74E09]' },
+				{ border: 'border-[#129490]/30', hover: 'hover:border-[#129490] hover:shadow-[#129490]/20', selected: 'border-[#129490] ring-[#129490]/20 shadow-[#129490]/20', check: 'bg-[#129490]', checkHover: 'group-hover:bg-[#129490]' }
 			]}
-			{@const colorScheme = colors[index % colors.length]}
+			{@const accentScheme = accentColors[index % accentColors.length]}
 			<button
 				type="button"
-				class="relative flex h-full flex-row justify-center overflow-hidden rounded-xl border-2 bg-gradient-to-b {colorScheme.bg} shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl focus:outline-none focus:ring-4 lg:flex-col {isSelected(
+				class="group relative flex h-full flex-row justify-center overflow-hidden rounded-xl border-2 bg-gradient-to-b from-white to-primary-50 shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl focus:outline-none focus:ring-4 lg:flex-col {isSelected(
 					option.value
 				)
-					? `${colorScheme.selected} ring-4 shadow-2xl scale-[1.02]`
-					: `${colorScheme.border} ${colorScheme.hover}`}"
+					? `${accentScheme.selected} ring-4 shadow-2xl scale-[1.02]`
+					: `${accentScheme.border} ${accentScheme.hover}`}"
 				onclick={() => handleOptionSelect(option.value)}
 				aria-label={getLocalizedDescription(fieldName, option.value)}
 				aria-pressed={isSelected(option.value)}
@@ -195,12 +195,19 @@
 				lang={currentLang}
 			>
 				{#if isSelected(option.value)}
+					{@const accentColors = [
+						{ check: 'bg-[#124E78]' },
+						{ check: 'bg-[#F2BB05]' },
+						{ check: 'bg-[#D74E09]' },
+						{ check: 'bg-[#129490]' }
+					]}
+					{@const accentScheme = accentColors[index % accentColors.length]}
 					<div
-						class="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary-50 text-secondary lg:bg-primary-500"
+						class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full shadow-lg transition-all lg:{accentScheme.check} {accentScheme.check}/90"
 						role="presentation"
 						aria-hidden="true"
 					>
-						<Icon name="check" size={18} fill="none" strokeWidth="2" stroke="currentColor" />
+						<Icon name="check" size={18} fill="none" strokeWidth="3" stroke="white" className="text-white" />
 					</div>
 				{/if}
 
