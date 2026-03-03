@@ -32,11 +32,10 @@
 	</h2>
 
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-		{#each processSteps as step, index}
+		{#each processSteps as step, index (step.key)}
 			<div
 				class="flex flex-col rounded-lg bg-primary-50 p-6 shadow-lg transition-all duration-300 hover:shadow-xl"
 				in:fly={{ y: 20, duration: 500, delay: staggerDelay * (index + 1) }}
-				key={step.key}
 			>
 				<div
 					class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-secondary"
