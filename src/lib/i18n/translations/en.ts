@@ -398,7 +398,7 @@ const en: Translation = {
 				},
 				handover: {
 					title: 'Your system runs',
-					description: 'Fully set up and ready to go – from now on it works for you and brings you inquiries automatically',
+					description: 'Fully set up – works for you and brings inquiries automatically',
 					icon: 'check'
 				}
 			},

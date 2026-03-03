@@ -401,7 +401,7 @@ const de: Translation = {
 				},
 				handover: {
 					title: 'Dein System läuft',
-					description: 'Fertig eingerichtet und startklar – ab jetzt arbeitet es für dich und bringt dir automatisch Anfragen',
+					description: 'Fertig eingerichtet – arbeitet für dich und bringt automatisch Anfragen',
 					icon: 'check'
 				}
 			},
