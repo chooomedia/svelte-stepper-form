@@ -171,13 +171,20 @@
 		aria-label={fieldName ? `Optionen für ${fieldName}` : 'Verfügbare Optionen'}
 	>
 		{#each options as option, index}
+			{@const colors = [
+				{ border: 'border-[#124E78]/20', bg: 'from-[#124E78]/10 to-[#124E78]/5', hover: 'hover:border-[#124E78]', selected: 'border-[#124E78] ring-[#124E78]/20' },
+				{ border: 'border-[#F2BB05]/20', bg: 'from-[#F2BB05]/10 to-[#F2BB05]/5', hover: 'hover:border-[#F2BB05]', selected: 'border-[#F2BB05] ring-[#F2BB05]/20' },
+				{ border: 'border-[#D74E09]/20', bg: 'from-[#D74E09]/10 to-[#D74E09]/5', hover: 'hover:border-[#D74E09]', selected: 'border-[#D74E09] ring-[#D74E09]/20' },
+				{ border: 'border-[#129490]/20', bg: 'from-[#129490]/10 to-[#129490]/5', hover: 'hover:border-[#129490]', selected: 'border-[#129490] ring-[#129490]/20' }
+			]}
+			{@const colorScheme = colors[index % colors.length]}
 			<button
 				type="button"
-				class="relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 shadow-custom transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
+				class="relative flex h-full flex-row justify-center overflow-hidden rounded-xl border-2 bg-gradient-to-b {colorScheme.bg} shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl focus:outline-none focus:ring-4 lg:flex-col {isSelected(
 					option.value
 				)
-					? 'border-primary-500 shadow-primary-100 ring-1 ring-primary-500'
-					: 'border-gray-100'}"
+					? `${colorScheme.selected} ring-4 shadow-2xl scale-[1.02]`
+					: `${colorScheme.border} ${colorScheme.hover}`}"
 				onclick={() => handleOptionSelect(option.value)}
 				aria-label={getLocalizedDescription(fieldName, option.value)}
 				aria-pressed={isSelected(option.value)}

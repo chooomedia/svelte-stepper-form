@@ -388,25 +388,20 @@ const de: Translation = {
 		sections: {
 			analysis: 'Deine Analyse-Ergebnisse',
 			steps: {
-				title: 'Wie geht es nach dem Kauf weiter?',
-				purchase: {
-					title: 'Kaufabschluss',
-					description: 'Auswahl des passenden Plans und unkomplizierter Kaufabschluss',
-					icon: 'cart'
-				},
+				title: 'Deine nächsten Schritte zum Erfolg',
 				scheduling: {
-					title: 'Terminvereinbarung',
-					description: 'Persönliche Terminvereinbarung mit unserem Digital-Experten',
+					title: 'Persönliches Gespräch',
+					description: '30min mit unserem Experten – konkrete Strategien für dein Wachstum',
 					icon: 'calendar'
 				},
 				implementation: {
-					title: 'Umsetzung',
-					description: 'Professionelle Umsetzung aller vereinbarten Maßnahmen',
+					title: 'Schnelle Umsetzung',
+					description: 'Wir setzen um, was funktioniert – professionell und zielgerichtet',
 					icon: 'code'
 				},
 				handover: {
-					title: 'Übergabe',
-					description: 'Übergabe und Einweisung in Dein optimiertes digitales System',
+					title: 'Dein System läuft',
+					description: 'Übergabe deines optimierten digitalen Erfolgs-Systems',
 					icon: 'check'
 				}
 			},

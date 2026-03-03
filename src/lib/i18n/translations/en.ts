@@ -385,25 +385,20 @@ const en: Translation = {
 		sections: {
 			analysis: 'Your Analysis Results',
 			steps: {
-				title: 'What happens after purchase?',
-				purchase: {
-					title: 'Purchase completion',
-					description: 'Selection of the suitable plan and straightforward purchase process',
-					icon: 'cart'
-				},
+				title: 'Your next steps to success',
 				scheduling: {
-					title: 'Appointment scheduling',
-					description: 'Personal appointment scheduling with our digital expert',
+					title: 'Personal Consultation',
+					description: '30min with our expert – concrete strategies for your growth',
 					icon: 'calendar'
 				},
 				implementation: {
-					title: 'Implementation',
-					description: 'Professional implementation of all agreed measures',
+					title: 'Quick Implementation',
+					description: 'We implement what works – professional and focused',
 					icon: 'code'
 				},
 				handover: {
-					title: 'Handover',
-					description: 'Handover and introduction to your optimized digital system',
+					title: 'Your system runs',
+					description: 'Delivery of your optimized digital success system',
 					icon: 'check'
 				}
 			},

@@ -327,13 +327,13 @@
 		</div>
 	{:else}
 		<!-- Calendly-Style Layout -->
-		<div class="booking-container grid gap-8 lg:grid-cols-12">
+		<div class="booking-container grid gap-6 lg:grid-cols-12">
 			<!-- Left Side: Expert Profile & Info -->
-			<div class="lg:col-span-5">
-				<!-- Expert Profile Card -->
-				<div class="expert-card mb-6 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-6 text-white shadow-xl" in:fade={{ duration: 500 }}>
-					<div class="mb-6 flex items-center gap-4">
-						<div class="relative h-20 w-20 overflow-hidden rounded-full border-4 border-white/30 shadow-lg">
+			<div class="flex flex-col gap-6 lg:col-span-5">
+				<!-- Expert Profile Card - kompakt für gleiche Höhe -->
+				<div class="expert-card h-fit rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-6 text-white shadow-xl" in:fade={{ duration: 500 }}>
+					<div class="mb-4 flex items-center gap-4">
+						<div class="relative h-16 w-16 overflow-hidden rounded-full border-4 border-white/30 shadow-lg flex-shrink-0">
 							<img
 								src={profile.imageUrl}
 								alt={profile.imageAlt}
@@ -341,29 +341,29 @@
 								loading="lazy"
 							/>
 						</div>
-						<div>
-							<h3 class="text-xl font-bold">{profile.name}</h3>
-							<p class="text-primary-100">{profile.role}</p>
+						<div class="flex-1">
+							<h3 class="text-lg font-bold">{profile.name}</h3>
+							<p class="text-sm text-primary-100">{profile.role}</p>
 						</div>
 					</div>
 
-					<div class="mb-6">
-						<h4 class="mb-3 text-2xl font-bold">Kostenlose Strategieberatung</h4>
-						<p class="text-primary-50">
+					<div class="mb-4">
+						<h4 class="mb-2 text-xl font-bold">Kostenlose Strategieberatung</h4>
+						<p class="text-sm text-primary-50 leading-relaxed">
 							Dein direkter Draht zum Experten. In 30 Minuten analysieren wir deine aktuelle Situation und zeigen dir konkrete Wachstumschancen.
 						</p>
 					</div>
 
-					<!-- Trust Elements -->
-					<div class="space-y-3">
+					<!-- Trust Elements - kompakter -->
+					<div class="space-y-2">
 						{#each trustElements as trust, i}
-							<div class="flex items-center gap-3 rounded-lg bg-white/10 p-3 backdrop-blur-sm" in:fly={{ x: -20, delay: 300 + i * 100, duration: 400 }}>
-								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-									<Icon name={trust.icon} size={20} stroke="currentColor" strokeWidth="2" fill="none" />
+							<div class="flex items-center gap-3 rounded-lg bg-white/10 p-2.5 backdrop-blur-sm" in:fly={{ x: -20, delay: 300 + i * 100, duration: 400 }}>
+								<div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-white/20">
+									<Icon name={trust.icon} size={16} stroke="currentColor" strokeWidth="2" fill="none" />
 								</div>
-								<div>
-									<div class="font-semibold">{trust.title}</div>
-									<div class="text-sm text-primary-100">{trust.subtitle}</div>
+								<div class="flex-1 min-w-0">
+									<div class="text-sm font-semibold">{trust.title}</div>
+									<div class="text-xs text-primary-100">{trust.subtitle}</div>
 								</div>
 							</div>
 						{/each}
@@ -371,36 +371,36 @@
 				</div>
 
 				<!-- NLP Conversion Copy -->
-				<div class="nlp-section rounded-xl bg-gradient-to-br from-yellow-50 to-orange-50 p-6 shadow-lg" in:fly={{ y: 20, delay: 500, duration: 400 }}>
+				<div class="nlp-section rounded-xl bg-gradient-to-br from-yellow-50 to-orange-50 p-5 shadow-lg" in:fly={{ y: 20, delay: 500, duration: 400 }}>
 					<div class="mb-3 flex items-center gap-2">
-						<Icon name="star" size={24} className="text-yellow-500" fill="currentColor" />
-						<h4 class="text-lg font-bold text-gray-900">Was dich nach dem Termin erwartet:</h4>
+						<Icon name="star" size={20} className="text-yellow-500" fill="currentColor" />
+						<h4 class="text-base font-bold text-gray-900">Was dich erwartet:</h4>
 					</div>
 					<ul class="space-y-2 text-sm text-gray-700">
 						<li class="flex items-start gap-2">
-							<Icon name="check" size={16} className="mt-0.5 text-green-600" stroke="currentColor" strokeWidth="3" />
-							<span><strong>7 Geheimtipps</strong> für dein Online-Marketing – praxiserprobt und sofort umsetzbar</span>
+							<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
+							<span><strong>7 Geheimtipps</strong> – praxiserprobt und sofort umsetzbar</span>
 						</li>
 						<li class="flex items-start gap-2">
-							<Icon name="check" size={16} className="mt-0.5 text-green-600" stroke="currentColor" strokeWidth="3" />
-							<span><strong>Konkrete Handlungsempfehlungen</strong> speziell für deine Website und Branche</span>
+							<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
+							<span><strong>Konkrete Handlungsempfehlungen</strong> für deine Branche</span>
 						</li>
 						<li class="flex items-start gap-2">
-							<Icon name="check" size={16} className="mt-0.5 text-green-600" stroke="currentColor" strokeWidth="3" />
-							<span><strong>Exklusive Insights</strong> aus 500+ erfolgreichen Projekten</span>
+							<Icon name="check" size={14} className="mt-0.5 text-green-600 flex-shrink-0" stroke="currentColor" strokeWidth="3" />
+							<span><strong>Exklusive Insights</strong> aus 500+ Projekten</span>
 						</li>
 					</ul>
-					<div class="mt-4 rounded-lg bg-white p-3 text-center">
-						<p class="text-sm font-medium text-gray-900">
-							💡 <strong>Erfolgsgarantie:</strong> Unsere Kunden berichten von durchschnittlich <span class="text-primary-600">3x mehr Anfragen</span> nach Umsetzung unserer Tipps
+					<div class="mt-3 rounded-lg bg-white p-3 text-center">
+						<p class="text-xs font-medium text-gray-900">
+							💡 <strong>Erfolgsgarantie:</strong> Durchschnittlich <span class="text-primary-600">3x mehr Anfragen</span> nach Umsetzung
 						</p>
 					</div>
 				</div>
 			</div>
 
-			<!-- Right Side: Calendar -->
+			<!-- Right Side: Calendar - größer -->
 			<div class="lg:col-span-7">
-				<div class="calendar-card rounded-2xl bg-white p-6 shadow-xl">
+				<div class="calendar-card h-full rounded-2xl bg-white p-6 shadow-xl">
 					<!-- Calendar Header -->
 					<div class="mb-6">
 						<h3 class="mb-2 text-2xl font-bold text-gray-900">Wähle deinen Wunschtermin</h3>
