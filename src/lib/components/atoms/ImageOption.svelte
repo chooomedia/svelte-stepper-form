@@ -223,9 +223,16 @@
 					</div>
 				{/if}
 
+				{@const footerColors = [
+					{ border: 'border-[#124E78]/40', bg: 'bg-[#124E78]/10' },
+					{ border: 'border-[#F2BB05]/40', bg: 'bg-[#F2BB05]/10' },
+					{ border: 'border-[#D74E09]/40', bg: 'bg-[#D74E09]/10' },
+					{ border: 'border-[#129490]/40', bg: 'bg-[#129490]/10' }
+				]}
+				{@const footerScheme = footerColors[index % footerColors.length]}
 				<div
-					class={`flex w-full flex-col justify-center border-t border-primary-200 ${
-						special ? 'bg-primary' : ''
+					class={`flex w-full flex-col justify-center border-t-2 ${footerScheme.border} ${
+						special ? footerScheme.bg : ''
 					} px-1 py-2 lg:block`}
 					dir={textDirection}
 				>
