@@ -133,7 +133,7 @@ function formatPriceInternal(
 // Create the currency store
 function createCurrencyStore(): CurrencyStore {
 	// Current active currency
-	const { subscribe, set, update } = writable<string>('EUR');
+	const { subscribe, set } = writable<string>('EUR');
 
 	// Sync with taxInfo store for automatic currency switching
 	taxInfo.subscribe(($taxInfo) => {
