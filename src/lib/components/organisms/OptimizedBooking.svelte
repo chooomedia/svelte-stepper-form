@@ -4,15 +4,14 @@
 	import Icon from '../atoms/Icon.svelte';
 	import type { FormData } from '$lib/schema';
 	import { i18n } from '$lib/i18n';
+	import { modalStore } from '../organisms/modal/modalStore';
 
 	let { formData }: { formData: FormData } = $props();
 
 	// UI State
 	let isLoading = $state(false);
-	let isBookingSuccessful = $state(false);
 	let isLoadingSlots = $state(false);
 	let errorMessage = $state('');
-	let bookingResult = $state<any>(null);
 	let selectedDate = $state('');
 	let selectedTime = $state('');
 	let currentMonth = $state(new Date());
@@ -187,11 +186,27 @@
 		selectedDate = formatDate(date);
 		selectedTime = '';
 		errorMessage = '';
+		
+		// Auto-scroll to time selection
+		setTimeout(() => {
+			const timeSection = document.querySelector('.time-section');
+			if (timeSection) {
+				timeSection.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+			}
+		}, 200);
 	}
 
 	function selectTime(time: string): void {
 		selectedTime = time;
 		errorMessage = '';
+		
+		// Auto-scroll to contact form
+		setTimeout(() => {
+			const contactForm = document.querySelector('.contact-form');
+			if (contactForm) {
+				contactForm.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+			}
+		}, 200);
 	}
 
 	function validateBooking(): boolean {
@@ -253,16 +268,16 @@
 				throw new Error(result.error || 'Buchung fehlgeschlagen');
 			}
 
-			bookingResult = result;
-			isBookingSuccessful = true;
-
-			// Auto-scroll to success message with smooth animation
-			setTimeout(() => {
-				const successElement = document.querySelector('.success-state');
-				if (successElement) {
-					successElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-				}
-			}, 100);
+			// Open success modal with booking data
+			modalStore.open('bookingSuccess', {
+				selectedDate,
+				selectedTime,
+				email: hasExistingData ? formData.email : email,
+				meetingUrl: result?.booking?.meeting_url || ''
+			}, {
+				size: '3xl',
+				closable: true
+			});
 		} catch (error) {
 			console.error('❌ Booking error:', error);
 			errorMessage =
@@ -286,112 +301,10 @@
 </script>
 
 <div class="optimized-booking">
-	{#if isBookingSuccessful}
-		<!-- Success State - Modern & Fancy -->
-		<div class="success-state max-w-3xl mx-auto" in:scale={{ duration: 400, start: 0.95 }}>
-			<!-- Main Success Card -->
-			<div class="rounded-3xl bg-gradient-to-br from-green-50 via-white to-primary-50 p-8 shadow-2xl border border-green-200/50">
-				<!-- Animated Check Icon -->
-				<div class="mb-6 flex justify-center">
-					<div class="relative">
-						<div class="absolute inset-0 rounded-full bg-green-400 blur-xl opacity-50 animate-pulse"></div>
-						<div class="relative rounded-full bg-gradient-to-br from-green-400 to-green-600 p-5 shadow-lg">
-							<Icon name="checkCircle" size={72} className="text-white" stroke="none" />
-						</div>
-					</div>
-				</div>
-
-				<!-- Success Message -->
-				<div class="text-center mb-8">
-					<h3 class="mb-4 text-4xl font-bold bg-gradient-to-r from-green-600 to-primary-600 bg-clip-text text-transparent">
-						{booking.success.title}
-					</h3>
-					<div class="mb-2 text-xl text-gray-700 leading-relaxed">
-						{booking.success.message}
-					</div>
-					<div class="inline-flex flex-wrap items-center justify-center gap-2 rounded-xl bg-white p-4 shadow-md border border-gray-100">
-						<Icon name="calendar" size={20} className="text-primary-600" stroke="currentColor" strokeWidth="2" />
-						<strong class="text-2xl text-primary-600">
-							{new Date(selectedDate).toLocaleDateString('de-DE', {
-								weekday: 'long',
-								year: 'numeric',
-								month: 'long',
-								day: 'numeric'
-							})}
-						</strong>
-						<span class="text-gray-400">•</span>
-						<Icon name="clock" size={20} className="text-primary-600" stroke="currentColor" strokeWidth="2" />
-						<strong class="text-2xl text-primary-600">{selectedTime} {booking.success.oclock}</strong>
-					</div>
-				</div>
-
-				<!-- Email Confirmation Badge -->
-				<div class="mb-6 flex items-center justify-center gap-3 rounded-xl bg-green-50 border-2 border-green-200 p-4" in:fly={{ y: 10, delay: 200, duration: 400 }}>
-					<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 shadow-md">
-						<Icon name="checkCircle" size={20} className="text-white" stroke="currentColor" strokeWidth="2" />
-					</div>
-					<div class="flex-1 text-left">
-						<p class="text-sm font-semibold text-green-900">Bestätigung versendet</p>
-						<p class="text-xs text-green-700">{email || formData.email}</p>
-					</div>
-				</div>
-
-				<!-- Bonus Section - Enhanced -->
-				<div class="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 shadow-lg border border-yellow-200" in:fly={{ y: 10, delay: 300, duration: 400 }}>
-					<div class="relative p-6">
-						<!-- Decorative Elements -->
-						<div class="absolute top-0 right-0 w-32 h-32 bg-yellow-200 rounded-full blur-3xl opacity-30"></div>
-						<div class="absolute bottom-0 left-0 w-24 h-24 bg-orange-200 rounded-full blur-2xl opacity-30"></div>
-						
-						<div class="relative">
-							<div class="mb-4 flex items-center justify-center gap-3">
-								<div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg">
-									<Icon name="star" size={24} className="text-white" fill="currentColor" />
-								</div>
-								<h4 class="text-2xl font-bold text-gray-900">{booking.success.bonusTitle}</h4>
-							</div>
-							
-							<p class="mb-4 text-center text-gray-700 leading-relaxed">
-								{booking.success.bonusDescription}
-							</p>
-							
-							<div class="flex items-center justify-center gap-2 rounded-lg bg-white/80 backdrop-blur-sm p-3 shadow-sm">
-								<Icon
-									name="mail"
-									size={18}
-									className="text-primary-600"
-									stroke="currentColor"
-									strokeWidth="2"
-								/>
-								<span class="text-sm font-medium text-gray-700">{booking.success.bonusEmail}</span>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Meeting Link Button (if available) -->
-				{#if bookingResult?.booking?.meeting_url}
-					<div class="flex flex-col gap-3" in:fly={{ y: 10, delay: 400, duration: 400 }}>
-						<a
-							href={bookingResult.booking.meeting_url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="group flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 px-8 py-4 font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:scale-105"
-						>
-							<Icon name="external-link" size={20} stroke="currentColor" strokeWidth="2" />
-							<span>{booking.success.meetingLink}</span>
-							<Icon name="arrowRight" size={20} className="transition-transform group-hover:translate-x-1" stroke="currentColor" strokeWidth="2" />
-						</a>
-						<p class="text-center text-xs text-gray-500">Du kannst den Link auch später in der E-Mail finden</p>
-					</div>
-				{/if}
-			</div>
-		</div>
-	{:else}
-		<!-- Calendly-Style Layout -->
-		<div class="booking-container grid gap-6 lg:grid-cols-12">
-			<!-- Left Side: Expert Profile & Info -->
-			<div class="flex flex-col gap-6 lg:col-span-5">
+	<!-- Calendly-Style Layout -->
+	<div class="booking-container grid gap-6 lg:grid-cols-12">
+		<!-- Left Side: Expert Profile & Info -->
+		<div class="flex flex-col gap-6 lg:col-span-5">
 				<!-- Expert Profile Card - kompakt für gleiche Höhe -->
 				<div
 					class="expert-card flex h-full flex-col rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-6 text-white shadow-xl"
@@ -761,17 +674,11 @@
 				</div>
 			</div>
 		</div>
-	{/if}
 </div>
 
 <style>
 	.optimized-booking {
 		width: 100%;
-		margin: 0 auto;
-	}
-
-	.success-state {
-		max-width: 42rem;
 		margin: 0 auto;
 	}
 

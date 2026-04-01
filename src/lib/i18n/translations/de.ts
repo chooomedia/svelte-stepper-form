@@ -824,6 +824,8 @@ const de: Translation = {
 			calendar: {
 				title: 'Wähle deinen Wunschtermin',
 				description: '30 Minuten • Videocall',
+				addToCalendar: 'Termin zu deinem Kalender hinzufügen:',
+				download: 'Apple / Outlook',
 				selectDate: 'Datum wählen',
 				selectTime: 'Zeit wählen',
 				noSlotsAvailable: 'Keine Termine verfügbar',
@@ -856,14 +858,14 @@ const de: Translation = {
 			},
 			success: {
 				title: '🎉 Perfekt! Dein Termin steht!',
-				message: 'Wir freuen uns auf das Gespräch am',
-				at: 'um',
-				oclock: 'Uhr',
-				bonusTitle: '🎁 Dein Bonus wartet!',
+				message: 'Wir freuen uns auf das Gespräch!',
+				socialProof: '500+ Projekte erfolgreich umgesetzt',
+				bonusTitle: 'Dein Bonus wartet!',
+				bonusValue: 'Wert: 299€ • Exklusiv für dich',
 				bonusDescription:
 					'Als Dankeschön erhältst du unsere 7 Geheimtipps für deinen Online-Marketing-Erfolg – bewährte Strategien, die deine Konkurrenz noch nicht kennt.',
 				bonusEmail: 'Die Tipps senden wir dir direkt per E-Mail zu!',
-				confirmationSent: 'Bestätigung wurde an {email} gesendet',
+				bonusUrgency: 'Wird automatisch in 2 Minuten versendet',
 				meetingLink: 'Meeting-Link öffnen'
 			},
 			error: {

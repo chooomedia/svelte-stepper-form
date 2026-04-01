@@ -817,6 +817,8 @@ const en: Translation = {
 			calendar: {
 				title: 'Choose your preferred time',
 				description: '30 Minutes • Video call',
+				addToCalendar: 'Add to your calendar:',
+				download: 'Apple / Outlook',
 				selectDate: 'Select date',
 				selectTime: 'Select time',
 				noSlotsAvailable: 'No appointments available',
@@ -849,14 +851,14 @@ const en: Translation = {
 			},
 			success: {
 				title: '🎉 Perfect! Your appointment is confirmed!',
-				message: 'We look forward to the conversation on',
-				at: 'at',
-				oclock: '',
-				bonusTitle: '🎁 Your bonus is waiting!',
+				message: 'We look forward to the conversation!',
+				socialProof: '500+ projects successfully implemented',
+				bonusTitle: 'Your bonus is waiting!',
+				bonusValue: 'Value: €299 • Exclusive for you',
 				bonusDescription:
 					'As a thank you, you will receive our 7 secret tips for your online marketing success – proven strategies your competitors don\'t know yet.',
 				bonusEmail: 'We will send you the tips directly via email!',
-				confirmationSent: 'Confirmation sent to {email}',
+				bonusUrgency: 'Will be sent automatically in 2 minutes',
 				meetingLink: 'Open meeting link'
 			},
 			error: {

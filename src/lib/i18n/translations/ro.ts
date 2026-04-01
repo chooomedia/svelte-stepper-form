@@ -796,6 +796,8 @@ const ro: Translation = {
 			calendar: {
 				title: 'Alege timpul preferat',
 				description: '30 Minute • Apel video',
+				addToCalendar: 'Adaugă în calendar:',
+				download: 'Apple / Outlook',
 				selectDate: 'Selectează data',
 				selectTime: 'Selectează ora',
 				noSlotsAvailable: 'Nu sunt programări disponibile',
@@ -828,14 +830,14 @@ const ro: Translation = {
 			},
 			success: {
 				title: '🎉 Perfect! Programarea ta este confirmată!',
-				message: 'Ne bucurăm de conversația de pe',
-				at: 'la ora',
-				oclock: '',
-				bonusTitle: '🎁 Bonusul tău te așteaptă!',
+				message: 'Ne bucurăm de conversație!',
+				socialProof: '500+ proiecte implementate cu succes',
+				bonusTitle: 'Bonusul tău te așteaptă!',
+				bonusValue: 'Valoare: 299€ • Exclusiv pentru tine',
 				bonusDescription:
 					'Ca mulțumire, vei primi cele 7 sfaturi secrete pentru succesul tău în marketing online – strategii dovedite pe care concurența ta nu le știe încă.',
 				bonusEmail: 'Îți trimitem sfaturile direct pe email!',
-				confirmationSent: 'Confirmare trimisă la {email}',
+				bonusUrgency: 'Va fi trimis automat în 2 minute',
 				meetingLink: 'Deschide link-ul întâlnirii'
 			},
 			error: {
