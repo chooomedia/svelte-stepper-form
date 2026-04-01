@@ -786,6 +786,28 @@ const tr: Translation = {
 				details:
 					'Yakında tüm detaylar ve toplantı linki ile birlikte bir onay e-postası alacaksınız.'
 			}
+		},
+		buttons: {
+			restart: 'Analizi yeniden başlat',
+			getReport: 'Analiz raporu e-posta ile al',
+			emailError: 'Sonuçları almak için formda bir e-posta adresi belirtin.',
+			bookNow: 'Şimdi randevu al'
+		},
+		cta: {
+			readyTitle: 'Bir sonraki adıma hazır mısınız?',
+			bookingText: 'Şimdi ücretsiz danışmanlık randevunuzu alın ve birlikte çevrimiçi görünürlüğünüzü iyileştirelim.'
+		},
+		restartModal: {
+			title: 'Gerçekten yeniden başlamak istiyor musunuz?',
+			message: 'Zaten zaman yatırımı yaptınız ve çevrimiçi görünürlüğünüz hakkında değerli bilgiler edindiniz.',
+			suggestion: '💡 Ücretsiz danışmanlığımızı kullanın ve optimizasyonda zaman kazanın!',
+			bookInstead: '✨ Bunun yerine randevu al',
+			cancel: 'İptal',
+			confirmRestart: 'Yine de yeniden başlat'
+		},
+		screenshot: {
+			alt: 'Web Sitesi Ekran Görüntüsü',
+			unsupported: 'Ekran görüntüsü verileri mevcut ancak format desteklenmiyor'
 		}
 	},
 	waitingScreen: {

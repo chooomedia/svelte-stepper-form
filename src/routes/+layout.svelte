@@ -7,6 +7,7 @@
 	import { i18n, currentLocale, getTextDirection } from '$lib/i18n';
 	import { FORM_STEPS } from '$lib/schema';
 	import Footer from '$lib/components/organisms/Footer.svelte';
+	import ModalController from '$lib/components/organisms/modal/ModalController.svelte';
 
 	const logoMain = '/logo-digitalpusher.svg';
 
@@ -310,6 +311,9 @@
 			<Footer />
 		{/if}
 	</main>
+
+	<!-- Global Modal Controller -->
+	<ModalController />
 </div>
 
 <style lang="css">

@@ -241,7 +241,7 @@
 		</div>
 
 		<!-- Privacy Agreement (Styled to match PaymentContent.svelte) -->
-		<div class="form-group space-y-4">
+		<div class="form-group space-y-2">
 			<div class="form-control">
 				<label class="label cursor-pointer justify-start gap-2">
 					<input
@@ -279,7 +279,7 @@
 			</div>
 
 			<!-- Marketing Consent (Styled to match PaymentContent.svelte) -->
-			<div class="form-control pt-4">
+			<div class="form-control">
 				<label class="label cursor-pointer justify-start gap-2">
 					<input
 						type="checkbox"

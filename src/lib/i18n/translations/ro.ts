@@ -402,7 +402,7 @@ const ro: Translation = {
 				},
 				handover: {
 					title: 'Predare',
-					description: 'Sistem optimizat gata',
+					description: 'Complet configurat – lucrează pentru tine și aduce cereri automat',
 					icon: 'check'
 				}
 			},
@@ -774,18 +774,100 @@ const ro: Translation = {
 			title: 'Rezervă consultație gratuită',
 			subtitle:
 				'Alege o programare pentru consultația ta gratuită de 30 de minute. Discutăm nevoile tale individuale și îți arătăm cum să îți optimizezi vizibilitatea online.',
-			selectDate: 'Selectează data:',
-			selectTime: 'Selectează ora:',
-			contactInfo: 'Informațiile tale de contact:',
-			confirm: 'Rezervă programare gratuită',
-			booking: 'Se rezervă programarea...',
-			cancel: 'Anulează',
+			expert: {
+				title: 'Consultanță Strategică Gratuită',
+				description:
+					'Linia ta directă către expert. În 30 de minute analizăm situația ta actuală și îți arătăm oportunități concrete de creștere.'
+			},
+			trustElements: {
+				free: {
+					title: '100% Gratuit',
+					subtitle: 'Fără costuri ascunse'
+				},
+				duration: {
+					title: '30 Minute',
+					subtitle: 'Consultanță personală'
+				},
+				projects: {
+					title: '500+ Proiecte',
+					subtitle: 'Implementate cu succes'
+				}
+			},
+			calendar: {
+				title: 'Alege timpul preferat',
+				description: '30 Minute • Apel video',
+				addToCalendar: 'Adaugă în calendar:',
+				download: 'Apple / Outlook',
+				selectDate: 'Selectează data',
+				selectTime: 'Selectează ora',
+				noSlotsAvailable: 'Nu sunt programări disponibile',
+				loadingSlots: 'Se încarcă orele disponibile...',
+				months: [
+					'Ianuarie',
+					'Februarie',
+					'Martie',
+					'Aprilie',
+					'Mai',
+					'Iunie',
+					'Iulie',
+					'August',
+					'Septembrie',
+					'Octombrie',
+					'Noiembrie',
+					'Decembrie'
+				],
+				days: ['Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm', 'Dum']
+			},
+			form: {
+				title: 'Datele tale de contact',
+				firstName: 'Prenume',
+				lastName: 'Nume',
+				email: 'Email',
+				phone: 'Telefon (opțional)',
+				privacy: 'Datele tale sunt în siguranță și vor fi tratate confidențial',
+				submit: 'Rezervă acum',
+				submitting: 'Se rezervă...'
+			},
 			success: {
-				title: 'Programarea rezervată cu succes!',
-				message: 'Consultația ta gratuită a fost rezervată pentru {date} la {time}.',
-				details:
-					'Vei primi în curând un e-mail de confirmare cu toate detaliile și link-ul pentru întâlnire.'
+				title: '🎉 Perfect! Programarea ta este confirmată!',
+				message: 'Ne bucurăm de conversație!',
+				socialProof: '500+ proiecte implementate cu succes',
+				bonusTitle: 'Bonusul tău te așteaptă!',
+				bonusValue: 'Valoare: 299€ • Exclusiv pentru tine',
+				bonusDescription:
+					'Ca mulțumire, vei primi cele 7 sfaturi secrete pentru succesul tău în marketing online – strategii dovedite pe care concurența ta nu le știe încă.',
+				bonusEmail: 'Îți trimitem sfaturile direct pe email!',
+				bonusUrgency: 'Va fi trimis automat în 2 minute',
+				meetingLink: 'Deschide link-ul întâlnirii'
+			},
+			error: {
+				generic: 'A apărut o eroare. Te rugăm să încerci din nou.',
+				dateRequired: 'Te rugăm să selectezi o dată',
+				timeRequired: 'Te rugăm să selectezi o oră',
+				allFieldsRequired: 'Te rugăm să completezi toate câmpurile obligatorii'
 			}
+		},
+		buttons: {
+			restart: 'Repornește analiza',
+			getReport: 'Primește raportul de analiză prin e-mail',
+			emailError: 'Vă rugăm să furnizați o adresă de e-mail în formular pentru a primi rezultatele.',
+			bookNow: 'Rezervă programare acum'
+		},
+		cta: {
+			readyTitle: 'Ești gata pentru următorul pas?',
+			bookingText: 'Rezervă consultația ta gratuită acum și hai să îmbunătățim împreună vizibilitatea ta online.'
+		},
+		restartModal: {
+			title: 'Vrei cu adevărat să reîncepi?',
+			message: 'Ai investit deja timp și ai obținut informații valoroase despre vizibilitatea ta online.',
+			suggestion: '💡 Mai bine folosește consultația noastră gratuită și economisește timp la optimizare!',
+			bookInstead: '✨ Rezervă programare în schimb',
+			cancel: 'Anulează',
+			confirmRestart: 'Reîncepe oricum'
+		},
+		screenshot: {
+			alt: 'Captură de ecran site web',
+			unsupported: 'Date captură de ecran disponibile, dar formatul nu este suportat'
 		}
 	},
 	waitingScreen: {

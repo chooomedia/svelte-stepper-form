@@ -7,6 +7,7 @@
 	import ErrorContent from './ModalContent/ErrorContent.svelte';
 	import ConfirmContent from './ModalContent/ConfirmContent.svelte';
 	import BookingContent from './ModalContent/BookingContent.svelte';
+	import BookingSuccessContent from './ModalContent/BookingSuccessContent.svelte';
 	import { i18n } from '$lib/i18n';
 	import { PaymentType, PlanType } from '$lib/types/plans';
 
@@ -36,6 +37,8 @@
 				return $i18n.modal.common.confirm;
 			case 'booking':
 				return $i18n.modal.booking.title;
+			case 'bookingSuccess':
+				return ''; // No title for bookingSuccess (clean modal)
 			default:
 				return '';
 		}
@@ -55,6 +58,8 @@
 				return modalData?.message || $i18n.modal.confirm.cancelPurchase;
 			case 'booking':
 				return $i18n.modal.booking.subtitle;
+			case 'bookingSuccess':
+				return ''; // No subtitle for bookingSuccess
 			default:
 				return '';
 		}
@@ -151,5 +156,13 @@
 		/>
 	{:else if currentModalType === 'booking'}
 		<BookingContent />
+	{:else if currentModalType === 'bookingSuccess'}
+		<BookingSuccessContent
+			selectedDate={modalData?.selectedDate || ''}
+			selectedTime={modalData?.selectedTime || ''}
+			email={modalData?.email || ''}
+			meetingUrl={modalData?.meetingUrl || ''}
+			onClose={() => modalStore.close()}
+		/>
 	{/if}
 </Modal>

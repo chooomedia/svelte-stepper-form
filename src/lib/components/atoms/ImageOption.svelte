@@ -171,9 +171,17 @@
 		aria-label={fieldName ? `Optionen für ${fieldName}` : 'Verfügbare Optionen'}
 	>
 		{#each options as option, index}
+			{@const isStep1 = fieldName === 'visibility'}
+			{@const shadowColors = [
+				'shadow-[0_4px_14px_0_rgba(18,78,120,0.15)] hover:shadow-[0_8px_24px_0_rgba(18,78,120,0.25)]',
+				'shadow-[0_4px_14px_0_rgba(242,187,5,0.15)] hover:shadow-[0_8px_24px_0_rgba(242,187,5,0.25)]',
+				'shadow-[0_4px_14px_0_rgba(215,78,9,0.15)] hover:shadow-[0_8px_24px_0_rgba(215,78,9,0.25)]',
+				'shadow-[0_4px_14px_0_rgba(18,148,144,0.15)] hover:shadow-[0_8px_24px_0_rgba(18,148,144,0.25)]'
+			]}
+			{@const customShadow = isStep1 ? shadowColors[index % shadowColors.length] : 'shadow-custom hover:shadow-lg'}
 			<button
 				type="button"
-				class="relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 shadow-custom transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
+				class="select-none relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 {customShadow} transition-all duration-300 hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
 					option.value
 				)
 					? 'border-primary-500 shadow-primary-100 ring-1 ring-primary-500'
@@ -202,9 +210,10 @@
 						<img
 							src={option.imgSrc}
 							alt={getLocalizedDescription(fieldName, option.value)}
-							class="h-16 w-auto transform object-contain transition-transform hover:scale-110 md:h-24 lg:h-32"
+							class="h-16 w-auto transform object-contain transition-transform hover:scale-110 md:h-24 lg:h-32 select-none pointer-events-none"
 							role="img"
 							aria-hidden="true"
+							draggable="false"
 						/>
 					</div>
 				{/if}

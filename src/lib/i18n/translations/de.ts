@@ -388,25 +388,20 @@ const de: Translation = {
 		sections: {
 			analysis: 'Deine Analyse-Ergebnisse',
 			steps: {
-				title: 'Wie geht es nach dem Kauf weiter?',
-				purchase: {
-					title: 'Kaufabschluss',
-					description: 'Auswahl des passenden Plans und unkomplizierter Kaufabschluss',
-					icon: 'cart'
-				},
+				title: 'Deine nächsten Schritte zum Erfolg',
 				scheduling: {
-					title: 'Terminvereinbarung',
-					description: 'Persönliche Terminvereinbarung mit unserem Digital-Experten',
+					title: 'Persönliches Gespräch',
+					description: '30min mit unserem Experten – konkrete Strategien für dein Wachstum',
 					icon: 'calendar'
 				},
 				implementation: {
-					title: 'Umsetzung',
-					description: 'Professionelle Umsetzung aller vereinbarten Maßnahmen',
+					title: 'Schnelle Umsetzung',
+					description: 'Wir setzen um, was funktioniert – professionell und zielgerichtet',
 					icon: 'code'
 				},
 				handover: {
-					title: 'Übergabe',
-					description: 'Übergabe und Einweisung in Dein optimiertes digitales System',
+					title: 'Dein System läuft',
+					description: 'Fertig eingerichtet – arbeitet für dich und bringt automatisch Anfragen',
 					icon: 'check'
 				}
 			},
@@ -570,9 +565,22 @@ const de: Translation = {
 			}
 		},
 		buttons: {
-			restart: 'Quiz und Analyse neu starten',
+			restart: 'Analyse neu starten',
 			getReport: 'Analysebericht per E-Mail erhalten',
-			emailError: 'Bitte gib im Formular eine E-Mail-Adresse an, um die Ergebnisse zu erhalten.'
+			emailError: 'Bitte gib im Formular eine E-Mail-Adresse an, um die Ergebnisse zu erhalten.',
+			bookNow: 'Jetzt Termin buchen'
+		},
+		cta: {
+			readyTitle: 'Bereit für den nächsten Schritt?',
+			bookingText: 'Buche jetzt dein kostenloses Beratungsgespräch und lass uns gemeinsam deine Online-Sichtbarkeit verbessern.'
+		},
+		restartModal: {
+			title: 'Möchtest du wirklich neu starten?',
+			message: 'Du hast bereits Zeit investiert und wertvolle Einblicke in deine Online-Sichtbarkeit erhalten.',
+			suggestion: '💡 Nutze lieber unsere kostenlose Beratung und spare Zeit bei der Optimierung!',
+			bookInstead: '✨ Lieber Termin buchen',
+			cancel: 'Abbrechen',
+			confirmRestart: 'Trotzdem neu starten'
 		},
 		screenshot: {
 			alt: 'Website Screenshot',
@@ -807,18 +815,77 @@ const de: Translation = {
 			title: 'Kostenloses Beratungsgespräch buchen',
 			subtitle:
 				'Wähle einen Termin für Dein 30-minütiges kostenloses Beratungsgespräch. Wir besprechen Deine individuellen Bedürfnisse und zeigen Dir, wie Du Deine Online-Sichtbarkeit optimieren kannst.',
-			selectDate: 'Datum auswählen:',
-			selectTime: 'Uhrzeit auswählen:',
-			contactInfo: 'Deine Kontaktdaten:',
-			confirm: 'Termin kostenlos buchen',
-			booking: 'Termin wird gebucht...',
-			cancel: 'Abbrechen',
+			expert: {
+				title: 'Kostenlose Strategieberatung',
+				description:
+					'Dein direkter Draht zum Experten. In 30 Minuten analysieren wir deine aktuelle Situation und zeigen dir konkrete Wachstumschancen.'
+			},
+			trustElements: {
+				free: {
+					title: '100% Kostenlos',
+					subtitle: 'Keine versteckten Kosten'
+				},
+				duration: {
+					title: '30 Minuten',
+					subtitle: 'Persönliche Beratung'
+				},
+				projects: {
+					title: '500+ Projekte',
+					subtitle: 'Erfolgreich umgesetzt'
+				}
+			},
+			calendar: {
+				title: 'Wähle deinen Wunschtermin',
+				description: '30 Minuten • Videocall',
+				addToCalendar: 'Termin zu deinem Kalender hinzufügen:',
+				download: 'Apple / Outlook',
+				selectDate: 'Datum wählen',
+				selectTime: 'Zeit wählen',
+				noSlotsAvailable: 'Keine Termine verfügbar',
+				loadingSlots: 'Lade verfügbare Zeiten...',
+				months: [
+					'Januar',
+					'Februar',
+					'März',
+					'April',
+					'Mai',
+					'Juni',
+					'Juli',
+					'August',
+					'September',
+					'Oktober',
+					'November',
+					'Dezember'
+				],
+				days: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+			},
+			form: {
+				title: 'Deine Kontaktdaten',
+				firstName: 'Vorname',
+				lastName: 'Nachname',
+				email: 'E-Mail',
+				phone: 'Telefon (optional)',
+				privacy: 'Deine Daten sind bei uns sicher und werden vertraulich behandelt',
+				submit: 'Jetzt Termin buchen',
+				submitting: 'Wird gebucht...'
+			},
 			success: {
-				title: 'Termin erfolgreich gebucht!',
-				message:
-					'Dein kostenloses Beratungsgespräch wurde für den {date} um {time} Uhr reserviert.',
-				details:
-					'Du erhältst in Kürze eine Bestätigungs-E-Mail mit allen Details und dem Meeting-Link.'
+				title: '🎉 Perfekt! Dein Termin steht!',
+				message: 'Wir freuen uns auf das Gespräch!',
+				socialProof: '500+ Projekte erfolgreich umgesetzt',
+				bonusTitle: 'Dein Bonus wartet!',
+				bonusValue: 'Wert: 299€ • Exklusiv für dich',
+				bonusDescription:
+					'Als Dankeschön erhältst du unsere 7 Geheimtipps für deinen Online-Marketing-Erfolg – bewährte Strategien, die deine Konkurrenz noch nicht kennt.',
+				bonusEmail: 'Die Tipps senden wir dir direkt per E-Mail zu!',
+				bonusUrgency: 'Wird automatisch in 2 Minuten versendet',
+				meetingLink: 'Meeting-Link öffnen'
+			},
+			error: {
+				generic: 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.',
+				dateRequired: 'Bitte wähle ein Datum',
+				timeRequired: 'Bitte wähle eine Uhrzeit',
+				allFieldsRequired: 'Bitte fülle alle Pflichtfelder aus'
 			}
 		}
 	},

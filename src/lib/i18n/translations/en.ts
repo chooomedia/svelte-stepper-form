@@ -385,25 +385,20 @@ const en: Translation = {
 		sections: {
 			analysis: 'Your Analysis Results',
 			steps: {
-				title: 'What happens after purchase?',
-				purchase: {
-					title: 'Purchase completion',
-					description: 'Selection of the suitable plan and straightforward purchase process',
-					icon: 'cart'
-				},
+				title: 'Your next steps to success',
 				scheduling: {
-					title: 'Appointment scheduling',
-					description: 'Personal appointment scheduling with our digital expert',
+					title: 'Personal Consultation',
+					description: '30min with our expert – concrete strategies for your growth',
 					icon: 'calendar'
 				},
 				implementation: {
-					title: 'Implementation',
-					description: 'Professional implementation of all agreed measures',
+					title: 'Quick Implementation',
+					description: 'We implement what works – professional and focused',
 					icon: 'code'
 				},
 				handover: {
-					title: 'Handover',
-					description: 'Handover and introduction to your optimized digital system',
+					title: 'Your system runs',
+					description: 'Fully set up – works for you and brings inquiries automatically',
 					icon: 'check'
 				}
 			},
@@ -566,9 +561,22 @@ const en: Translation = {
 			}
 		},
 		buttons: {
-			restart: 'Restart quiz and analysis',
+			restart: 'Restart Analysis',
 			getReport: 'Receive analysis report by email',
-			emailError: 'Please provide an email address in the form to receive the results.'
+			emailError: 'Please provide an email address in the form to receive the results.',
+			bookNow: 'Book Appointment Now'
+		},
+		cta: {
+			readyTitle: 'Ready for the next step?',
+			bookingText: 'Book your free consultation now and let us improve your online visibility together.'
+		},
+		restartModal: {
+			title: 'Do you really want to start over?',
+			message: 'You have already invested time and gained valuable insights into your online visibility.',
+			suggestion: '💡 Better use our free consultation and save time on optimization!',
+			bookInstead: '✨ Book Appointment Instead',
+			cancel: 'Cancel',
+			confirmRestart: 'Start Over Anyway'
 		},
 		screenshot: {
 			alt: 'Website Screenshot',
@@ -800,17 +808,77 @@ const en: Translation = {
 			title: 'Book free consultation',
 			subtitle:
 				'Choose an appointment for your 30-minute free consultation. We will discuss your individual needs and show you how to optimize your online visibility.',
-			selectDate: 'Select date:',
-			selectTime: 'Select time:',
-			contactInfo: 'Your contact details:',
-			confirm: 'Book appointment for free',
-			booking: 'Booking appointment...',
-			cancel: 'Cancel',
+			expert: {
+				title: 'Free Strategy Consultation',
+				description:
+					'Your direct line to the expert. In 30 minutes we analyze your current situation and show you concrete growth opportunities.'
+			},
+			trustElements: {
+				free: {
+					title: '100% Free',
+					subtitle: 'No hidden costs'
+				},
+				duration: {
+					title: '30 Minutes',
+					subtitle: 'Personal consultation'
+				},
+				projects: {
+					title: '500+ Projects',
+					subtitle: 'Successfully implemented'
+				}
+			},
+			calendar: {
+				title: 'Choose your preferred time',
+				description: '30 Minutes • Video call',
+				addToCalendar: 'Add to your calendar:',
+				download: 'Apple / Outlook',
+				selectDate: 'Select date',
+				selectTime: 'Select time',
+				noSlotsAvailable: 'No appointments available',
+				loadingSlots: 'Loading available times...',
+				months: [
+					'January',
+					'February',
+					'March',
+					'April',
+					'May',
+					'June',
+					'July',
+					'August',
+					'September',
+					'October',
+					'November',
+					'December'
+				],
+				days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+			},
+			form: {
+				title: 'Your contact details',
+				firstName: 'First name',
+				lastName: 'Last name',
+				email: 'Email',
+				phone: 'Phone (optional)',
+				privacy: 'Your data is safe with us and will be treated confidentially',
+				submit: 'Book appointment now',
+				submitting: 'Booking...'
+			},
 			success: {
-				title: 'Appointment successfully booked!',
-				message: 'Your free consultation has been reserved for {date} at {time}.',
-				details:
-					'You will shortly receive a confirmation email with all details and the meeting link.'
+				title: '🎉 Perfect! Your appointment is confirmed!',
+				message: 'We look forward to the conversation!',
+				socialProof: '500+ projects successfully implemented',
+				bonusTitle: 'Your bonus is waiting!',
+				bonusValue: 'Value: €299 • Exclusive for you',
+				bonusDescription:
+					'As a thank you, you will receive our 7 secret tips for your online marketing success – proven strategies your competitors don\'t know yet.',
+				bonusEmail: 'We will send you the tips directly via email!',
+				bonusUrgency: 'Will be sent automatically in 2 minutes',
+				meetingLink: 'Open meeting link'
+			},
+			error: {
+				generic: 'An error occurred. Please try again.',
+				dateRequired: 'Please select a date',
+				timeRequired: 'Please select a time',
+				allFieldsRequired: 'Please fill in all required fields'
 			}
 		}
 	},

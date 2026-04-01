@@ -2,17 +2,14 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { WebhookService } from '$lib/services/webhookService';
-	import { i18n, getTextDirection, currentLocale } from '$lib/i18n';
-	import { currencyStore } from '$lib/stores/currencyStore';
+	import { i18n, currentLocale } from '$lib/i18n';
 	import type { FormData } from '$lib/schema';
 	import VisibilityScore from '../atoms/VisibilityScore.svelte';
 	import PerformanceChart from './PerformanceChart.svelte';
-	import PricingOptions from './PricingOptions.svelte';
-	import ExpertProfile from '../templates/ExpertSection.svelte';
 	import ProcessSteps from '../molecules/ProcessSteps.svelte';
 	import BenefitsSection from '../templates/BenefitsSection.svelte';
+	import OptimizedBooking from './OptimizedBooking.svelte';
 	import {
-		scoreStore,
 		getFallbackAuditData,
 		websiteScreenshot,
 		calculateIconBasedScore
@@ -22,29 +19,18 @@
 
 	const isDev = import.meta.env.DEV;
 
-	interface Props {
+	let { score, formData, auditData, nextStep, restartAssessment }: {
 		score: number;
 		formData: FormData;
 		auditData: any;
 		nextStep: () => void;
 		restartAssessment: () => void;
-	}
-
-	let { score, formData, auditData, nextStep, restartAssessment } = $props<Props>();
+	} = $props();
 
 	// State variables
-	let pageLoaded = $state(false);
-	let showImprovement = $state(false);
 	let webhookSent = $state(false);
-	let webhookSuccess = $state(false);
-	let webhookMessage = $state('');
 	let formErrors = $state<string[]>([]);
-	let emailSendAttempted = $state(false);
-	let recommendations = $state<string[]>([]);
-
-	// RTL/LTR Support - reaktive Textrichtung
-	let textDirection = $derived(getTextDirection());
-	let currentLang = $derived($i18n?.meta?.language || 'de');
+	let showRestartModal = $state(false);
 
 	// Debug: Log die aktuelle Sprache
 	$effect(() => {
@@ -57,8 +43,6 @@
 	let finalScore = $derived(Math.round((score + iconBasedScore) / 2));
 
 	async function sendAnalysisResults() {
-		emailSendAttempted = true;
-
 		// Prüfen, ob bereits gesendet wurde
 		if (webhookSent) {
 			return;
@@ -67,9 +51,7 @@
 		// Prüfen, ob tägliches Limit erreicht ist
 		if (WebhookService.hasReachedDailyLimit() && !isDev) {
 			const error = 'You have reached your daily limit for emails. Please try again tomorrow.';
-			webhookMessage = error;
 			formErrors = [error];
-			webhookSuccess = false;
 			webhookSent = true;
 			return;
 		}
@@ -88,8 +70,6 @@
 			// Übergebe die aktuellen Formulardaten direkt an den Webhook-Service
 			const result = await WebhookService.sendQuizResults(formDataWithLanguage);
 			webhookSent = true;
-			webhookSuccess = result.success;
-			webhookMessage = result.message;
 			if (!result.success) {
 				formErrors = [result.message];
 			} else {
@@ -97,9 +77,7 @@
 			}
 		} catch (error) {
 			webhookSent = true;
-			webhookSuccess = false;
 			const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-			webhookMessage = errorMessage;
 			formErrors = [errorMessage];
 		}
 	}
@@ -112,182 +90,17 @@
 		isNaN(finalScore) || finalScore < 0 || finalScore > 100 ? 50 : finalScore
 	);
 
-	// Generate recommendations based on score and form data
-	function generateRecommendations() {
-		const baseRecommendations = [
-			$i18n.results.recommendations.website,
-			$i18n.results.recommendations.content
-		];
 
-		const metricRecommendations = [];
-
-		// Metrics-basierte Empfehlungen temporär deaktiviert
-		// const metrics = scoreStore.getState()?.metrics;
-		// if (metrics) {
-		// 	if (metrics.performance < 70) {
-		// 		metricRecommendations.push($i18n.results.recommendations.performance);
-		// 	}
-		// 	if (metrics.seo < 70) {
-		// 		metricRecommendations.push($i18n.results.recommendations.seo);
-		// 	}
-		// 	if (metrics.accessibility < 70) {
-		// 		metricRecommendations.push($i18n.results.recommendations.accessibility);
-		// 	}
-		// 	if (metrics.content < 70) {
-		// 		metricRecommendations.push($i18n.results.recommendations.contentQuality);
-		// 	}
-		// }
-
-		const additionalRecommendations = [];
-
-		// Add specific recommendations based on score
-		if (processedScore < 40) {
-			additionalRecommendations.push($i18n.results.recommendations.basicSeo);
-			additionalRecommendations.push($i18n.results.recommendations.googleBusiness);
-		} else if (processedScore < 60) {
-			additionalRecommendations.push($i18n.results.recommendations.advancedSeo);
-			additionalRecommendations.push($i18n.results.recommendations.localSeo);
-		} else if (processedScore < 80) {
-			additionalRecommendations.push($i18n.results.recommendations.contentMarketing);
-			additionalRecommendations.push($i18n.results.recommendations.backlinks);
-		} else {
-			additionalRecommendations.push($i18n.results.recommendations.extendedContent);
-			additionalRecommendations.push($i18n.results.recommendations.competitorAnalysis);
-		}
-
-		return [
-			...new Set([...baseRecommendations, ...additionalRecommendations, ...metricRecommendations])
-		].slice(0, 5);
-	}
-
-	function handlePlanSelection(plan: string, price: number) {
-		console.log(`Selected plan: ${plan}, price: ${currencyStore.getFormattedPrice(price)}€`);
-		// Add your logic here
-	}
-
-	// Enhance the plan prices with localized currency
-	function getLocalizedPricePlans() {
-		return pricePlans.map((plan) => ({
-			...plan,
-			price: currencyStore.convertPrice(plan.price),
-			originalPrice: currencyStore.convertPrice(plan.originalPrice),
-			formattedPrice: currencyStore.convertPrice(plan.price),
-			formattedOriginalPrice: currencyStore.convertPrice(plan.originalPrice)
-		}));
-	}
-
-	// Price plans based on score range
-	export const pricePlans = [
-		{
-			name: $i18n.pricing.planLabels.oneMonth,
-			price: 1.98,
-			originalPrice: 7.99,
-			perDay: $i18n.pricing.perDay,
-			popular: false,
-			features: [
-				$i18n.pricing.features.websiteOptimization,
-				$i18n.pricing.features.basicSeo,
-				$i18n.pricing.features.monthlyContent,
-				$i18n.pricing.features.performanceReport
-			]
-		},
-		{
-			name: $i18n.pricing.planLabels.threeMonth,
-			price: 3.98,
-			originalPrice: 10.99,
-			perDay: $i18n.pricing.perDay,
-			popular: true,
-			features: [
-				$i18n.pricing.features.allBasicFeatures,
-				$i18n.pricing.features.socialMedia,
-				$i18n.pricing.features.weeklyContent,
-				$i18n.pricing.features.keywordOptimization,
-				$i18n.pricing.features.competitorAnalysis
-			]
-		},
-		{
-			name: $i18n.pricing.planLabels.sixMonth,
-			price: 6.98,
-			originalPrice: 19.99,
-			perDay: $i18n.pricing.perDay,
-			popular: false,
-			features: [
-				$i18n.pricing.features.allPremiumFeatures,
-				$i18n.pricing.features.marketingStrategy,
-				$i18n.pricing.features.dailyContent,
-				$i18n.pricing.features.sem,
-				$i18n.pricing.features.personalManager,
-				$i18n.pricing.features.cro
-			]
-		}
-	];
-
-	// Included & excluded features in our plans
-	const includedFeatures = [
-		$i18n.pricing.included.longtermBusiness,
-		$i18n.pricing.included.viralContent,
-		$i18n.pricing.included.expertFrameworks,
-		$i18n.pricing.included.targetedStrategies
-	];
-
-	const excludedFeatures = [
-		$i18n.pricing.excluded.getRichQuick,
-		$i18n.pricing.excluded.noContracts,
-		$i18n.pricing.excluded.noInvestment,
-		$i18n.pricing.excluded.pyramidSchemes
-	];
-
-	// Add a reactive subscription to the score store
-	let scorestoreData = $state(null);
-	let metrics = $state(null);
-
-	$effect(() => {
-		// Subscribe to the score store
-		const unsubscribe = scoreStore.subscribe((data) => {
-			scorestoreData = data;
-
-			// Direct access to detailed metrics
-			if (data?.metrics) {
-				metrics = data.metrics;
-			}
-		});
-
-		return () => {
-			unsubscribe();
-		};
-	});
+	// Simplified - removed pricing functions and data
 
 	// Initialize chart and data on mount
 	onMount(() => {
-		// Subscribe to the score store
-		const unsubscribe = scoreStore.subscribe((data) => {
-			scorestoreData = data;
-		});
-
 		if (formData.email && !webhookSent && !WebhookService.hasReachedDailyLimit()) {
 			// Wait a short delay to allow the UI to render
 			setTimeout(() => {
 				sendAnalysisResults();
 			}, 2000);
 		}
-
-		// Generate benefits and recommendations
-		// benefits = generateBenefits(); // This line is removed as per the edit hint
-		recommendations = generateRecommendations();
-
-		// After initial load, show plans
-		setTimeout(() => {
-			pageLoaded = true;
-		}, 500);
-
-		// After a longer delay, show improvement view
-		setTimeout(() => {
-			showImprovement = true;
-		}, 3000);
-
-		return () => {
-			unsubscribe();
-		};
 	});
 </script>
 
@@ -306,13 +119,14 @@
 				in:fade={{ duration: 500, delay: 800 }}
 			>
 				{#if screenshot}
-					<div class="screenshot-container overflow-hidden rounded-t-lg">
+					<div class="screenshot-container h-48 overflow-hidden rounded-t-lg">
 						<!-- Wenn der Screenshot eine Daten-URL ist -->
 						{#if screenshot.startsWith('data:')}
 							<img
 								src={screenshot}
 								alt={$i18n.results.screenshot.alt}
-								class="h-auto w-full object-cover shadow-sm"
+								class="h-full w-full object-cover object-top shadow-sm"
+								draggable="false"
 								onerror={(e) => {
 									console.error('Screenshot Fehler:', e);
 								}}
@@ -366,8 +180,6 @@
 			<PerformanceChart
 				{score}
 				auditData={auditData || getFallbackAuditData(finalScore, formData?.company_url)}
-				animateOnResultLoad={pageLoaded}
-				{showImprovement}
 			/>
 		</div>
 	</div>
@@ -434,84 +246,12 @@
 	<!-- Process Steps Section - NEW -->
 	<ProcessSteps />
 
-	<!-- Expert Profile Section - NEW -->
-	<ExpertProfile />
-
-	<!-- Pricing Section -->
-	<PricingOptions
-		score={processedScore}
-		{formData}
-		onPlanSelect={handlePlanSelection}
-		pricePlans={getLocalizedPricePlans()}
-	/>
-
-	<!-- Add after PricingOptions component -->
+	<!-- Optimized Booking Section with Expert Profile Integration -->
 	<div
-		class="my-16 overflow-hidden rounded-xl bg-gradient-to-br from-primary-50 to-gray-100 p-8 shadow-lg"
+		class="booking-content my-16"
 		in:fade={{ duration: 500, delay: 1200 }}
 	>
-		<div class="mx-auto max-w-7xl">
-			<h2 class="text-center text-3xl font-bold tracking-tight text-gray-900">
-				<span class="text-primary-600">{$i18n.pricing.includedTitle}</span>
-				{$i18n.pricing.inAllPlans}
-			</h2>
-
-			<div class="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
-				{#each includedFeatures as feature, i}
-					<div class="flex items-start" in:fly={{ y: 20, delay: 1300 + i * 100, duration: 400 }}>
-						<div class="flex-shrink-0">
-							<div
-								class="flex h-12 w-12 items-center justify-center rounded-md bg-primary-500 text-white"
-							>
-								<Icon name="check" size={24} stroke="currentColor" strokeWidth="3" fill="none" />
-							</div>
-						</div>
-						<div class="ml-4">
-							<h3 class="text-lg font-medium text-gray-900">{feature}</h3>
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			<div class="mt-16">
-				<h2 class="text-center text-3xl font-bold tracking-tight text-gray-900">
-					{$i18n.pricing.excludedTitle} <span class="text-red-500">{$i18n.pricing.notWorking}</span>
-				</h2>
-
-				<div class="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
-					{#each excludedFeatures as feature, i}
-						<div class="flex items-start" in:fly={{ y: 20, delay: 1800 + i * 100, duration: 400 }}>
-							<div class="flex-shrink-0">
-								<div
-									class="flex h-12 w-12 items-center justify-center rounded-md bg-red-500 text-white"
-								>
-									<Icon name="closeX" strokeWidth="2" size={26} />
-								</div>
-							</div>
-							<div class="ml-4">
-								<h3 class="text-lg font-medium text-gray-900">{feature}</h3>
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
-
-			<div class="mt-16 text-center">
-				<div class="inline-flex items-center rounded-md shadow">
-					<button
-						class="flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-5 py-3 text-base font-medium text-secondary hover:bg-primary-700"
-						onclick={() =>
-							window.scrollTo({
-								top: document.querySelector('.pricing-cards')?.offsetTop || 0,
-								behavior: 'smooth'
-							})}
-					>
-						{$i18n.pricing.choosePlan}
-						<Icon name="arrowRight" fill="currentColor" size={32} className="mt-1 ml-2" />
-					</button>
-				</div>
-			</div>
-		</div>
+		<OptimizedBooking {formData} />
 	</div>
 
 	<!-- Before/After Comparison with Real Results -->
@@ -585,68 +325,112 @@
 		</div>
 	</div>
 
-	<!-- Call to Action -->
+	<!-- Simplified Call to Action - Scroll to Booking -->
 	<div
 		class="mt-10 rounded-lg bg-gradient-to-r from-primary-600 to-primary-800 p-8 text-center shadow-lg"
 		in:fade={{ duration: 500, delay: 1800 }}
 	>
 		<h3 class="text-2xl font-bold text-white">
-			{$i18n.results.sections.cta.title}
+			{$i18n.results.cta.readyTitle || 'Bereit für den nächsten Schritt?'}
 		</h3>
 		<p class="mt-2 text-blue-100">
-			{$i18n.results.sections.cta.subtitle}
+			{$i18n.results.cta.bookingText || 'Buche jetzt dein kostenloses Beratungsgespräch und lass uns gemeinsam deine Online-Sichtbarkeit verbessern.'}
 		</p>
-		<div class="mt-6">
+		<div class="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
+			<!-- Restart Button -->
 			<button
-				class="rounded-lg bg-white px-8 py-3 font-semibold text-secondary-600 shadow-lg transition hover:bg-blue-50"
-				onclick={() =>
-					window.scrollTo({
-						top: document.querySelector('.pricing-cards')?.offsetTop || 0,
-						behavior: 'smooth'
-					})}
+				class="w-full rounded-lg border-2 border-white bg-transparent px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-white hover:text-primary-600 sm:w-auto"
+				onclick={() => showRestartModal = true}
 			>
-				{$i18n.results.sections.cta.button}
+				{$i18n.results.buttons.restart || 'Analyse neu starten'}
+			</button>
+			
+			<!-- Booking Button -->
+			<button
+				class="w-full rounded-lg bg-white px-8 py-3 font-semibold text-secondary-600 shadow-lg transition hover:bg-blue-50 sm:w-auto"
+				onclick={() => {
+					const element = document.querySelector('.booking-content');
+					if (element) {
+						window.scrollTo({
+							top: (element as HTMLElement).offsetTop || 0,
+							behavior: 'smooth'
+						});
+					}
+				}}
+			>
+				{$i18n.results.buttons.bookNow || 'Jetzt Termin buchen'}
 			</button>
 		</div>
 	</div>
 
-	<!-- Action Buttons -->
-	<div
-		class="mt-8 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
-	>
-		<button
-			class="btn w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto lg:mx-3"
-			onclick={restartAssessment}
+	<!-- Restart Confirmation Modal -->
+	{#if showRestartModal}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+			onclick={() => showRestartModal = false}
+			transition:fade={{ duration: 200 }}
 		>
-			{$i18n.results.buttons.restart}
-		</button>
-
-		<button
-			class="btn btn-primary flex w-full items-center justify-center px-6 py-3 shadow-sm md:w-auto lg:mx-3 {emailSendAttempted &&
-			!formData.email
-				? 'btn-error'
-				: ''}"
-			onclick={formData.email
-				? sendAnalysisResults
-				: () => {
-						emailSendAttempted = true;
-					}}
-			disabled={webhookSent && webhookSuccess}
-		>
-			{#if webhookSent && webhookSuccess}
-				Ergebnisse gesendet
-			{:else if formData.email}
-				{$i18n.results.buttons.getReport}
-			{:else}
-				{$i18n.results.buttons.getReport}
-			{/if}
-		</button>
-	</div>
-	<div class="my-4 text-center">
-		{#if emailSendAttempted && !formData.email}
-			<p class="text-sm text-red-600" in:fly={{ y: 10, duration: 300 }}>
-				{$i18n.results.buttons.emailError}
-			</p>
-		{/if}
-	</div>
+			<div
+				class="max-w-md rounded-lg bg-white p-6 shadow-xl"
+				onclick={(e) => e.stopPropagation()}
+				transition:fly={{ y: -20, duration: 300 }}
+			>
+				<div class="mb-4 flex items-start gap-3">
+					<div class="rounded-full bg-orange-100 p-2">
+						<Icon name="alertCircle" size={24} stroke="currentColor" strokeWidth="2" fill="none" class="text-orange-600" />
+					</div>
+					<h3 class="text-xl font-bold text-gray-900">
+						{$i18n.results.restartModal?.title || 'Möchtest du wirklich neu starten?'}
+					</h3>
+				</div>
+				
+				<p class="mb-2 text-gray-600">
+					{$i18n.results.restartModal?.message || 'Du hast bereits Zeit investiert und wertvolle Einblicke in deine Online-Sichtbarkeit erhalten.'}
+				</p>
+				
+				<p class="mb-6 font-semibold text-primary-600">
+					{$i18n.results.restartModal?.suggestion || '💡 Nutze lieber unsere kostenlose Beratung und spare Zeit bei der Optimierung!'}
+				</p>
+				
+				<div class="flex flex-col gap-3">
+					<!-- Book Appointment Button (volle Breite) -->
+					<button
+						class="w-full rounded-lg bg-gradient-to-r from-primary-600 to-primary-800 px-6 py-3 font-semibold text-white shadow-md transition hover:shadow-lg"
+						onclick={() => {
+							showRestartModal = false;
+							const element = document.querySelector('.booking-content');
+							if (element) {
+								window.scrollTo({
+									top: (element as HTMLElement).offsetTop || 0,
+									behavior: 'smooth'
+								});
+							}
+						}}
+					>
+						{$i18n.results.restartModal?.bookInstead || '✨ Lieber Termin buchen'}
+					</button>
+					
+					<!-- Cancel + Restart Buttons (nebeneinander) -->
+					<div class="flex gap-3">
+						<button
+							class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
+							onclick={() => showRestartModal = false}
+						>
+							{$i18n.results.restartModal?.cancel || 'Abbrechen'}
+						</button>
+						
+						<button
+							class="flex-1 rounded-lg bg-gray-100 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-200"
+							onclick={() => {
+								showRestartModal = false;
+								restartAssessment();
+							}}
+						>
+							{$i18n.results.restartModal?.confirmRestart || 'Trotzdem neu starten'}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
