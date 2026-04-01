@@ -30,6 +30,7 @@
 	// State variables
 	let webhookSent = $state(false);
 	let formErrors = $state<string[]>([]);
+	let showRestartModal = $state(false);
 
 	// Debug: Log die aktuelle Sprache
 	$effect(() => {
@@ -118,13 +119,14 @@
 				in:fade={{ duration: 500, delay: 800 }}
 			>
 				{#if screenshot}
-					<div class="screenshot-container overflow-hidden rounded-t-lg">
+					<div class="screenshot-container h-48 overflow-hidden rounded-t-lg">
 						<!-- Wenn der Screenshot eine Daten-URL ist -->
 						{#if screenshot.startsWith('data:')}
 							<img
 								src={screenshot}
 								alt={$i18n.results.screenshot.alt}
-								class="h-auto w-full object-cover shadow-sm"
+								class="h-full w-full object-cover object-top shadow-sm"
+								draggable="false"
 								onerror={(e) => {
 									console.error('Screenshot Fehler:', e);
 								}}
@@ -329,14 +331,23 @@
 		in:fade={{ duration: 500, delay: 1800 }}
 	>
 		<h3 class="text-2xl font-bold text-white">
-			Bereit für den nächsten Schritt?
+			{$i18n.results.cta.readyTitle || 'Bereit für den nächsten Schritt?'}
 		</h3>
 		<p class="mt-2 text-blue-100">
-			Buche jetzt dein kostenloses Beratungsgespräch und lass uns gemeinsam deine Online-Sichtbarkeit verbessern.
+			{$i18n.results.cta.bookingText || 'Buche jetzt dein kostenloses Beratungsgespräch und lass uns gemeinsam deine Online-Sichtbarkeit verbessern.'}
 		</p>
-		<div class="mt-6">
+		<div class="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
+			<!-- Restart Button -->
 			<button
-				class="rounded-lg bg-white px-8 py-3 font-semibold text-secondary-600 shadow-lg transition hover:bg-blue-50"
+				class="w-full rounded-lg border-2 border-white bg-transparent px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-white hover:text-primary-600 sm:w-auto"
+				onclick={() => showRestartModal = true}
+			>
+				{$i18n.results.buttons.restart || 'Analyse neu starten'}
+			</button>
+			
+			<!-- Booking Button -->
+			<button
+				class="w-full rounded-lg bg-white px-8 py-3 font-semibold text-secondary-600 shadow-lg transition hover:bg-blue-50 sm:w-auto"
 				onclick={() => {
 					const element = document.querySelector('.booking-content');
 					if (element) {
@@ -347,35 +358,79 @@
 					}
 				}}
 			>
-				Jetzt Termin buchen
+				{$i18n.results.buttons.bookNow || 'Jetzt Termin buchen'}
 			</button>
 		</div>
 	</div>
 
-	<!-- Simplified Action Buttons - Only Restart -->
-	<div
-		class="mt-8 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
-	>
-		<button
-			class="btn w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 sm:w-auto"
-			onclick={restartAssessment}
+	<!-- Restart Confirmation Modal -->
+	{#if showRestartModal}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+			onclick={() => showRestartModal = false}
+			transition:fade={{ duration: 200 }}
 		>
-			{$i18n.results.buttons.restart}
-		</button>
-
-		<button
-			class="btn btn-primary flex w-full items-center justify-center px-6 py-3 shadow-sm md:w-auto"
-			onclick={() => {
-				const element = document.querySelector('.booking-content');
-				if (element) {
-					window.scrollTo({
-						top: (element as HTMLElement).offsetTop || 0,
-						behavior: 'smooth'
-					});
-				}
-			}}
-		>
-			Jetzt Termin buchen
-		</button>
-	</div>
+			<div
+				class="max-w-md rounded-lg bg-white p-6 shadow-xl"
+				onclick={(e) => e.stopPropagation()}
+				transition:fly={{ y: -20, duration: 300 }}
+			>
+				<div class="mb-4 flex items-start gap-3">
+					<div class="rounded-full bg-orange-100 p-2">
+						<Icon name="alertCircle" size={24} stroke="currentColor" strokeWidth="2" fill="none" class="text-orange-600" />
+					</div>
+					<h3 class="text-xl font-bold text-gray-900">
+						{$i18n.results.restartModal?.title || 'Möchtest du wirklich neu starten?'}
+					</h3>
+				</div>
+				
+				<p class="mb-2 text-gray-600">
+					{$i18n.results.restartModal?.message || 'Du hast bereits Zeit investiert und wertvolle Einblicke in deine Online-Sichtbarkeit erhalten.'}
+				</p>
+				
+				<p class="mb-6 font-semibold text-primary-600">
+					{$i18n.results.restartModal?.suggestion || '💡 Nutze lieber unsere kostenlose Beratung und spare Zeit bei der Optimierung!'}
+				</p>
+				
+				<div class="flex flex-col gap-3">
+					<!-- Book Appointment Button (volle Breite) -->
+					<button
+						class="w-full rounded-lg bg-gradient-to-r from-primary-600 to-primary-800 px-6 py-3 font-semibold text-white shadow-md transition hover:shadow-lg"
+						onclick={() => {
+							showRestartModal = false;
+							const element = document.querySelector('.booking-content');
+							if (element) {
+								window.scrollTo({
+									top: (element as HTMLElement).offsetTop || 0,
+									behavior: 'smooth'
+								});
+							}
+						}}
+					>
+						{$i18n.results.restartModal?.bookInstead || '✨ Lieber Termin buchen'}
+					</button>
+					
+					<!-- Cancel + Restart Buttons (nebeneinander) -->
+					<div class="flex gap-3">
+						<button
+							class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
+							onclick={() => showRestartModal = false}
+						>
+							{$i18n.results.restartModal?.cancel || 'Abbrechen'}
+						</button>
+						
+						<button
+							class="flex-1 rounded-lg bg-gray-100 px-6 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-200"
+							onclick={() => {
+								showRestartModal = false;
+								restartAssessment();
+							}}
+						>
+							{$i18n.results.restartModal?.confirmRestart || 'Trotzdem neu starten'}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>

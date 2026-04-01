@@ -846,6 +846,28 @@ const ro: Translation = {
 				timeRequired: 'Te rugăm să selectezi o oră',
 				allFieldsRequired: 'Te rugăm să completezi toate câmpurile obligatorii'
 			}
+		},
+		buttons: {
+			restart: 'Repornește analiza',
+			getReport: 'Primește raportul de analiză prin e-mail',
+			emailError: 'Vă rugăm să furnizați o adresă de e-mail în formular pentru a primi rezultatele.',
+			bookNow: 'Rezervă programare acum'
+		},
+		cta: {
+			readyTitle: 'Ești gata pentru următorul pas?',
+			bookingText: 'Rezervă consultația ta gratuită acum și hai să îmbunătățim împreună vizibilitatea ta online.'
+		},
+		restartModal: {
+			title: 'Vrei cu adevărat să reîncepi?',
+			message: 'Ai investit deja timp și ai obținut informații valoroase despre vizibilitatea ta online.',
+			suggestion: '💡 Mai bine folosește consultația noastră gratuită și economisește timp la optimizare!',
+			bookInstead: '✨ Rezervă programare în schimb',
+			cancel: 'Anulează',
+			confirmRestart: 'Reîncepe oricum'
+		},
+		screenshot: {
+			alt: 'Captură de ecran site web',
+			unsupported: 'Date captură de ecran disponibile, dar formatul nu este suportat'
 		}
 	},
 	waitingScreen: {

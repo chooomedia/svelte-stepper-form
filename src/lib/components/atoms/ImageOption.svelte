@@ -181,7 +181,7 @@
 			{@const customShadow = isStep1 ? shadowColors[index % shadowColors.length] : 'shadow-custom hover:shadow-lg'}
 			<button
 				type="button"
-				class="relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 {customShadow} transition-all duration-300 hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
+				class="select-none relative flex h-full flex-row justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-white to-primary-50 {customShadow} transition-all duration-300 hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-primary-600 lg:flex-col {isSelected(
 					option.value
 				)
 					? 'border-primary-500 shadow-primary-100 ring-1 ring-primary-500'
@@ -210,9 +210,10 @@
 						<img
 							src={option.imgSrc}
 							alt={getLocalizedDescription(fieldName, option.value)}
-							class="h-16 w-auto transform object-contain transition-transform hover:scale-110 md:h-24 lg:h-32"
+							class="h-16 w-auto transform object-contain transition-transform hover:scale-110 md:h-24 lg:h-32 select-none pointer-events-none"
 							role="img"
 							aria-hidden="true"
+							draggable="false"
 						/>
 					</div>
 				{/if}

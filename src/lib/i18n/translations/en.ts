@@ -561,9 +561,22 @@ const en: Translation = {
 			}
 		},
 		buttons: {
-			restart: 'Restart quiz and analysis',
+			restart: 'Restart Analysis',
 			getReport: 'Receive analysis report by email',
-			emailError: 'Please provide an email address in the form to receive the results.'
+			emailError: 'Please provide an email address in the form to receive the results.',
+			bookNow: 'Book Appointment Now'
+		},
+		cta: {
+			readyTitle: 'Ready for the next step?',
+			bookingText: 'Book your free consultation now and let us improve your online visibility together.'
+		},
+		restartModal: {
+			title: 'Do you really want to start over?',
+			message: 'You have already invested time and gained valuable insights into your online visibility.',
+			suggestion: '💡 Better use our free consultation and save time on optimization!',
+			bookInstead: '✨ Book Appointment Instead',
+			cancel: 'Cancel',
+			confirmRestart: 'Start Over Anyway'
 		},
 		screenshot: {
 			alt: 'Website Screenshot',

@@ -565,9 +565,22 @@ const de: Translation = {
 			}
 		},
 		buttons: {
-			restart: 'Quiz und Analyse neu starten',
+			restart: 'Analyse neu starten',
 			getReport: 'Analysebericht per E-Mail erhalten',
-			emailError: 'Bitte gib im Formular eine E-Mail-Adresse an, um die Ergebnisse zu erhalten.'
+			emailError: 'Bitte gib im Formular eine E-Mail-Adresse an, um die Ergebnisse zu erhalten.',
+			bookNow: 'Jetzt Termin buchen'
+		},
+		cta: {
+			readyTitle: 'Bereit für den nächsten Schritt?',
+			bookingText: 'Buche jetzt dein kostenloses Beratungsgespräch und lass uns gemeinsam deine Online-Sichtbarkeit verbessern.'
+		},
+		restartModal: {
+			title: 'Möchtest du wirklich neu starten?',
+			message: 'Du hast bereits Zeit investiert und wertvolle Einblicke in deine Online-Sichtbarkeit erhalten.',
+			suggestion: '💡 Nutze lieber unsere kostenlose Beratung und spare Zeit bei der Optimierung!',
+			bookInstead: '✨ Lieber Termin buchen',
+			cancel: 'Abbrechen',
+			confirmRestart: 'Trotzdem neu starten'
 		},
 		screenshot: {
 			alt: 'Website Screenshot',

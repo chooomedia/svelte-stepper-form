@@ -792,6 +792,28 @@ const hu: Translation = {
 				details:
 					'Hamarosan megkapsz egy visszaigazoló e-mailt minden részlettel és a meeting linkkel.'
 			}
+		},
+		buttons: {
+			restart: 'Elemzés újraindítása',
+			getReport: 'Elemzési jelentés fogadása e-mailben',
+			emailError: 'Kérjük, adjon meg egy e-mail címet az űrlapon az eredmények fogadásához.',
+			bookNow: 'Időpont foglalása most'
+		},
+		cta: {
+			readyTitle: 'Készen állsz a következő lépésre?',
+			bookingText: 'Foglalj most ingyenes tanácsadást, és javítsuk együtt az online láthatóságodat.'
+		},
+		restartModal: {
+			title: 'Biztosan újra szeretnéd kezdeni?',
+			message: 'Már időt fektettél be és értékes betekintést nyertél az online láthatóságodba.',
+			suggestion: '💡 Inkább használd ingyenes tanácsadásunkat és takarítsd meg az időt az optimalizálásban!',
+			bookInstead: '✨ Inkább foglalj időpontot',
+			cancel: 'Mégse',
+			confirmRestart: 'Mégis újraindítom'
+		},
+		screenshot: {
+			alt: 'Weboldal képernyőkép',
+			unsupported: 'Képernyőkép adatok elérhetők, de a formátum nem támogatott'
 		}
 	},
 	waitingScreen: {

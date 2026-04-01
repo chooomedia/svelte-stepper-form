@@ -3,6 +3,8 @@
 	import Icon from './Icon.svelte';
 	import { i18n } from '$lib/i18n';
 
+	const isDev = import.meta.env.DEV;
+
 	let { errors = [], title } = $props<{
 		errors: string[];
 		title?: string;
@@ -58,6 +60,11 @@
 		<div class="error-header">
 			<Icon name="alert-circle" size={20} stroke="currentColor" strokeWidth="2" fill="none" />
 			<h3 class="error-title">{displayTitle}</h3>
+			{#if isDev}
+				<span class="ml-2 rounded-full bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white">
+					DEV ONLY
+				</span>
+			{/if}
 		</div>
 		<ul class="error-list">
 			{#each translatedErrors as error, index}
